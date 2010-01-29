@@ -1,0 +1,14 @@
+<resources>
+    <string-array name='sixminchoices'> 
+		<item>00</item>
+		<item>06</item>
+		<item>12</item>
+		<item>18</item>
+		<item>24</item>
+		<item>30</item>
+		<item>36</item>
+		<item>36</item>
+		<item>48</item>
+		<item>54</item>
+	</string-array>
+</resources>

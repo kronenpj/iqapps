@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<merge 
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout="@layout/bottombar"
+    android:orientation="vertical"	
+	>
+
+	<Button
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_gravity="left|bottom"
+		android:id="@+id/button_one" 
+        android:padding="12dip"
+		android:text="One"
+		android:minWidth="20dip"
+   	/>
+
+   	<Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" 
+    	android:layout_gravity="right|bottom"
+		android:id="@+id/button_two" 
+        android:padding="12dip"
+        android:text="Two"
+   	/>
+
+</merge>
