@@ -1,24 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">Time Sheet</string>
+	<string name="app_name">IQTimeSheet</string>
 
 	<string name="icon_add_task">ic_task_add.png</string>
 	<string name="taskedit">Edit Task Name</string>
 
-	<string name="activity_change">Change Entry</string>
-	<string name="activity_change_time">Change Time</string>
-	<string name="activity_change_okcancel">Change OK / Cancel</string>
-	<string name="activity_add_task">Add Task</string>
-	<string name="activity_edit_task">Edit Task</string>
-	<string name="activity_revive_task">Revive Task</string>
-	<string name="activity_reports">Reports</string>
-	<string name="activity_edit_day_entries">Edit Day Entries</string>
+	<!--
+		<string name="activity_change">Change Entry</string> <string
+		name="activity_change_time">Change Time</string> <string
+		name="activity_change_okcancel">Change OK / Cancel</string> <string
+		name="activity_add_task">Add Task</string> <string
+		name="activity_edit_task">Edit Task</string> <string
+		name="activity_revive_task">Revive Task</string> <string
+		name="activity_reports">Reports</string> <string
+		name="activity_edit_day_entries">Edit Day Entries</string>
+	-->
 
 	<string name="menu_new_task">New Task</string>
 	<string name="menu_revive_task">Revive Task</string>
 	<string name="menu_edit_day_entries">Edit Entries</string>
 	<string name="menu_reports">Day Report</string>
 	<string name="menu_week_reports">Week Report</string>
+	<string name="menu_prefs">Settings</string>
+	<string name="menu_about">About</string>
 
 	<string name="startlabel">Start Time</string>
 	<string name="endlabel">End Time</string>
@@ -36,6 +40,9 @@
 	<string name="cancel">Cancel</string>
 	<string name="accept">Accept</string>
 	<string name="delete">Delete</string>
-	<string name="sixminalign">Align to tenth</string>
+	<string name="sixminalign">Align (1 min)</string>
 
+	<string name="auto_align_summary">Align to an X minute-increment when clocking in/out or changing times.</string>
+
+	<string name="about_summary">IQTimeSheet is my first Android application.  It is based on a few other similar applications both in function and style.  Hopefully you'll find it useful. The source code is available on <a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a> and is released under the Apache license.</string>
 </resources>

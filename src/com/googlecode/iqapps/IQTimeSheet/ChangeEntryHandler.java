@@ -17,6 +17,9 @@
 package com.googlecode.iqapps.IQTimeSheet;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
@@ -36,10 +39,11 @@ import com.googlecode.iqapps.TimeHelpers;
  */
 public class ChangeEntryHandler extends Activity {
 	private static final String TAG = "ChangeEntryHandler";
-	protected static final int TASKCHOOSE_CODE = 0x01;
-	protected static final int CHANGETIMEIN_CODE = 0x02;
-	protected static final int CHANGETIMEOUT_CODE = 0x03;
-	protected static final int CHANGEDATE_CODE = 0x04;
+	private static final int TASKCHOOSE_CODE = 0x01;
+	private static final int CHANGETIMEIN_CODE = 0x02;
+	private static final int CHANGETIMEOUT_CODE = 0x03;
+	private static final int CHANGEDATE_CODE = 0x04;
+	private static final int CONFIRM_DIALOG = 0x10;
 	private Cursor entryCursor;
 	private Button child[];
 	private TimeSheetDbAdapter db;
@@ -48,6 +52,8 @@ public class ChangeEntryHandler extends Activity {
 	private long newTimeIn = -1;
 	private long newTimeOut = -1;
 	private long newDate = -1;
+	private int alignMinutes = 0;
+	private boolean alignMinutesAuto = false;
 
 	/** Called when the activity is first created. */
 	@Override
@@ -59,6 +65,14 @@ public class ChangeEntryHandler extends Activity {
 		} catch (RuntimeException e) {
 			Log.e(TAG, e.toString() + " calling showChangeLayout");
 		}
+
+		alignMinutes = TimeSheetActivity.prefs.getAlignMinutes();
+		alignMinutesAuto = TimeSheetActivity.prefs.getAlignMinutesAuto();
+
+		Button changeButton = (Button) findViewById(R.id.changealign);
+		changeButton.setText("Align (" + alignMinutes + " min)");
+		if (alignMinutesAuto)
+			changeButton.setClickable(false);
 
 		db = new TimeSheetDbAdapter(this);
 		setupDB();
@@ -73,6 +87,31 @@ public class ChangeEntryHandler extends Activity {
 		entryCursor.close();
 		db.close();
 		super.onDestroy();
+	}
+
+	/** Called when the activity is first created to create a dialog. */
+	@Override
+	protected Dialog onCreateDialog(int dialogId) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage("Are you sure you want to delete this entry?")
+				.setCancelable(true).setPositiveButton("Yes",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								Intent intent = new Intent();
+								intent.putExtra(EditDayEntriesHandler.ENTRY_ID,
+										entryID);
+								intent.setAction("delete");
+								setResult(RESULT_OK, intent);
+								ChangeEntryHandler.this.finish();
+							}
+						}).setNegativeButton("No",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								dialog.cancel();
+							}
+						});
+		AlertDialog alert = builder.create();
+		return alert;
 	}
 
 	protected void showChangeLayout() {
@@ -126,22 +165,25 @@ public class ChangeEntryHandler extends Activity {
 		child[0].setText(newTask);
 		child[1].setText(TimeHelpers.millisToDate(newDate));
 
+		if (alignMinutesAuto) {
+			newTimeIn = TimeHelpers.millisToAlignMinutes(newTimeIn,
+					alignMinutes);
+		}
 		hour = TimeHelpers.millisToHour(newTimeIn);
 		minute = TimeHelpers.millisToMinute(newTimeIn);
 		child[2].setText(TimeHelpers.formatHours(hour) + ":"
 				+ TimeHelpers.formatMinutes(minute));
-		Log.d(TAG, "set child[2] to " + TimeHelpers.formatHours(hour) + ":"
-				+ TimeHelpers.formatMinutes(minute));
 
 		if (newTimeOut == 0) {
 			child[3].setText("Now");
-			Log.d(TAG, "set child[3] to Now");
 		} else {
+			if (alignMinutesAuto) {
+				newTimeOut = TimeHelpers.millisToAlignMinutes(newTimeOut,
+						alignMinutes);
+			}
 			hour = TimeHelpers.millisToHour(newTimeOut);
 			minute = TimeHelpers.millisToMinute(newTimeOut);
 			child[3].setText(TimeHelpers.formatHours(hour) + ":"
-					+ TimeHelpers.formatMinutes(minute));
-			Log.d(TAG, "set child[3] to " + TimeHelpers.formatHours(hour) + ":"
 					+ TimeHelpers.formatMinutes(minute));
 		}
 	}
@@ -216,12 +258,11 @@ public class ChangeEntryHandler extends Activity {
 				}
 				break;
 			case R.id.changealign:
-				long temp;
-				temp = TimeHelpers.millisToNearestTenth(newTimeIn);
-				newTimeIn = temp;
+				newTimeIn = TimeHelpers.millisToAlignMinutes(newTimeIn,
+						alignMinutes);
 				if (newTimeOut != 0) {
-					temp = TimeHelpers.millisToNearestTenth(newTimeOut);
-					newTimeOut = temp;
+					newTimeOut = TimeHelpers.millisToAlignMinutes(newTimeOut,
+							alignMinutes);
 				}
 				fillData();
 				break;
@@ -241,12 +282,7 @@ public class ChangeEntryHandler extends Activity {
 				finish();
 				break;
 			case R.id.changedelete:
-				// TODO: Add "Are you sure" dialog box.
-				intent = new Intent();
-				intent.putExtra(EditDayEntriesHandler.ENTRY_ID, entryID);
-				intent.setAction("delete");
-				setResult(RESULT_OK, intent);
-				finish();
+				showDialog(CONFIRM_DIALOG);
 				break;
 			}
 		}
@@ -282,8 +318,8 @@ public class ChangeEntryHandler extends Activity {
 		case CHANGETIMEIN_CODE:
 			if (resultCode == RESULT_OK) {
 				if (data != null) {
-					Log.d(TAG, "onActivityResult action: " + data.getAction());
 					newTimeIn = Long.valueOf(data.getAction());
+					Log.d(TAG, "onActivityResult action: " + newTimeIn);
 					fillData();
 				}
 			}
@@ -291,8 +327,8 @@ public class ChangeEntryHandler extends Activity {
 		case CHANGETIMEOUT_CODE:
 			if (resultCode == RESULT_OK) {
 				if (data != null) {
-					Log.d(TAG, "onActivityResult action: " + data.getAction());
 					newTimeOut = Long.valueOf(data.getAction());
+					Log.d(TAG, "onActivityResult action: " + newTimeOut);
 					fillData();
 				}
 			}

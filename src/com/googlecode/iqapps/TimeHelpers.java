@@ -16,6 +16,8 @@
 
 package com.googlecode.iqapps;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
@@ -84,17 +86,32 @@ public class TimeHelpers {
 	 * @return The supplied value trimmed to the six-minute boundary.
 	 */
 	public static long millisToNearestTenth(long timeInMillis) {
+		return millisToAlignMinutes(timeInMillis, 6);
+	}
+
+	/*
+	 * Method to trim millisecond resolution down to six-minute resolution. The
+	 * user-interface deals with minute intervals, not milliseconds.
+	 * 
+	 * TODO: This is not accurate when alignTo is odd, eg: 5. Figure out what to
+	 * do there.
+	 * 
+	 * @param millis Milliseconds to trim to minutes.
+	 * 
+	 * @return The supplied value trimmed to the six-minute boundary.
+	 */
+	public static long millisToAlignMinutes(long timeInMillis, int alignTo) {
 		final int days = (int) (timeInMillis / (24L * 60 * 60 * 1000));
 		int remainder = (int) (timeInMillis % (24L * 60 * 60 * 1000));
 		int hours = remainder / (60 * 60 * 1000);
 		remainder %= 60 * 60 * 1000;
 		int minutes = remainder / (60 * 1000);
-		int modulo = minutes % 6;
+		int modulo = minutes % alignTo;
 
-		if (modulo <= 2) {
+		if (modulo < (alignTo / 2.0)) {
 			minutes = minutes - modulo;
 		} else {
-			minutes = minutes + 6 - modulo;
+			minutes = minutes + alignTo - modulo;
 			if (minutes == 0)
 				hours = hours + 1;
 		}
@@ -116,10 +133,10 @@ public class TimeHelpers {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
-		calendar.set(GregorianCalendar.HOUR_OF_DAY, 0);
-		calendar.set(GregorianCalendar.MINUTE, 0);
-		calendar.set(GregorianCalendar.SECOND, 0);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 		return calendar.getTimeInMillis();
 	}
 
@@ -134,13 +151,13 @@ public class TimeHelpers {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
-		calendar.set(GregorianCalendar.HOUR_OF_DAY, 23);
-		calendar.set(GregorianCalendar.MINUTE, 59);
-		calendar.set(GregorianCalendar.SECOND, 59);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		calendar.set(Calendar.MILLISECOND, 0);
 		// Flip to the next day by adding a second. This forces the calendar to
 		// do most of the work :).
-		calendar.add(GregorianCalendar.SECOND, 1);
+		calendar.add(Calendar.SECOND, 1);
 
 		// Then take away one millisecond so that we're still bounding it by the
 		// day.
@@ -159,15 +176,15 @@ public class TimeHelpers {
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
 		// TODO: Make this configurable.
-		calendar.set(GregorianCalendar.DAY_OF_WEEK, GregorianCalendar.MONDAY);
-		calendar.set(GregorianCalendar.HOUR_OF_DAY, 0);
-		calendar.set(GregorianCalendar.MINUTE, 0);
-		calendar.set(GregorianCalendar.SECOND, 0);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 
 		// Make sure we actually went backward in time and adjust it if not.
 		if (calendar.getTimeInMillis() > timeInMillis)
-			calendar.add(GregorianCalendar.DAY_OF_MONTH, -7);
+			calendar.add(Calendar.DAY_OF_MONTH, -7);
 
 		return calendar.getTimeInMillis();
 	}
@@ -184,18 +201,18 @@ public class TimeHelpers {
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
 		// TODO: Make this configurable.
-		calendar.set(GregorianCalendar.DAY_OF_WEEK, GregorianCalendar.SUNDAY);
-		calendar.set(GregorianCalendar.HOUR_OF_DAY, 23);
-		calendar.set(GregorianCalendar.MINUTE, 59);
-		calendar.set(GregorianCalendar.SECOND, 59);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+		calendar.set(Calendar.HOUR_OF_DAY, 23);
+		calendar.set(Calendar.MINUTE, 59);
+		calendar.set(Calendar.SECOND, 59);
+		calendar.set(Calendar.MILLISECOND, 0);
 		// Flip to the next day by adding a second. This forces the calendar to
 		// do most of the work :).
-		calendar.add(GregorianCalendar.SECOND, 1);
+		calendar.add(Calendar.SECOND, 1);
 
 		// Make sure we actually went forward in time and adjust it if not.
 		if (calendar.getTimeInMillis() < timeInMillis)
-			calendar.add(GregorianCalendar.DAY_OF_MONTH, 7);
+			calendar.add(Calendar.DAY_OF_MONTH, 7);
 
 		// Then take away one millisecond so that we're still bounding it by the
 		// day.
@@ -219,7 +236,7 @@ public class TimeHelpers {
 		remainder %= 60 * 60 * 1000;
 		int minutes = remainder / (60 * 1000);
 
-		final float hourFraction = (float) (hours) + (float) (minutes / 60.0);
+		final float hourFraction = (hours) + (float) (minutes / 60.0);
 
 		return hourFraction;
 	}
@@ -235,7 +252,7 @@ public class TimeHelpers {
 	public static int millisToMinute(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(timeInMillis);
-		int minute = calendar.get(GregorianCalendar.MINUTE);
+		int minute = calendar.get(Calendar.MINUTE);
 
 		return minute;
 	}
@@ -251,7 +268,7 @@ public class TimeHelpers {
 	public static int millisToHour(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(timeInMillis);
-		int hour = calendar.get(GregorianCalendar.HOUR_OF_DAY);
+		int hour = calendar.get(Calendar.HOUR_OF_DAY);
 
 		return hour;
 	}
@@ -266,7 +283,7 @@ public class TimeHelpers {
 	public static int millisToDayOfMonth(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(timeInMillis);
-		int day = calendar.get(GregorianCalendar.DAY_OF_MONTH);
+		int day = calendar.get(Calendar.DAY_OF_MONTH);
 		return day;
 	}
 
@@ -280,7 +297,7 @@ public class TimeHelpers {
 	public static int millisToMonthOfYear(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(timeInMillis);
-		int day = calendar.get(GregorianCalendar.MONTH);
+		int day = calendar.get(Calendar.MONTH);
 		return day;
 	}
 
@@ -294,7 +311,7 @@ public class TimeHelpers {
 	public static int millisToYear(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeInMillis(timeInMillis);
-		int day = calendar.get(GregorianCalendar.YEAR);
+		int day = calendar.get(Calendar.YEAR);
 		return day;
 	}
 
@@ -314,10 +331,10 @@ public class TimeHelpers {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
-		calendar.set(GregorianCalendar.HOUR_OF_DAY, hours);
-		calendar.set(GregorianCalendar.MINUTE, minutes);
-		calendar.set(GregorianCalendar.SECOND, 0);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.HOUR_OF_DAY, hours);
+		calendar.set(Calendar.MINUTE, minutes);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 		return calendar.getTimeInMillis();
 	}
 
@@ -335,19 +352,19 @@ public class TimeHelpers {
 	public static long millisSetDate(int year, int month, int date) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
-		calendar.set(GregorianCalendar.YEAR, year);
-		calendar.set(GregorianCalendar.MONTH, month);
-		calendar.set(GregorianCalendar.DAY_OF_MONTH, date);
-		calendar.set(GregorianCalendar.HOUR, 0);
-		calendar.set(GregorianCalendar.MINUTE, 0);
-		calendar.set(GregorianCalendar.SECOND, 0);
-		calendar.set(GregorianCalendar.MILLISECOND, 0);
+		calendar.set(Calendar.YEAR, year);
+		calendar.set(Calendar.MONTH, TimeHelpers
+				.convertToCalendarMonth(month));
+		calendar.set(Calendar.DAY_OF_MONTH, date);
+		calendar.set(Calendar.HOUR_OF_DAY, 0);
+		calendar.set(Calendar.MINUTE, 0);
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MILLISECOND, 0);
 		return calendar.getTimeInMillis();
 	}
 
 	/*
-	 * Method to return a slightly mangled locale string of the date. The locale
-	 * date will most likely be mangled badly in non-English locales.
+	 * Method to return a string representation of the date.
 	 * 
 	 * @param millis Milliseconds to convert.
 	 * 
@@ -357,9 +374,29 @@ public class TimeHelpers {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
-		String date = calendar.getTime().toLocaleString();
-		int comma = date.indexOf(',');
-		return date.substring(0, date.indexOf(' ', comma + 2));
+		SimpleDateFormat simpleDate = new SimpleDateFormat("MMM d, yyyy");
+		String date = simpleDate.format(calendar.getTime());
+		return date;
+	}
+
+	/*
+	 * Method to compute the difference between two millisecond times in
+	 * minutes.
+	 * 
+	 * @param firstTimeMillis Milliseconds as the minuend.
+	 * 
+	 * @param secondTimeMillis Milliseconds as the subtrahend.
+	 * 
+	 * @return The difference between first and second time in minutes.
+	 */
+	public static int minutesBetweenMillis(long firstTimeMillis,
+			long secondTimeMillis) {
+		long timeInMillis = firstTimeMillis - secondTimeMillis;
+		int remainder = (int) (timeInMillis % (24L * 60 * 60 * 1000));
+		remainder %= 60 * 60 * 1000;
+		final int minutes = remainder / (60 * 1000);
+
+		return minutes;
 	}
 
 	/*
@@ -393,5 +430,100 @@ public class TimeHelpers {
 		final long now = System.currentTimeMillis();
 
 		return now;
+	}
+
+	/**
+	 * Method to convert a "traditional" month to a java.util.Calendar month
+	 * constant. They're offset by one if you're interested. January = 0,
+	 * December = 11, etc..
+	 * 
+	 * @param month
+	 *            Traditional month integer to convert. 1-January, 6-June,
+	 *            12-December.
+	 * @return The java.util.Calendar constant value for the supplied month
+	 *         integer.
+	 */
+	public static int convertToCalendarMonth(int month) {
+		int retMonth = -1;
+		switch (month) {
+		case 1:
+			retMonth = java.util.Calendar.JANUARY;
+			break;
+		case 2:
+			retMonth = java.util.Calendar.FEBRUARY;
+			break;
+		case 3:
+			retMonth = java.util.Calendar.MARCH;
+			break;
+		case 4:
+			retMonth = java.util.Calendar.APRIL;
+			break;
+		case 5:
+			retMonth = java.util.Calendar.MAY;
+			break;
+		case 6:
+			retMonth = java.util.Calendar.JUNE;
+			break;
+		case 7:
+			retMonth = java.util.Calendar.JULY;
+			break;
+		case 8:
+			retMonth = java.util.Calendar.AUGUST;
+			break;
+		case 9:
+			retMonth = java.util.Calendar.SEPTEMBER;
+			break;
+		case 10:
+			retMonth = java.util.Calendar.OCTOBER;
+			break;
+		case 11:
+			retMonth = java.util.Calendar.NOVEMBER;
+			break;
+		case 12:
+			retMonth = java.util.Calendar.DECEMBER;
+			break;
+		}
+
+		return retMonth;
+	}
+
+	/**
+	 * Method to convert a traditional month String to the corresponding
+	 * integer.
+	 * 
+	 * @param month
+	 *            Traditional month string to convert. January, June, Dec, Apr,
+	 *            etc...
+	 * @return The traditional "human" value for the supplied month string.
+	 */
+	public static int convertToMonth(String month) {
+		int retMonth = -1;
+		if (month.equalsIgnoreCase("january") || month.equalsIgnoreCase("jan"))
+			retMonth = 1;
+		if (month.equalsIgnoreCase("february") || month.equalsIgnoreCase("feb"))
+			retMonth = 2;
+		if (month.equalsIgnoreCase("march") || month.equalsIgnoreCase("mar"))
+			retMonth = 3;
+		if (month.equalsIgnoreCase("april") || month.equalsIgnoreCase("apr"))
+			retMonth = 4;
+		if (month.equalsIgnoreCase("may"))
+			retMonth = 5;
+		if (month.equalsIgnoreCase("june") || month.equalsIgnoreCase("jun"))
+			retMonth = 6;
+		if (month.equalsIgnoreCase("july") || month.equalsIgnoreCase("jul"))
+			retMonth = 7;
+		if (month.equalsIgnoreCase("august") || month.equalsIgnoreCase("aug"))
+			retMonth = 8;
+		if (month.equalsIgnoreCase("september")
+				|| month.equalsIgnoreCase("sep"))
+			retMonth = 9;
+		if (month.equalsIgnoreCase("october") || month.equalsIgnoreCase("oct"))
+			retMonth = 10;
+		if (month.equalsIgnoreCase("november") || month.equalsIgnoreCase("nov"))
+			retMonth = 11;
+		if (month.equalsIgnoreCase("december") || month.equalsIgnoreCase("dec"))
+			retMonth = 12;
+
+		return retMonth;
 	}
 }

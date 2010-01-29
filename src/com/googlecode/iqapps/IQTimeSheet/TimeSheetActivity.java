@@ -16,8 +16,12 @@
 
 package com.googlecode.iqapps.IQTimeSheet;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.os.Bundle;
@@ -35,6 +39,8 @@ import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 
+import com.googlecode.iqapps.TimeHelpers;
+
 /**
  * Main activity for the TimeSheet project. Implements the top-level user
  * interface for the application.
@@ -42,25 +48,33 @@ import android.widget.AdapterView.OnItemClickListener;
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeSheetActivity extends ListActivity {
+	static PreferenceHelper prefs;
+
 	private TimeSheetDbAdapter db;
 	private ListView tasksList;
 	private TimeListWrapper timeWrapper;
 	private TimeListAdapter timeAdapter;
 	private Cursor taskCursor;
 	private Cursor reportCursor;
-	private final static String TAG = "TimeSheetActivity";
+	private String applicationName;
+	private static final String TAG = "TimeSheetActivity";
 	private static final int TASKADD_CODE = 0x00;
 	private static final int TASKEDIT_CODE = 0x01;
 	private static final int TASKREVIVE_CODE = 0x02;
 	private static final int EDIT_CODE = 0x03;
 	private static final int REPORT_CODE = 0x04;
+	private static final int PREFS_CODE = 0x05;
+	private static final int ABOUT_CODE = 0x06;
 	private static final int EDIT_ID = 0x20;
 	private static final int RETIRE_ID = 0x21;
 	private static final int MENU_NEW_TASK = 0x30;
 	private static final int MENU_REVIVE_TASK = 0x31;
 	private static final int MENU_EDITDAYENTRIES = 0x32;
-	private static final int MENU_DAYREPORT = 0x33;
-	private static final int MENU_WEEKREPORT = 0x34;
+	private static final int MENU_SETTINGS = 0x33;
+	private static final int MENU_DAYREPORT = 0x34;
+	private static final int MENU_WEEKREPORT = 0x35;
+	private static final int MENU_ABOUT = 0x36;
+	private static final int CROSS_DIALOG = 0x40;
 
 	/**
 	 * Called when the activity is first created.
@@ -73,6 +87,8 @@ public class TimeSheetActivity extends ListActivity {
 		setContentView(R.layout.main);
 		Log.d(TAG, "onCreate.");
 
+		prefs = new PreferenceHelper(this);
+
 		try {
 			tasksList = (ListView) findViewById(android.R.id.list);
 			tasksList.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
@@ -83,6 +99,9 @@ public class TimeSheetActivity extends ListActivity {
 		db = new TimeSheetDbAdapter(this);
 		setupDB();
 
+		Resources res = getResources();
+		applicationName = res.getString(R.string.app_name);
+
 		try {
 			fillData();
 		} catch (Exception e) {
@@ -90,9 +109,13 @@ public class TimeSheetActivity extends ListActivity {
 		}
 
 		try {
+			checkCrossDayClock();
+		} catch (Exception e) {
+			Log.d(TAG, "checkCrossDayClock: " + e.toString());
+		}
+
+		try {
 			setSelected();
-			// TODO: Consider a message here to mention a cross-day clocking and
-			// what should be done about it.
 		} catch (Exception e) {
 			Log.e(TAG, "setSelected: " + e.toString());
 		}
@@ -134,6 +157,7 @@ public class TimeSheetActivity extends ListActivity {
 			Log.e(TAG, "onDestroy: (reportCursor) " + e.toString());
 		}
 		db.close();
+
 		super.onDestroy();
 	}
 
@@ -246,7 +270,8 @@ public class TimeSheetActivity extends ListActivity {
 		// Display the time accumulated for today with time remaining.
 		reportCursor = db.daySummary();
 		if (reportCursor == null) {
-			setTitle("Time Sheet " + String.format("(%.2fh / %.2fh)", 0.0, 8.0));
+			setTitle(applicationName + " "
+					+ String.format("(%.2fh / %.2fh)", 0.0, 8.0));
 			return;
 		}
 		reportCursor.moveToFirst();
@@ -258,8 +283,44 @@ public class TimeSheetActivity extends ListActivity {
 				accum = accum + reportCursor.getFloat(column);
 				reportCursor.moveToNext();
 			}
-			setTitle("Time Sheet "
+			setTitle(applicationName + " "
 					+ String.format("(%.2fh / %.2fh)", accum, 8.0 - accum));
+		}
+	}
+
+	private void checkCrossDayClock() {
+		long lastRowID = db.lastClockEntry();
+		long lastTaskID = db.taskIDForLastClockEntry();
+		Cursor tempClockCursor = db.fetchEntry(lastRowID);
+
+		long timeOut = -1;
+		timeOut = tempClockCursor.getLong(tempClockCursor
+				.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEOUT));
+
+		if (timeOut != 0) {
+			tempClockCursor.close();
+			return;
+		}
+
+		// Handle cross-day clockings.
+		// tempClockCursor.moveToFirst();
+		long now = TimeHelpers.millisNow();
+		long today = TimeHelpers.millisToDayOfMonth(now);
+		long lastClock = TimeHelpers.millisToDayOfMonth(tempClockCursor
+				.getLong(tempClockCursor
+						.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEIN)));
+		// If the difference in days is 1, ask. If it's greater than 1, just
+		// close it.
+		// TODO: This should be handled better.
+		if (today - lastClock == 1) {
+			Log.d(TAG, "Opening dialog.  today - lastClock = "
+					+ (today - lastClock));
+			showDialog(CROSS_DIALOG);
+		} else if (today - lastClock > 1) {
+			Log.d(TAG, "Closing entry.  today - lastClock = "
+					+ (today - lastClock));
+			db.closeEntry(lastTaskID, TimeHelpers.millisToEndOfDay(lastClock));
+			taskCursor.requery();
 		}
 	}
 
@@ -269,8 +330,7 @@ public class TimeSheetActivity extends ListActivity {
 
 		Log.d(TAG, "Last Task Entry Row: " + lastRowID);
 		Log.d(TAG, "Last Task ID: " + lastTaskID);
-		Cursor tempClockCursor = db.fetchEntry(lastRowID,
-				TimeSheetDbAdapter.KEY_TIMEOUT);
+		Cursor tempClockCursor = db.fetchEntry(lastRowID);
 
 		long timeOut = -1;
 		if (tempClockCursor == null)
@@ -278,7 +338,8 @@ public class TimeSheetActivity extends ListActivity {
 		if (!tempClockCursor.moveToFirst())
 			Log.d(TAG, "Moving cursor to first failed.");
 		else {
-			timeOut = tempClockCursor.getLong(0);
+			timeOut = tempClockCursor.getLong(tempClockCursor
+					.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEOUT));
 			Log.d(TAG, "Last clock out at: " + timeOut);
 		}
 		tempClockCursor.close();
@@ -290,6 +351,7 @@ public class TimeSheetActivity extends ListActivity {
 
 		Log.d(TAG, "tasksList child count is: " + tasksList.getChildCount());
 
+		tasksList.clearChoices();
 		// Iterate over the entire cursor to find the name of the
 		// entry that is to be selected.
 		taskCursor.moveToFirst();
@@ -305,12 +367,48 @@ public class TimeSheetActivity extends ListActivity {
 		}
 	}
 
+	/** Called when the activity is first created to create a dialog. */
+	@Override
+	protected Dialog onCreateDialog(int dialogId) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder
+				.setMessage(
+						"The last entry is still open from yesterday.  What should I do?")
+				.setCancelable(false).setPositiveButton("Close",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								long taskID = db.taskIDForLastClockEntry();
+								long now = TimeHelpers.millisNow();
+								long today = TimeHelpers
+										.millisToStartOfDay(now);
+								db.closeEntry(taskID, today - 1);
+								// TODO: The item selected remains so, even
+								// though that task has been closed.
+								setSelected();
+							}
+						}).setNegativeButton("Close & Re-open",
+						new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int id) {
+								long taskID = db.taskIDForLastClockEntry();
+								long now = TimeHelpers.millisNow();
+								long today = TimeHelpers
+										.millisToStartOfDay(now);
+								db.closeEntry(taskID, today - 1);
+								db.createEntry(taskID, today);
+								setSelected();
+							}
+						});
+		AlertDialog alert = builder.create();
+		return alert;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
 	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
+	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
@@ -323,6 +421,7 @@ public class TimeSheetActivity extends ListActivity {
 	 * 
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
+	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
@@ -355,18 +454,22 @@ public class TimeSheetActivity extends ListActivity {
 	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuItem item = menu.add(0, MENU_NEW_TASK, 0, R.string.menu_new_task);
+		MenuItem item = menu.add(0, MENU_NEW_TASK, 1, R.string.menu_new_task);
 		item.setIcon(R.drawable.ic_task_add);
-		item = menu.add(0, MENU_EDITDAYENTRIES, 0,
+		item = menu.add(0, MENU_EDITDAYENTRIES, 2,
 				R.string.menu_edit_day_entries);
 		item.setIcon(R.drawable.ic_menu_edit);
-		item = menu.add(0, MENU_REVIVE_TASK, 0, R.string.menu_revive_task);
-		item.setIcon(R.drawable.ic_menu_refresh);
-
-		item = menu.add(0, MENU_DAYREPORT, 0, R.string.menu_reports);
+		item = menu.add(0, MENU_SETTINGS, 3, R.string.menu_prefs);
+		item.setIcon(R.drawable.ic_menu_preferences);
+		item = menu.add(0, MENU_DAYREPORT, 4, R.string.menu_reports);
 		item.setIcon(R.drawable.ic_menu_info_details);
-		item = menu.add(0, MENU_WEEKREPORT, 0, R.string.menu_week_reports);
+		item = menu.add(0, MENU_WEEKREPORT, 5, R.string.menu_week_reports);
+		item.setIcon(R.drawable.ic_menu_info_details);
+		item = menu.add(0, MENU_REVIVE_TASK, 6, R.string.menu_revive_task);
+		item.setIcon(R.drawable.ic_menu_refresh);
+		item = menu.add(0, MENU_ABOUT, 7, R.string.menu_about);
 		item.setIcon(R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -376,6 +479,7 @@ public class TimeSheetActivity extends ListActivity {
 	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
 		switch (item.getItemId()) {
@@ -426,6 +530,29 @@ public class TimeSheetActivity extends ListActivity {
 			intent = new Intent(TimeSheetActivity.this, WeekReport.class);
 			try {
 				startActivityForResult(intent, REPORT_CODE);
+			} catch (RuntimeException e) {
+				Log
+						.e(TAG,
+								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, e.getLocalizedMessage());
+			}
+			return true;
+		case MENU_SETTINGS:
+			intent = new Intent(TimeSheetActivity.this,
+					MyPreferenceActivity.class);
+			try {
+				startActivityForResult(intent, PREFS_CODE);
+			} catch (RuntimeException e) {
+				Log
+						.e(TAG,
+								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, e.getLocalizedMessage());
+			}
+			return true;
+		case MENU_ABOUT:
+			intent = new Intent(TimeSheetActivity.this, AboutDialog.class);
+			try {
+				startActivity(intent);
 			} catch (RuntimeException e) {
 				Log
 						.e(TAG,

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<ListPreference android:title="Align to x minutes"
+		android:key="align.minutes" android:defaultValue="1" android:enabled="true"
+		android:entryValues="@array/alignminutes" android:entries="@array/alignminutetext" android:order="10"/>
+
+	<CheckBoxPreference android:enabled="true"
+		android:defaultValue="false"
+		android:title="Auto. align minutes?" android:summary="@string/auto_align_summary" android:key="align.minutes.auto" android:order="20"/>
+
+<CheckBoxPreference android:title="Store DB on /sdcard" android:defaultValue="false" android:key="db.on.sdcard" android:summary="Not implemented" android:order="30"></CheckBoxPreference>
+
+</PreferenceScreen>

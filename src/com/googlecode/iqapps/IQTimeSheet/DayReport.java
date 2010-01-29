@@ -37,7 +37,7 @@ import android.widget.TextView;
  */
 public class DayReport extends ListActivity {
 	private static final String TAG = "DayReport";
-	private final int FOOTER_ID = 0xDEAD;
+	private final int FOOTER_ID = -1;
 	private ListView reportList;
 	private TextView footerView;
 	private TimeSheetDbAdapter db;
