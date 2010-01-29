@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/robotium/robotium-solo-1.0.1.jar" sourcepath="/export/home1/users/kronenpj/src/android/robotium/robotium-solo-1.0.1-sources.jar"/>
+	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/TimeSheetProjectTest/lib/junit.jar"/>
+	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/TimeSheetProjectTest/lib/positron.jar" sourcepath="/export/home1/users/kronenpj/src/android/positron/positron-src-1.0-rc5.jar"/>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/IQTimeSheet"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Android1.1"/>
+	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/CalendarMerge/support/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/CalendarMerge/support/log4j-1.2.15.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

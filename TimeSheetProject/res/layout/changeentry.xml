@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout="@layout/changeentry" android:id="@+id/timechanger"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:background="#80000000">
+
+	<Button android:id="@+id/defaulttask" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_gravity="center_horizontal|top" />
+
+	<Button android:id="@+id/date" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_gravity="center_horizontal|top"
+		android:layout_below="@+id/defaulttask" />
+
+	<TableLayout android:id="@+id/timechangetable"
+		android:layout_gravity="center_horizontal" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_below="@+id/date">
+
+		<TableRow android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<TextView android:id="@+id/startlabel" android:text="@string/startlabel"
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				android:layout_gravity="center" />
+
+			<TextView android:id="@+id/endlabel" android:text="@string/endlabel"
+				android:layout_width="fill_parent" android:layout_height="wrap_content"
+				android:layout_gravity="center" />
+		</TableRow>
+
+		<TableRow android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<Button android:id="@+id/starttime" android:minWidth="150dip"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
+
+			<Button android:id="@+id/endtime" android:minWidth="150dip"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
+		</TableRow>
+
+		<TableRow android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<Button android:id="@+id/changeok" android:text="@string/accept"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
+
+			<Button android:id="@+id/changecancel" android:text="@string/cancel"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
+		</TableRow>
+
+		<TableRow android:layout_width="fill_parent"
+			android:layout_height="fill_parent">
+			<Button android:id="@+id/changedelete" android:text="@string/delete"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
+		</TableRow>
+	</TableLayout>
+
+</RelativeLayout>
