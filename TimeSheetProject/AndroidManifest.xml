@@ -1,94 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="1"
-      android:versionName="0.1" package="com.googlecode.iqapps.IQTimeSheet">
-	<uses-sdk android:minSdkVersion="2"/> 
-    <application android:label="@string/app_name">
-        <activity android:name=".TimeSheetActivity"
-                  android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        
-		<activity android:name=".AddTaskHandler" android:label="@string/activity_add_task">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+	android:versionCode="1" android:versionName="2010.1"
+	package="com.googlecode.iqapps.IQTimeSheet">
+	<uses-sdk android:minSdkVersion="2" />
+	<application android:label="@string/app_name">
+		<activity android:name=".TimeSheetActivity" android:label="@string/app_name">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<category android:name="android.intent.category.LAUNCHER" />
+			</intent-filter>
+		</activity>
 
-        <activity android:name=".ChangeDate" android:label="@string/activity_change">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
+		<activity android:name=".AboutDialog" />
 
-        <activity android:name=".ChangeEntryHandler" android:label="@string/activity_change">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
+		<activity android:name=".AddTaskHandler" />
 
-        <activity android:name=".ChangeTaskList" android:label="@string/activity_change">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
+		<activity android:name=".ChangeDate" />
 
-        <activity android:name=".ChangeTime" android:label="@string/activity_change_time">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-        </activity>
+		<activity android:name=".ChangeEntryHandler" />
 
-		<activity android:name=".DayReport" android:label="@string/activity_reports">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".ChangeTaskList" />
 
-		<activity android:name=".EditDayEntriesHandler" android:label="@string/activity_edit_day_entries">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".ChangeTime" />
 
-		<activity android:name=".EditTaskHandler" android:label="@string/activity_edit_task">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".DayReport" />
 
-		<activity android:name=".ReviveTaskHandler" android:label="@string/activity_revive_task">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".EditDayEntriesHandler" />
 
-		<activity android:name=".WeekReport" android:label="@string/activity_reports">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".EditTaskHandler" />
 
-		<activity android:name=".WeekReport" android:label="@string/activity_reports">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT"/>
-            </intent-filter>
-    	</activity>
+		<activity android:name=".MyPreferenceActivity" />
 
-</application>
+		<activity android:name=".ReviveTaskHandler" />
+
+		<activity android:name=".WeekReport" />
+
+	</application>
 
 </manifest> 

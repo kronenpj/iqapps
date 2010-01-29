@@ -1,5 +1,5 @@
 <resources>
-    <string-array name='sixminchoices'> 
+	<string-array name='sixminchoices'>
 		<item>00</item>
 		<item>06</item>
 		<item>12</item>
@@ -10,5 +10,33 @@
 		<item>36</item>
 		<item>48</item>
 		<item>54</item>
+	</string-array>
+	<string-array name="alignminutes">
+		<item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>6</item>
+		<item>10</item>
+		<item>12</item>
+		<item>15</item>
+		<item>20</item>
+		<item>30</item>
+		<item>60</item>
+	</string-array>
+	<string-array name="alignminutetext">
+		<item>1 minute</item>
+		<item>2 minutes</item>
+		<item>3 minutes</item>
+		<item>4 minutes</item>
+		<item>5 minutes</item>
+		<item>6 minutes</item>
+		<item>10 minutes</item>
+		<item>12 minutes</item>
+		<item>15 minutes</item>
+		<item>20 minutes</item>
+		<item>30 minutes</item>
+		<item>60 minutes</item>
 	</string-array>
 </resources>

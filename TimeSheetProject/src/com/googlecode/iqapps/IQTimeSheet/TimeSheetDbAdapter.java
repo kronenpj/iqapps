@@ -39,10 +39,8 @@ import com.googlecode.iqapps.TimeHelpers;
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeSheetDbAdapter {
-
 	public static final String KEY_VERSION = "version";
 	public static final String KEY_ROWID = "_id";
-	public static final String KEY_DATE = "date";
 	public static final String KEY_CHARGENO = "chargeno";
 	public static final String KEY_TIMEIN = "timein";
 	public static final String KEY_TIMEOUT = "timeout";
@@ -75,7 +73,6 @@ public class TimeSheetDbAdapter {
 	 * Database creation SQL statements
 	 */
 	private static final String CLOCK_TABLE_CREATE = "CREATE TABLE TimeSheet(_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-			+ "date DATE NOT NULL, "
 			+ "chargeno INTEGER NOT NULL, "
 			+ "timein INTEGER NOT NULL, "
 			+ "timeout INTEGER NOT NULL DEFAULT 0" + ");";
@@ -242,14 +239,15 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long createEntry(long chargeno, long timeIn) {
-		long now = System.currentTimeMillis();
-		Date tempDate = new Date(now);
+		if (TimeSheetActivity.prefs.getAlignMinutesAuto()) {
+			timeIn = TimeHelpers.millisToAlignMinutes(timeIn,
+					TimeSheetActivity.prefs.getAlignMinutes());
+		}
 
 		incrementTaskUsage(chargeno);
 
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_CHARGENO, chargeno);
-		initialValues.put(KEY_DATE, tempDate.toString());
 		initialValues.put(KEY_TIMEIN, timeIn);
 
 		Log.d(TAG, "createEntry: " + chargeno);
@@ -334,6 +332,10 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(long chargeno, long timeOut) {
+		if (TimeSheetActivity.prefs.getAlignMinutesAuto()) {
+			timeOut = TimeHelpers.millisToAlignMinutes(timeOut,
+					TimeSheetActivity.prefs.getAlignMinutes());
+		}
 		ContentValues updateValues = new ContentValues();
 		updateValues.put(KEY_TIMEOUT, timeOut);
 
@@ -362,8 +364,8 @@ public class TimeSheetDbAdapter {
 	 */
 	public Cursor fetchAllTimeEntries() {
 		return mDb.query(CLOCK_DATABASE_TABLE, new String[] { KEY_ROWID,
-				KEY_DATE, KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT }, null, null,
-				null, null, null);
+				KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT }, null, null, null,
+				null, null);
 	}
 
 	/**
@@ -377,7 +379,7 @@ public class TimeSheetDbAdapter {
 	 */
 	public Cursor fetchEntry(long rowId) throws SQLException {
 		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE, new String[] {
-				KEY_ROWID, KEY_DATE, KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT },
+				KEY_ROWID, KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT },
 				KEY_ROWID + "=" + rowId, null, null, null, null, null);
 		if (mCursor != null) {
 			mCursor.moveToFirst();
@@ -423,8 +425,6 @@ public class TimeSheetDbAdapter {
 		// Only change items that aren't null or -1.
 		if (chargeno != -1)
 			args.put(KEY_CHARGENO, chargeno);
-		if (date != null)
-			args.put(KEY_DATE, date);
 		if (timein != -1)
 			args.put(KEY_TIMEIN, timein);
 		if (timeout != -1)

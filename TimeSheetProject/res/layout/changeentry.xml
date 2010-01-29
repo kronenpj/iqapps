@@ -47,6 +47,8 @@
 
 		<TableRow android:layout_width="fill_parent"
 			android:layout_height="fill_parent">
+			<Button android:id="@+id/changealign" android:text="@string/sixminalign"
+				android:layout_width="fill_parent" android:layout_height="wrap_content" />
 			<Button android:id="@+id/changedelete" android:text="@string/delete"
 				android:layout_width="fill_parent" android:layout_height="wrap_content" />
 		</TableRow>
