@@ -41,6 +41,8 @@ public class PreferenceHelper {
 
 	public static final String KEY_ALIGN_MINUTES = "align.minutes";
 	public static final String KEY_ALIGN_MINUTES_AUTO = "align.minutes.auto";
+	public static final String KEY_HOURS_DAY = "hours.day";
+	public static final String KEY_HOURS_WEEK = "hours.week";
 
 	public PreferenceHelper(Context mCtx) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
@@ -62,5 +64,23 @@ public class PreferenceHelper {
 		Log.d(TAG, "Preference " + KEY_ALIGN_MINUTES_AUTO + ": "
 				+ alignMinutesAuto);
 		return alignMinutesAuto;
+	}
+
+	public float getHoursPerDay() {
+		// Be careful here - The list used by the preferences activity is based
+		// on String, not any other primitive or class... This threw cast
+		// exceptions early on in development.
+		float hoursDay = Float.valueOf(prefs.getString(KEY_HOURS_DAY, "8"));
+		Log.d(TAG, "Preference " + KEY_HOURS_DAY + ": " + hoursDay);
+		return hoursDay;
+	}
+
+	public float getHoursPerWeek() {
+		// Be careful here - The list used by the preferences activity is based
+		// on String, not any other primitive or class... This threw cast
+		// exceptions early on in development.
+		float hoursWeek = Float.valueOf(prefs.getString(KEY_HOURS_WEEK, "40"));
+		Log.d(TAG, "Preference " + KEY_HOURS_WEEK + ": " + hoursWeek);
+		return hoursWeek;
 	}
 }

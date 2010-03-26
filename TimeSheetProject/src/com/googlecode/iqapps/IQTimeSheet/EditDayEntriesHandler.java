@@ -35,7 +35,7 @@ import android.widget.AdapterView.OnItemClickListener;
 
 /**
  * Activity to provide an interface to edit entries for a selected day.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class EditDayEntriesHandler extends ListActivity {
@@ -178,7 +178,7 @@ public class EditDayEntriesHandler extends ListActivity {
 
 	/*
 	 * Process the changes
-	 * 
+	 *
 	 * @param itemID The entry ID being changed.
 	 */
 	private void processChange(long itemID) {
@@ -220,7 +220,7 @@ public class EditDayEntriesHandler extends ListActivity {
 	/**
 	 * This method is called when the sending activity has finished, with the
 	 * result it supplied.
-	 * 
+	 *
 	 * @param requestCode
 	 *            The original request code as given to startActivity().
 	 * @param resultCode
@@ -249,6 +249,43 @@ public class EditDayEntriesHandler extends ListActivity {
 							long newTimeOut = extras
 									.getLong(TimeSheetDbAdapter.KEY_TIMEOUT);
 							long chargeNo = db.getTaskIDByName(newTask);
+							db.updateEntry(entryID, chargeNo, null, newTimeIn,
+									newTimeOut);
+						}
+					} else if (result.equalsIgnoreCase("acceptadjacent")) {
+						// TODO: This should be just an option of the accept
+						// case.
+						// Pass something back in the extra package to specify
+						// adjust adjacent.
+						Bundle extras = data.getExtras();
+						if (extras != null) {
+							Log.d(TAG, "Processing returned data.");
+							long entryID = extras.getLong(ENTRY_ID);
+							String newTask = extras
+									.getString(TimeSheetDbAdapter.KEY_TASK);
+							long newTimeIn = extras
+									.getLong(TimeSheetDbAdapter.KEY_TIMEIN);
+							long newTimeOut = extras
+									.getLong(TimeSheetDbAdapter.KEY_TIMEOUT);
+							long chargeNo = db.getTaskIDByName(newTask);
+							try {
+								long prev = db.getPreviousClocking(entryID);
+								if (prev > 0)
+									db.updateEntry(prev, -1, null, -1,
+											newTimeIn);
+							} catch (SQLException e) {
+								// Don't do anything.
+							}
+							try {
+								long next = db.getNextClocking(entryID);
+								if (next > 0)
+									db.updateEntry(next, -1, null, newTimeOut,
+											-1);
+							} catch (SQLException e) {
+								// Don't do anything.
+							}
+							// Change this last because the getNext/Previous
+							// depend on the DB data.
 							db.updateEntry(entryID, chargeNo, null, newTimeIn,
 									newTimeOut);
 						}

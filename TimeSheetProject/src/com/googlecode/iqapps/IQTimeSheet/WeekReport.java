@@ -41,13 +41,14 @@ import android.widget.TextView;
  */
 public class WeekReport extends ListActivity {
 	private static final String TAG = "WeekReport";
-	private final int FOOTER_ID = 0xDEAD;
+	private final int FOOTER_ID = -1;
 	private ListView reportList;
 	private TimeSheetDbAdapter db;
 	private Cursor timeEntryCursor;
 	private TextView footerView = null;
 	private long day = TimeHelpers.millisNow();
 	private Button[] child;
+	private float weekHours = -1;
 
 	/**
 	 * Called when the activity is first created.
@@ -56,6 +57,8 @@ public class WeekReport extends ListActivity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d(TAG, "In onCreate.");
+
+		weekHours = TimeSheetActivity.prefs.getHoursPerWeek();
 
 		try {
 			showReport();
@@ -128,7 +131,9 @@ public class WeekReport extends ListActivity {
 			reportList.addFooterView(footerView);
 		}
 
-		footerView.setText("Hours worked this week: 0");
+		footerView
+				.setText("Hours worked this week: 0\nHours remaining this week: "
+						+ String.format("%.2f", weekHours));
 
 		try {
 			timeEntryCursor.close();
@@ -160,7 +165,9 @@ public class WeekReport extends ListActivity {
 		}
 
 		footerView.setText("Hours worked this week: "
-				+ String.format("%.2f", accum));
+				+ String.format("%.2f", accum)
+				+ "\nHours remaining this week: "
+				+ String.format("%.2f", weekHours - accum));
 
 		try {
 			reportList.setAdapter(new ReportCursorAdapter(this,
