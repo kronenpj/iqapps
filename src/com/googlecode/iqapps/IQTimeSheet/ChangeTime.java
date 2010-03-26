@@ -30,7 +30,7 @@ import android.widget.Toast;
 
 /**
  * Activity that provides an interface to change the time of an entry.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeTime extends Activity {
@@ -52,9 +52,11 @@ public class ChangeTime extends Activity {
 
 		timeChange = (TimePicker) findViewById(R.id.TimePicker01);
 
-		timeChange.setIs24HourView(true);
-		timeChange.setCurrentHour(TimeHelpers.millisToHour(timeMillis));
-		timeChange.setCurrentMinute(TimeHelpers.millisToMinute(timeMillis));
+		if (timeChange != null) {
+			timeChange.setIs24HourView(true);
+			timeChange.setCurrentHour(TimeHelpers.millisToHour(timeMillis));
+			timeChange.setCurrentMinute(TimeHelpers.millisToMinute(timeMillis));
+		}
 
 		Button[] child = new Button[] { (Button) findViewById(R.id.changeok),
 				(Button) findViewById(R.id.changecancel) };

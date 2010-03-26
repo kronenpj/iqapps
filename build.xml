@@ -318,6 +318,9 @@
             -keep public class * extends android.app.Service
             -keep public class * extends android.content.BroadcastReceiver
             -keep public class * extends android.content.ContentProvider
+            -assumenosideeffects public class android.util.Log.** {
+                &lt;methods&gt;;
+             }
         </proguard>
 	</target>
 

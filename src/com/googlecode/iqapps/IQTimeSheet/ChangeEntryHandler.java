@@ -34,7 +34,7 @@ import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity to provide an interface to change an entry.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeEntryHandler extends Activity {
@@ -117,6 +117,8 @@ public class ChangeEntryHandler extends Activity {
 	protected void showChangeLayout() {
 		setContentView(R.layout.changeentry);
 
+		// TODO: The order of these is important, the array is referenced
+		// by index a few times below.
 		child = new Button[] { (Button) findViewById(R.id.defaulttask),
 				(Button) findViewById(R.id.date),
 				(Button) findViewById(R.id.starttime),
@@ -124,7 +126,9 @@ public class ChangeEntryHandler extends Activity {
 				(Button) findViewById(R.id.changeok),
 				(Button) findViewById(R.id.changecancel),
 				(Button) findViewById(R.id.changedelete),
-				(Button) findViewById(R.id.changealign) };
+				(Button) findViewById(R.id.changealign),
+				(Button) findViewById(R.id.changeadjacent)
+				};
 
 		for (int count = 0; count < child.length; count++) {
 			try {
@@ -281,6 +285,21 @@ public class ChangeEntryHandler extends Activity {
 				setResult(RESULT_OK, intent);
 				finish();
 				break;
+			case R.id.changeadjacent:
+				intent = new Intent();
+				intent.putExtra(EditDayEntriesHandler.ENTRY_ID, entryID);
+				// Push task title into response.
+				intent.putExtra(TimeSheetDbAdapter.KEY_TASK, newTask);
+				// Push start and end time milliseconds into response
+				// bundle.
+				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEIN, newTimeIn);
+				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEOUT, newTimeOut);
+				// TODO: Push option to adjust previous/next task time along
+				// with this one.
+				intent.setAction("acceptadjacent");
+				setResult(RESULT_OK, intent);
+				finish();
+				break;
 			case R.id.changedelete:
 				showDialog(CONFIRM_DIALOG);
 				break;
@@ -291,7 +310,7 @@ public class ChangeEntryHandler extends Activity {
 	/**
 	 * This method is called when the sending activity has finished, with the
 	 * result it supplied.
-	 * 
+	 *
 	 * @param requestCode
 	 *            The original request code as given to startActivity().
 	 * @param resultCode

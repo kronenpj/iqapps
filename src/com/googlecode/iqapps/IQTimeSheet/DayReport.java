@@ -44,12 +44,15 @@ public class DayReport extends ListActivity {
 	private Cursor timeEntryCursor;
 	private long day = TimeHelpers.millisNow();
 	private Button[] child;
+	private float dayHours = -1;
 
 	/** Called when the activity is first created. */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d(TAG, "In onCreate.");
+
+		dayHours = TimeSheetActivity.prefs.getHoursPerDay();
 
 		try {
 			showReport();
@@ -114,7 +117,9 @@ public class DayReport extends ListActivity {
 			reportList.addFooterView(footerView);
 		}
 
-		footerView.setText("Hours worked this day: 0");
+		footerView
+				.setText("Hours worked this day: 0\nHours remaining this day: "
+						+ String.format("%.2f", dayHours));
 
 		try {
 			timeEntryCursor.close();
@@ -146,7 +151,8 @@ public class DayReport extends ListActivity {
 		}
 
 		footerView.setText("Hours worked this day: "
-				+ String.format("%.2f", accum));
+				+ String.format("%.2f", accum) + "\nHours remaining this day: "
+				+ String.format("%.2f", dayHours - accum));
 
 		try {
 			reportList.setAdapter(new ReportCursorAdapter(this,

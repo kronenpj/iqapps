@@ -33,9 +33,9 @@ import com.googlecode.iqapps.TimeHelpers;
  * Simple time sheet database helper class. Defines the basic CRUD operations
  * for the time sheet application, and gives the ability to list all entries as
  * well as retrieve or modify a specific entry.
- * 
+ *
  * Graciously stolen from the Android Notepad example.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeSheetDbAdapter {
@@ -157,7 +157,7 @@ public class TimeSheetDbAdapter {
 	 * Open the time sheet database. If it cannot be opened, try to create a new
 	 * instance of the database. If it cannot be created, throw an exception to
 	 * signal the failure
-	 * 
+	 *
 	 * @return this (self reference, allowing this to be chained in an
 	 *         initialization call)
 	 * @throws SQLException
@@ -184,10 +184,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long createEntry(String task) {
@@ -199,10 +199,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long createEntry(long chargeno) {
@@ -213,12 +213,12 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
 	 * @param timeIn
 	 *            the time in milliseconds of the clock-in
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long createEntry(String task, long timeIn) {
@@ -230,12 +230,12 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
 	 * @param timeIn
 	 *            the time in milliseconds of the clock-in
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long createEntry(long chargeno, long timeIn) {
@@ -258,10 +258,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry() {
@@ -279,10 +279,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(String task) {
@@ -294,10 +294,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number ID provided. If the entry
 	 * is successfully created return the new rowId for that note, otherwise
 	 * return a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(long chargeno) {
@@ -308,10 +308,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number ID provided. If the entry
 	 * is successfully created return the new rowId for that note, otherwise
 	 * return a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(String task, long timeOut) {
@@ -323,18 +323,23 @@ public class TimeSheetDbAdapter {
 	 * Close an existing time entry using the charge number provided. If the
 	 * entry is successfully created return the new rowId for that note,
 	 * otherwise return a -1 to indicate failure.
-	 * 
+	 *
 	 * @param chargeno
 	 *            the charge number for the entry
 	 * @param timeOut
 	 *            the time in milliseconds of the clock-out
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(long chargeno, long timeOut) {
+		final long origTimeOut = timeOut;
 		if (TimeSheetActivity.prefs.getAlignMinutesAuto()) {
 			timeOut = TimeHelpers.millisToAlignMinutes(timeOut,
 					TimeSheetActivity.prefs.getAlignMinutes());
+			// TODO: Fix in a more sensible way.
+			// Hack to account for a cross-day automatic clock out.
+			if (timeOut - origTimeOut == 1)
+				timeOut = origTimeOut;
 		}
 		ContentValues updateValues = new ContentValues();
 		updateValues.put(KEY_TIMEOUT, timeOut);
@@ -347,7 +352,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Delete the entry with the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            code id of note to delete
 	 * @return true if deleted, false otherwise
@@ -359,7 +364,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor over the list of all entries in the database
-	 * 
+	 *
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchAllTimeEntries() {
@@ -370,7 +375,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor positioned at the entry that matches the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            id of entry to retrieve
 	 * @return Cursor positioned to matching entry, if found
@@ -379,8 +384,8 @@ public class TimeSheetDbAdapter {
 	 */
 	public Cursor fetchEntry(long rowId) throws SQLException {
 		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE, new String[] {
-				KEY_ROWID, KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT },
-				KEY_ROWID + "=" + rowId, null, null, null, null, null);
+				KEY_ROWID, KEY_CHARGENO, KEY_TIMEIN, KEY_TIMEOUT }, KEY_ROWID
+				+ "=" + rowId, null, null, null, null, null);
 		if (mCursor != null) {
 			mCursor.moveToFirst();
 		}
@@ -389,7 +394,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor positioned at the entry that matches the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            id of entry to retrieve
 	 * @return Cursor positioned to matching entry, if found
@@ -410,7 +415,7 @@ public class TimeSheetDbAdapter {
 	 * Update the note using the details provided. The entry to be updated is
 	 * specified using the rowId, and it is altered to use the title and body
 	 * values passed in
-	 * 
+	 *
 	 * @param rowId
 	 *            id of entry to update
 	 * @param title
@@ -440,7 +445,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long taskIDForLastClockEntry() {
@@ -465,7 +470,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long lastTaskEntry() {
@@ -481,7 +486,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor positioned at the entry that matches the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            id of entry to retrieve
 	 * @return Cursor positioned to matching entry, if found
@@ -499,9 +504,136 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
+	 * Retrieve the entry in the timesheet table immediately prior to the
+	 * supplied entry.
+	 *
+	 * @return rowId or -1 if failed
+	 */
+	public long getPreviousClocking(long rowID) {
+		long thisTimeIn = -1;
+		long prevTimeOut = -1;
+
+		Log.d(TAG, "getPreviousClocking for row: " + rowID);
+
+		// Get the tuple from the provided row
+		Cursor mCurrent = getTimeEntryTuple(rowID);
+
+		// KEY_ROWID, KEY_TASK, KEY_TIMEIN, KEY_TIMEOUT
+		if (mCurrent != null) {
+			try {
+				mCurrent.moveToFirst();
+				String response = mCurrent.getString(2);
+				thisTimeIn = Long.parseLong(response);
+				Log.d(TAG, "timeIn for current: " + thisTimeIn);
+			} catch (IllegalStateException e) {
+			} finally {
+				mCurrent.close();
+			}
+		}
+
+		// Query to discover the immediately previous row ID.
+		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE,
+				new String[] { KEY_ROWID }, KEY_ROWID + " < '" + rowID + "'",
+				null, null, null, KEY_ROWID + " desc", "1");
+		if (mCursor != null) {
+			mCursor.moveToFirst();
+		} else {
+			return -1;
+		}
+		String response = mCursor.getString(0);
+		long prevRowID = Long.parseLong(response);
+		mCursor.close();
+		Log.d(TAG, "rowID for previous: " + prevRowID);
+
+		// Get the tuple from the just-retrieved row
+		mCurrent = getTimeEntryTuple(prevRowID);
+		// KEY_ROWID, KEY_TASK, KEY_TIMEIN, KEY_TIMEOUT
+		if (mCurrent != null) {
+			try {
+				mCurrent.moveToFirst();
+				String response1 = mCurrent.getString(3);
+				prevTimeOut = Long.parseLong(response1);
+				Log.d(TAG, "timeOut for previous: " + prevTimeOut);
+			} catch (IllegalStateException e) {
+			} finally {
+				mCurrent.close();
+			}
+			// If the two tasks don't flow from one to another, don't allow the
+			// entry to be adjusted.
+			if (thisTimeIn != prevTimeOut)
+				prevRowID = -1;
+		}
+
+		return prevRowID;
+	}
+
+	/**
+	 * Retrieve the entry in the timesheet table immediately following to the
+	 * supplied entry.
+	 *
+	 * @return rowId or -1 if failed
+	 */
+	public long getNextClocking(long rowID) {
+		long thisTimeOut = -1;
+		long nextTimeIn = -1;
+
+		Log.d(TAG, "getNextClocking for row: " + rowID);
+
+		// Get the tuple from the provided row
+		Cursor mCurrent = getTimeEntryTuple(rowID);
+		// KEY_ROWID, KEY_TASK, KEY_TIMEIN, KEY_TIMEOUT
+		if (mCurrent != null) {
+			try {
+				mCurrent.moveToFirst();
+				String response = mCurrent.getString(3);
+				thisTimeOut = Long.parseLong(response);
+				Log.d(TAG, "timeOut for current: " + thisTimeOut);
+			} catch (IllegalStateException e) {
+			} finally {
+				mCurrent.close();
+			}
+		}
+
+		// Query to discover the immediately previous row ID.
+		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE,
+				new String[] { KEY_ROWID }, KEY_ROWID + " > '" + rowID + "'",
+				null, null, null, KEY_ROWID, "1");
+		if (mCursor != null) {
+			mCursor.moveToFirst();
+		} else {
+			return -1;
+		}
+		String response = mCursor.getString(0);
+		long nextRowID = Long.parseLong(response);
+		mCursor.close();
+		Log.d(TAG, "rowID for next: " + nextRowID);
+
+		// Get the tuple from the just-retrieved row
+		mCurrent = getTimeEntryTuple(nextRowID);
+		// KEY_ROWID, KEY_TASK, KEY_TIMEIN, KEY_TIMEOUT
+		if (mCurrent != null) {
+			try {
+				mCurrent.moveToFirst();
+				String response1 = mCurrent.getString(2);
+				nextTimeIn = Long.parseLong(response1);
+				Log.d(TAG, "timeIn for next: " + nextTimeIn);
+			} catch (IllegalStateException e) {
+			} finally {
+				mCurrent.close();
+			}
+			// If the two tasks don't flow from one to another, don't allow the
+			// entry to be adjusted.
+			if (thisTimeOut != nextTimeIn)
+				nextRowID = -1;
+		}
+
+		return nextRowID;
+	}
+
+	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long lastClockEntry() {
@@ -518,7 +650,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long[] todaysEntries() {
@@ -562,7 +694,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the supplied time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor getEntryReportCursor(boolean distinct, String[] columns,
@@ -572,7 +704,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the supplied time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	protected Cursor getEntryReportCursor(boolean distinct, String[] columns,
@@ -620,7 +752,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the current time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor dayEntryReport() {
@@ -629,7 +761,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the supplied time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor dayEntryReport(long time) {
@@ -650,7 +782,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Method that retrieves the entries for today from the entry view.
-	 * 
+	 *
 	 * @return Cursor over the results.
 	 */
 	public Cursor daySummary() {
@@ -660,7 +792,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Method that retrieves the entries for a single specified day from the
 	 * entry view.
-	 * 
+	 *
 	 * @return Cursor over the results.
 	 */
 	public Cursor daySummary(long time) {
@@ -688,7 +820,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the current time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor weekEntryReport() {
@@ -697,7 +829,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Retrieve list of entries for the day surrounding the supplied time.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor weekEntryReport(long time) {
@@ -724,7 +856,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Method that retrieves the entries for today from the entry view.
-	 * 
+	 *
 	 * @return Cursor over the results.
 	 */
 	public Cursor weekSummary() {
@@ -734,7 +866,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Method that retrieves the entries for a single specified day from the
 	 * entry view.
-	 * 
+	 *
 	 * @return Cursor over the results.
 	 */
 	public Cursor weekSummary(long time) {
@@ -770,10 +902,10 @@ public class TimeSheetDbAdapter {
 	 * Create a new time entry using the charge number provided. If the entry is
 	 * successfully created return the new rowId for that note, otherwise return
 	 * a -1 to indicate failure.
-	 * 
+	 *
 	 * @param task
 	 *            the charge number for the entry
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long createTask(String task) {
@@ -787,7 +919,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor over the list of all entries in the database
-	 * 
+	 *
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchAllTaskEntries() {
@@ -799,7 +931,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor over the list of all entries in the database
-	 * 
+	 *
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchAllDisabledTasks() {
@@ -810,7 +942,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor positioned at the entry that matches the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            id of entry to retrieve
 	 * @return Cursor positioned to matching entry, if found
@@ -831,7 +963,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public long getTaskIDByName(String name) {
@@ -851,7 +983,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public String getTaskNameByID(long taskID) {
@@ -871,7 +1003,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public void renameTask(String origName, String newName) {
@@ -891,7 +1023,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public void deactivateTask(String taskName) {
@@ -902,7 +1034,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public void deactivateTask(long taskID) {
@@ -919,7 +1051,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public void activateTask(String taskName) {
@@ -930,7 +1062,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	public void activateTask(long taskID) {
@@ -947,7 +1079,7 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
-	 * 
+	 *
 	 * @return rowId or -1 if failed
 	 */
 	private void incrementTaskUsage(long taskID) {
@@ -983,7 +1115,7 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Return a Cursor positioned at the note that matches the given rowId
-	 * 
+	 *
 	 * @param rowId
 	 *            id of note to retrieve
 	 * @return Cursor positioned to matching note, if found

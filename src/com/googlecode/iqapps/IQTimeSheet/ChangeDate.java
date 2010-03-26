@@ -30,7 +30,7 @@ import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity that provides an interface to change the date of an entry.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeDate extends Activity {
@@ -77,7 +77,7 @@ public class ChangeDate extends Activity {
 	private OnClickListener mButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			long newDate = TimeHelpers.millisSetDate(dateChange.getYear(),
-					dateChange.getMonth(), dateChange.getDayOfMonth());
+					dateChange.getMonth() + 1, dateChange.getDayOfMonth());
 
 			Log.d(TAG, "onClickListener view id: " + v.getId());
 			Log.d(TAG, "onClickListener defaulttask id: " + R.id.defaulttask);

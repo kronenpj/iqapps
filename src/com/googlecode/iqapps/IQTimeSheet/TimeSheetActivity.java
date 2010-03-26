@@ -44,7 +44,7 @@ import com.googlecode.iqapps.TimeHelpers;
 /**
  * Main activity for the TimeSheet project. Implements the top-level user
  * interface for the application.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeSheetActivity extends ListActivity {
@@ -102,22 +102,18 @@ public class TimeSheetActivity extends ListActivity {
 		Resources res = getResources();
 		applicationName = res.getString(R.string.app_name);
 
+		// Candidate for onResume or onStart
 		try {
 			fillData();
 		} catch (Exception e) {
 			Log.e(TAG, "fillData: " + e.toString());
 		}
 
+		// Candidate for onResume or onStart
 		try {
 			checkCrossDayClock();
 		} catch (Exception e) {
 			Log.d(TAG, "checkCrossDayClock: " + e.toString());
-		}
-
-		try {
-			setSelected();
-		} catch (Exception e) {
-			Log.e(TAG, "setSelected: " + e.toString());
 		}
 
 		try {
@@ -139,6 +135,24 @@ public class TimeSheetActivity extends ListActivity {
 
 		// Register the context menu below with the tasksList ListView.
 		registerForContextMenu(tasksList);
+	}
+
+	/** Called when the activity resumed. */
+	@Override
+	public void onResume() {
+		Log.d(TAG, "onResume");
+		super.onResume();
+
+		try {
+			setSelected();
+		} catch (Exception e) {
+			Log.e(TAG, "onResume: (setSelected) " + e.toString());
+		}
+		try {
+			updateTitleBar();
+		} catch (Exception e) {
+			Log.e(TAG, "onResume: (updateTitlebar) " + e.toString());
+		}
 	}
 
 	/** Called when the activity destroyed. */
@@ -267,11 +281,12 @@ public class TimeSheetActivity extends ListActivity {
 
 	private void updateTitleBar() {
 		Log.d(TAG, "updateTitleBar");
+		float hoursPerDay = prefs.getHoursPerDay();
 		// Display the time accumulated for today with time remaining.
 		reportCursor = db.daySummary();
 		if (reportCursor == null) {
 			setTitle(applicationName + " "
-					+ String.format("(%.2fh / %.2fh)", 0.0, 8.0));
+					+ String.format("(%.2fh / %.2fh)", 0.0, hoursPerDay));
 			return;
 		}
 		reportCursor.moveToFirst();
@@ -283,8 +298,10 @@ public class TimeSheetActivity extends ListActivity {
 				accum = accum + reportCursor.getFloat(column);
 				reportCursor.moveToNext();
 			}
-			setTitle(applicationName + " "
-					+ String.format("(%.2fh / %.2fh)", accum, 8.0 - accum));
+			setTitle(applicationName
+					+ " "
+					+ String.format("(%.2fh / %.2fh)", accum, hoursPerDay
+							- accum));
 		}
 	}
 
@@ -305,20 +322,25 @@ public class TimeSheetActivity extends ListActivity {
 		// Handle cross-day clockings.
 		// tempClockCursor.moveToFirst();
 		long now = TimeHelpers.millisNow();
-		long today = TimeHelpers.millisToDayOfMonth(now);
-		long lastClock = TimeHelpers.millisToDayOfMonth(tempClockCursor
-				.getLong(tempClockCursor
-						.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEIN)));
+		long lastClock = tempClockCursor.getLong(tempClockCursor
+				.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEIN));
+		double delta = (now - lastClock) / 86400000.0;
 		// If the difference in days is 1, ask. If it's greater than 1, just
 		// close it.
 		// TODO: This should be handled better.
-		if (today - lastClock == 1) {
+		Log.d(TAG, "checkCrossDayClock: now=" + now);
+		Log.d(TAG, "checkCrossDayClock: lastClock=" + lastClock);
+		Log.d(TAG, "checkCrossDayClock: delta=" + delta);
+		// Less than one day
+		if (delta < 1.0) {
+			Log.d(TAG, "Ignoring.  today - lastClock = " + (now - lastClock));
+		} else if (delta <= 2.0) { // Between one and two days.
 			Log.d(TAG, "Opening dialog.  today - lastClock = "
-					+ (today - lastClock));
+					+ (now - lastClock));
 			showDialog(CROSS_DIALOG);
-		} else if (today - lastClock > 1) {
+		} else if (delta > 2) { // More than two days.
 			Log.d(TAG, "Closing entry.  today - lastClock = "
-					+ (today - lastClock));
+					+ (now - lastClock));
 			db.closeEntry(lastTaskID, TimeHelpers.millisToEndOfDay(lastClock));
 			taskCursor.requery();
 		}
@@ -404,7 +426,7 @@ public class TimeSheetActivity extends ListActivity {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
@@ -418,7 +440,7 @@ public class TimeSheetActivity extends ListActivity {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -451,7 +473,7 @@ public class TimeSheetActivity extends ListActivity {
 
 	/*
 	 * Creates the menu items (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
@@ -476,7 +498,7 @@ public class TimeSheetActivity extends ListActivity {
 
 	/*
 	 * Handles item selections (non-Javadoc)
-	 * 
+	 *
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
@@ -567,7 +589,7 @@ public class TimeSheetActivity extends ListActivity {
 	/**
 	 * This method is called when the sending activity has finished, with the
 	 * result it supplied.
-	 * 
+	 *
 	 * @param requestCode
 	 *            The original request code as given to startActivity().
 	 * @param resultCode
