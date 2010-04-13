@@ -21,6 +21,7 @@ import java.sql.Date;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -72,16 +73,14 @@ public class TimeSheetDbAdapter {
 	/**
 	 * Database creation SQL statements
 	 */
-	private static final String CLOCK_TABLE_CREATE = "CREATE TABLE TimeSheet(_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-			+ "chargeno INTEGER NOT NULL, "
-			+ "timein INTEGER NOT NULL, "
+	private static final String CLOCK_TABLE_CREATE = "CREATE TABLE TimeSheet("
+			+ KEY_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ "chargeno INTEGER NOT NULL, " + "timein INTEGER NOT NULL, "
 			+ "timeout INTEGER NOT NULL DEFAULT 0" + ");";
-	private static final String TASK_TABLE_CREATE = "CREATE TABLE Tasks(_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-			+ "task TEXT NOT NULL, "
-			+ "active BOOLEAN NOT NULL DEFAULT '"
-			+ DB_TRUE
-			+ "', "
-			+ "usage INTEGER NOT NULL DEFAULT 0, "
+	private static final String TASK_TABLE_CREATE = "CREATE TABLE Tasks("
+			+ KEY_ROWID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+			+ "task TEXT NOT NULL, " + "active BOOLEAN NOT NULL DEFAULT '"
+			+ DB_TRUE + "', " + "usage INTEGER NOT NULL DEFAULT 0, "
 			+ "oldusage INTEGER NOT NULL DEFAULT 0, "
 			+ "lastused INTEGER NOT NULL DEFAULT 0" + ");";
 	private static final String ENTRYITEMS_VIEW_CREATE = "CREATE VIEW "
@@ -338,8 +337,8 @@ public class TimeSheetDbAdapter {
 					TimeSheetActivity.prefs.getAlignMinutes());
 			// TODO: Fix in a more sensible way.
 			// Hack to account for a cross-day automatic clock out.
-			if (timeOut - origTimeOut == 1)
-				timeOut = origTimeOut;
+			// if (timeOut - origTimeOut == 1)
+			// timeOut = origTimeOut;
 		}
 		ContentValues updateValues = new ContentValues();
 		updateValues.put(KEY_TIMEOUT, timeOut);
@@ -452,8 +451,8 @@ public class TimeSheetDbAdapter {
 		long lastClockID = lastClockEntry();
 
 		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE,
-				new String[] { KEY_CHARGENO }, "_id = " + lastClockID, null,
-				null, null, null, null);
+				new String[] { KEY_CHARGENO }, KEY_ROWID + " = " + lastClockID,
+				null, null, null, null, null);
 		if (mCursor != null) {
 			mCursor.moveToFirst();
 		}
@@ -573,6 +572,8 @@ public class TimeSheetDbAdapter {
 	 *
 	 * @return rowId or -1 if failed
 	 */
+	// TODO: Should this be chronological or ordered by _id? as it is now?
+	// And, if it should be chronological by time in or time out or both... :(
 	public long getNextClocking(long rowID) {
 		long thisTimeOut = -1;
 		long nextTimeIn = -1;
@@ -594,18 +595,38 @@ public class TimeSheetDbAdapter {
 			}
 		}
 
-		// Query to discover the immediately previous row ID.
-		Cursor mCursor = mDb.query(true, CLOCK_DATABASE_TABLE,
-				new String[] { KEY_ROWID }, KEY_ROWID + " > '" + rowID + "'",
-				null, null, null, KEY_ROWID, "1");
+		// Query to discover the immediately following row ID.
+		Cursor mCursor = null;
+		try {
+			mCursor = mDb.query(true, CLOCK_DATABASE_TABLE,
+					new String[] { KEY_ROWID }, KEY_ROWID + " > '" + rowID
+							+ "'", null, null, null, KEY_ROWID, "1");
+		} catch (RuntimeException e) {
+			Log.i(TAG, "Caught exception finding next clocking.");
+			Log.i(TAG, e.toString());
+			return -1;
+		}
 		if (mCursor != null) {
 			mCursor.moveToFirst();
 		} else {
 			return -1;
 		}
-		String response = mCursor.getString(0);
-		long nextRowID = Long.parseLong(response);
-		mCursor.close();
+
+		long nextRowID = -1;
+		try {
+			String response = mCursor.getString(0);
+			nextRowID = Long.parseLong(response);
+		} catch (CursorIndexOutOfBoundsException e) {
+			Log.i(TAG, "Caught exception retrieving row.");
+			Log.i(TAG, e.toString());
+			return -1;
+		} catch (RuntimeException e) {
+			Log.i(TAG, "Caught exception retrieving row.");
+			Log.i(TAG, e.toString());
+			return -1;
+		} finally {
+			mCursor.close();
+		}
 		Log.d(TAG, "rowID for next: " + nextRowID);
 
 		// Get the tuple from the just-retrieved row
@@ -714,13 +735,15 @@ public class TimeSheetDbAdapter {
 		// having, String orderBy, String limit) {
 
 		String selection;
-		final int endDay = TimeHelpers.millisToDayOfMonth(end);
+		final int endDay = TimeHelpers.millisToDayOfMonth(end - 1000);
 		final long now = TimeHelpers.millisNow();
-		if (TimeHelpers.millisToDayOfMonth(now) == endDay
+		if (TimeHelpers.millisToDayOfMonth(now - 1000) == endDay
 				|| TimeHelpers.millisToDayOfMonth(TimeHelpers
-						.millisToEndOfWeek(now)) == endDay) {
+						.millisToEndOfWeek(now - 1000)) == endDay) {
 			Log.d(TAG, "Allowing selection of zero-end-hour entries.");
-			selection = KEY_TIMEIN + " >=? and " + KEY_TIMEOUT + " <= ?";
+			selection = KEY_TIMEIN + " >=? and " + KEY_TIMEOUT + " <= ? and ("
+					+ KEY_TIMEOUT + " >= " + KEY_TIMEIN + " or " + KEY_TIMEOUT
+					+ " = 0)";
 		} else {
 			selection = KEY_TIMEIN + " >=? and " + KEY_TIMEOUT + " <= ? and "
 					+ KEY_TIMEOUT + " >= " + KEY_TIMEIN;

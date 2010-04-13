@@ -209,7 +209,7 @@ public class TimeSheetActivity extends ListActivity {
 			tasksList.clearChoices();
 			Log.d(TAG, "processChange for task ID: " + taskID);
 		} else {
-			if (lastTaskID > 0 && lastTaskID != taskID)
+			if (timeOut == 0 && lastTaskID != taskID)
 				db.closeEntry();
 			db.createEntry(taskID);
 			Log.d(TAG, "processChange ID from " + lastTaskID + " to " + taskID);
@@ -322,28 +322,35 @@ public class TimeSheetActivity extends ListActivity {
 		// Handle cross-day clockings.
 		// tempClockCursor.moveToFirst();
 		long now = TimeHelpers.millisNow();
-		long lastClock = tempClockCursor.getLong(tempClockCursor
+		long lastClockIn = tempClockCursor.getLong(tempClockCursor
 				.getColumnIndex(TimeSheetDbAdapter.KEY_TIMEIN));
-		double delta = (now - lastClock) / 86400000.0;
+		// TODO: The following doesn't behave correctly for a cross-year
+		// clocking.
+		int delta = (TimeHelpers.millisToDayOfYear(now) - TimeHelpers
+				.millisToDayOfYear(lastClockIn));
 		// If the difference in days is 1, ask. If it's greater than 1, just
 		// close it.
-		// TODO: This should be handled better.
-		Log.d(TAG, "checkCrossDayClock: now=" + now);
-		Log.d(TAG, "checkCrossDayClock: lastClock=" + lastClock);
+		Log.d(TAG, "checkCrossDayClock: now=" + now + " / "
+				+ TimeHelpers.millisToTimeDate(now));
+		Log.d(TAG, "checkCrossDayClock: lastClockIn=" + lastClockIn + " / "
+				+ TimeHelpers.millisToTimeDate(lastClockIn));
 		Log.d(TAG, "checkCrossDayClock: delta=" + delta);
+		// TODO: This should be handled better.
 		// Less than one day
-		if (delta < 1.0) {
-			Log.d(TAG, "Ignoring.  today - lastClock = " + (now - lastClock));
-		} else if (delta <= 2.0) { // Between one and two days.
-			Log.d(TAG, "Opening dialog.  today - lastClock = "
-					+ (now - lastClock));
+		if (delta < 1) {
+			Log.d(TAG, "Ignoring.  delta = " + delta);
+		} else if (delta <= 2) { // Between one and two days.
+			Log.d(TAG, "Opening dialog.  delta = " + delta);
 			showDialog(CROSS_DIALOG);
 		} else if (delta > 2) { // More than two days.
-			Log.d(TAG, "Closing entry.  today - lastClock = "
-					+ (now - lastClock));
-			db.closeEntry(lastTaskID, TimeHelpers.millisToEndOfDay(lastClock));
+			Log.d(TAG, "Closing entry.  delta = " + delta + " days.");
+			long lastClockDay = TimeHelpers.millisToEndOfDay(lastClockIn);
+			Log.d(TAG, "With timeOut = " + lastClockDay);
+			db.closeEntry(lastTaskID, lastClockDay);
 			taskCursor.requery();
 		}
+
+		tempClockCursor.close();
 	}
 
 	private void setSelected() {
@@ -393,19 +400,20 @@ public class TimeSheetActivity extends ListActivity {
 	@Override
 	protected Dialog onCreateDialog(int dialogId) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder
-				.setMessage(
-						"The last entry is still open from yesterday.  What should I do?")
-				.setCancelable(false).setPositiveButton("Close",
+		builder.setMessage(
+				"The last entry is still open from yesterday."
+						+ "  What should I do?").setCancelable(false)
+				.setPositiveButton("Close",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								long taskID = db.taskIDForLastClockEntry();
 								long now = TimeHelpers.millisNow();
 								long today = TimeHelpers
 										.millisToStartOfDay(now);
-								db.closeEntry(taskID, today - 1);
+								db.closeEntry(taskID, today);
 								// TODO: The item selected remains so, even
 								// though that task has been closed.
+								tasksList.clearChoices();
 								setSelected();
 							}
 						}).setNegativeButton("Close & Re-open",
@@ -415,7 +423,7 @@ public class TimeSheetActivity extends ListActivity {
 								long now = TimeHelpers.millisNow();
 								long today = TimeHelpers
 										.millisToStartOfDay(now);
-								db.closeEntry(taskID, today - 1);
+								db.closeEntry(taskID, today);
 								db.createEntry(taskID, today);
 								setSelected();
 							}
@@ -519,9 +527,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivityForResult(intent, TASKREVIVE_CODE);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for ReviveTaskHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for ReviveTaskHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
@@ -531,9 +538,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivityForResult(intent, EDIT_CODE);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for EditDayEntriesHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for EditDayEntriesHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
@@ -542,9 +548,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivityForResult(intent, REPORT_CODE);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for DayReportHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
@@ -553,9 +558,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivityForResult(intent, REPORT_CODE);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for WeekReportHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
@@ -565,9 +569,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivityForResult(intent, PREFS_CODE);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for MyPreferenceActivity");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
@@ -576,9 +579,8 @@ public class TimeSheetActivity extends ListActivity {
 			try {
 				startActivity(intent);
 			} catch (RuntimeException e) {
-				Log
-						.e(TAG,
-								"RuntimeException caught in onOptionsItemSelected for DayReportHandler");
+				Log.e(TAG, "RuntimeException caught in "
+						+ "onOptionsItemSelected for DayReportHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;

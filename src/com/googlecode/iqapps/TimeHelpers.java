@@ -25,7 +25,7 @@ import java.util.TimeZone;
 /**
  * Collection of routines to help deal with millisecond times and dates. Mostly
  * just wrappers for the Gregorian calendar routines.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeHelpers {
@@ -35,9 +35,9 @@ public class TimeHelpers {
 	/*
 	 * Method to parse information from milliseconds. This is intended to be an
 	 * example, and is not used in this application.
-	 * 
+	 *
 	 * @param millis Milliseconds to parse.
-	 * 
+	 *
 	 * @return The supplied value trimmed to the minute boundary.
 	 */
 	@SuppressWarnings("unused")
@@ -59,9 +59,9 @@ public class TimeHelpers {
 	/*
 	 * Method to trim millisecond resolution down to minute resolution. The
 	 * user-interface deals with minute intervals, not milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to trim to minutes.
-	 * 
+	 *
 	 * @return The supplied value trimmed to the one-minute boundary.
 	 */
 	public static long millisToNearestMinute(long timeInMillis) {
@@ -80,9 +80,9 @@ public class TimeHelpers {
 	/*
 	 * Method to trim millisecond resolution down to six-minute resolution. The
 	 * user-interface deals with minute intervals, not milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to trim to minutes.
-	 * 
+	 *
 	 * @return The supplied value trimmed to the six-minute boundary.
 	 */
 	public static long millisToNearestTenth(long timeInMillis) {
@@ -92,12 +92,12 @@ public class TimeHelpers {
 	/*
 	 * Method to trim millisecond resolution down to six-minute resolution. The
 	 * user-interface deals with minute intervals, not milliseconds.
-	 * 
+	 *
 	 * TODO: This is not accurate when alignTo is odd, eg: 5. Figure out what to
 	 * do there.
-	 * 
+	 *
 	 * @param millis Milliseconds to trim to minutes.
-	 * 
+	 *
 	 * @return The supplied value trimmed to the six-minute boundary.
 	 */
 	public static long millisToAlignMinutes(long timeInMillis, int alignTo) {
@@ -124,9 +124,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to calculate the millisecond time for the start of the day.
-	 * 
+	 *
 	 * @param millis Milliseconds to trim to the start of the day.
-	 * 
+	 *
 	 * @return The supplied value trimmed back to the start of the day.
 	 */
 	public static long millisToStartOfDay(long timeInMillis) {
@@ -142,9 +142,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to calculate the millisecond time for the end of the day.
-	 * 
+	 *
 	 * @param millis Milliseconds to extend to the end of the day.
-	 * 
+	 *
 	 * @return The supplied value extended to the end of the day.
 	 */
 	public static long millisToEndOfDay(long timeInMillis) {
@@ -159,16 +159,14 @@ public class TimeHelpers {
 		// do most of the work :).
 		calendar.add(Calendar.SECOND, 1);
 
-		// Then take away one millisecond so that we're still bounding it by the
-		// day.
-		return calendar.getTimeInMillis() - 1;
+		return calendar.getTimeInMillis();
 	}
 
 	/*
 	 * Method to calculate the millisecond time for the start of the week.
-	 * 
+	 *
 	 * @param millis Milliseconds to trim to the start of the week.
-	 * 
+	 *
 	 * @return The supplied value trimmed back to the start of the week.
 	 */
 	public static long millisToStartOfWeek(long timeInMillis) {
@@ -191,9 +189,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to calculate the millisecond time for the end of the week.
-	 * 
+	 *
 	 * @param millis Milliseconds to extend to the end of the week.
-	 * 
+	 *
 	 * @return The supplied value extended to the end of the week.
 	 */
 	public static long millisToEndOfWeek(long timeInMillis) {
@@ -222,11 +220,11 @@ public class TimeHelpers {
 	/*
 	 * Method to calculate the fractional number of hours between two time
 	 * periods.
-	 * 
+	 *
 	 * @param timeIn The start time of the calculation.
-	 * 
+	 *
 	 * @param timeOut The end time of the calculation.
-	 * 
+	 *
 	 * @return The fractional number of hours between the supplied times.
 	 */
 	public static float calculateDuration(long timeIn, long timeOut) {
@@ -244,9 +242,9 @@ public class TimeHelpers {
 	/*
 	 * Method to extract the minute represented by the supplied number in
 	 * milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return The minute of the hour of the supplied time.
 	 */
 	public static int millisToMinute(long timeInMillis) {
@@ -260,9 +258,9 @@ public class TimeHelpers {
 	/*
 	 * Method to trim millisecond resolution down to six-minute resolution. The
 	 * user-interface deals with minute intervals, not milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return Hour of the day of the supplied time.
 	 */
 	public static int millisToHour(long timeInMillis) {
@@ -275,9 +273,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return the day of month for a given time in milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return Day of month of supplied time.
 	 */
 	public static int millisToDayOfMonth(long timeInMillis) {
@@ -288,10 +286,24 @@ public class TimeHelpers {
 	}
 
 	/*
-	 * Method to return the month for a given time in milliseconds.
-	 * 
+	 * Method to return the day of month for a given time in milliseconds.
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
+	 * @return Day of year of supplied time.
+	 */
+	public static int millisToDayOfYear(long timeInMillis) {
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.setTimeInMillis(timeInMillis);
+		int day = calendar.get(Calendar.DAY_OF_YEAR);
+		return day;
+	}
+
+	/*
+	 * Method to return the month for a given time in milliseconds.
+	 *
+	 * @param millis Milliseconds to use for calculations.
+	 *
 	 * @return Month of supplied time.
 	 */
 	public static int millisToMonthOfYear(long timeInMillis) {
@@ -303,9 +315,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return the year for a given time in milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return Year of supplied time.
 	 */
 	public static int millisToYear(long timeInMillis) {
@@ -318,13 +330,13 @@ public class TimeHelpers {
 	/*
 	 * Method to set time to supplied hours and minutes from an initial
 	 * millisecond time.
-	 * 
+	 *
 	 * @param millis Milliseconds to start from.
-	 * 
+	 *
 	 * @param hour Hours to add to the start time.
-	 * 
+	 *
 	 * @param minute Hours to add to the start time.
-	 * 
+	 *
 	 * @return The supplied value trimmed back to the start of the day.
 	 */
 	public static long millisSetTime(long timeInMillis, int hours, int minutes) {
@@ -340,21 +352,20 @@ public class TimeHelpers {
 
 	/*
 	 * Method to set time to supplied year, month and day.
-	 * 
+	 *
 	 * @param year Year of the date to be set
-	 * 
+	 *
 	 * @param month Month of the date to be set
-	 * 
+	 *
 	 * @param date Day of month of the date to be set
-	 * 
+	 *
 	 * @return The supplied value of the start of the day supplied.
 	 */
 	public static long millisSetDate(int year, int month, int date) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.set(Calendar.YEAR, year);
-		calendar.set(Calendar.MONTH, TimeHelpers
-				.convertToCalendarMonth(month));
+		calendar.set(Calendar.MONTH, TimeHelpers.convertToCalendarMonth(month));
 		calendar.set(Calendar.DAY_OF_MONTH, date);
 		calendar.set(Calendar.HOUR_OF_DAY, 0);
 		calendar.set(Calendar.MINUTE, 0);
@@ -365,16 +376,33 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return a string representation of the date.
-	 * 
+	 *
 	 * @param millis Milliseconds to convert.
-	 * 
+	 *
 	 * @return Localized date for the supplied time.
 	 */
 	public static String millisToDate(long timeInMillis) {
 		GregorianCalendar calendar = new GregorianCalendar();
 		calendar.setTimeZone(TimeZone.getDefault());
 		calendar.setTimeInMillis(timeInMillis);
-		SimpleDateFormat simpleDate = new SimpleDateFormat("MMM d, yyyy");
+		SimpleDateFormat simpleDate = new SimpleDateFormat("E, MMM d, yyyy");
+		String date = simpleDate.format(calendar.getTime());
+		return date;
+	}
+
+	/*
+	 * Method to return a string representation of the date.
+	 *
+	 * @param millis Milliseconds to convert.
+	 *
+	 * @return Localized date for the supplied time.
+	 */
+	public static String millisToTimeDate(long timeInMillis) {
+		GregorianCalendar calendar = new GregorianCalendar();
+		calendar.setTimeZone(TimeZone.getDefault());
+		calendar.setTimeInMillis(timeInMillis);
+		SimpleDateFormat simpleDate = new SimpleDateFormat(
+				"MMM d, yyyy kk:mm:ss");
 		String date = simpleDate.format(calendar.getTime());
 		return date;
 	}
@@ -382,11 +410,11 @@ public class TimeHelpers {
 	/*
 	 * Method to compute the difference between two millisecond times in
 	 * minutes.
-	 * 
+	 *
 	 * @param firstTimeMillis Milliseconds as the minuend.
-	 * 
+	 *
 	 * @param secondTimeMillis Milliseconds as the subtrahend.
-	 * 
+	 *
 	 * @return The difference between first and second time in minutes.
 	 */
 	public static int minutesBetweenMillis(long firstTimeMillis,
@@ -401,9 +429,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return the day of month for a given time in milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return Day of month of supplied time.
 	 */
 	public static String formatHours(int in) {
@@ -412,9 +440,9 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return the day of month for a given time in milliseconds.
-	 * 
+	 *
 	 * @param millis Milliseconds to use for calculations.
-	 * 
+	 *
 	 * @return Day of month of supplied time.
 	 */
 	public static String formatMinutes(int in) {
@@ -423,7 +451,7 @@ public class TimeHelpers {
 
 	/*
 	 * Method to return the current time in milliseconds.
-	 * 
+	 *
 	 * @return The current time in milliseconds.
 	 */
 	public static long millisNow() {
@@ -436,7 +464,7 @@ public class TimeHelpers {
 	 * Method to convert a "traditional" month to a java.util.Calendar month
 	 * constant. They're offset by one if you're interested. January = 0,
 	 * December = 11, etc..
-	 * 
+	 *
 	 * @param month
 	 *            Traditional month integer to convert. 1-January, 6-June,
 	 *            12-December.
@@ -490,7 +518,7 @@ public class TimeHelpers {
 	/**
 	 * Method to convert a traditional month String to the corresponding
 	 * integer.
-	 * 
+	 *
 	 * @param month
 	 *            Traditional month string to convert. January, June, Dec, Apr,
 	 *            etc...

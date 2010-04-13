@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout="@layout/report" android:orientation="vertical"
+	android:layout_width="fill_parent" android:layout_height="fill_parent">
 
-<merge xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout="@layout/report" android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
+	<ScrollView android:id="@+id/top_view" android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:layout_weight="1"
+		android:scrollbarStyle="outsideInset" android:fillViewport="true"
+		android:background="@android:color/transparent" android:fadingEdge="none">
 
-	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
-		android:layout_height="fill_parent" />
-
-	<include layout="@layout/reportlist" />
-
+		<LinearLayout android:orientation="vertical"
+			android:layout_width="fill_parent" android:background="@android:color/transparent"
+			android:layout_height="0dip" android:layout_weight="1">
+			<!--
+				<ListView android:id="@android:id/list"
+				android:layout_width="fill_parent"
+				android:layout_height="fill_parent" />
+			-->
+			<include layout="@layout/reportlist" />
+		</LinearLayout>
+	</ScrollView>
 	<include layout="@layout/daybuttons" />
-</merge>
+</LinearLayout>
