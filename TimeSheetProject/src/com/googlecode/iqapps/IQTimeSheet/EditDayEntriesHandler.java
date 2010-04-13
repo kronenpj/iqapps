@@ -158,7 +158,12 @@ public class EditDayEntriesHandler extends ListActivity {
 	protected void showReport() {
 		Log.d(TAG, "Changing to report layout.");
 
-		setContentView(R.layout.report);
+		try {
+			setContentView(R.layout.report);
+		} catch (Exception e) {
+			Log.e(TAG, "Caught " + e.toString()
+					+ " while calling setContentView(R.layout.report)");
+		}
 
 		reportList = (ListView) findViewById(R.id.reportlist);
 		child = new Button[] { (Button) findViewById(R.id.previous),
