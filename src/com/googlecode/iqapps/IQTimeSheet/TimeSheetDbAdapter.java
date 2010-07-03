@@ -68,7 +68,7 @@ public class TimeSheetDbAdapter {
 	private static final String ENTRYITEMS_VIEW = "EntryItems";
 	private static final String ENTRYREPORT_VIEW = "EntryReport";
 	private static final String DATABASE_METADATA = "TimeSheetMeta";
-	private static final int DATABASE_VERSION = 1;
+	private static final int DATABASE_VERSION = 2;
 
 	/**
 	 * Database creation SQL statements
@@ -108,7 +108,18 @@ public class TimeSheetDbAdapter {
 	private static final String TASKS_INDEX = "CREATE UNIQUE INDEX "
 			+ TASKS_DATABASE_TABLE + "_index ON " + TASKS_DATABASE_TABLE + " ("
 			+ KEY_TASK + ");";
-	private static final String METADATA_CREATE = "create table TimeSheetMeta(version integer primary key);";
+	private static final String CHARGENO_INDEX = "CREATE INDEX "
+			+ CLOCK_DATABASE_TABLE + "_chargeno_index ON "
+			+ CLOCK_DATABASE_TABLE + " (" + KEY_CHARGENO + ");";
+	private static final String TIMEIN_INDEX = "CREATE INDEX "
+			+ CLOCK_DATABASE_TABLE + "_timein_index ON " + CLOCK_DATABASE_TABLE
+			+ " (" + KEY_TIMEIN + ");";
+	private static final String TIMEOUT_INDEX = "CREATE INDEX "
+			+ CLOCK_DATABASE_TABLE + "_timeout_index ON "
+			+ CLOCK_DATABASE_TABLE + " (" + KEY_TIMEOUT + ");";
+
+	private static final String METADATA_CREATE = "create table "
+			+ "TimeSheetMeta(version integer primary key);";
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -124,6 +135,9 @@ public class TimeSheetDbAdapter {
 			db.execSQL(ENTRYITEMS_VIEW_CREATE);
 			db.execSQL(ENTRYREPORT_VIEW_CREATE);
 			db.execSQL(TASKS_INDEX);
+			db.execSQL(CHARGENO_INDEX);
+			db.execSQL(TIMEIN_INDEX);
+			db.execSQL(TIMEOUT_INDEX);
 
 			ContentValues initialValues = new ContentValues();
 			initialValues.put(KEY_VERSION, DATABASE_VERSION);
@@ -139,7 +153,11 @@ public class TimeSheetDbAdapter {
 			// db.execSQL("UPDATE TimeSheet SET ");
 			switch (newVersion) {
 			case 2:
-				db.execSQL(TASK_TABLE_CREATE);
+				db.execSQL(CHARGENO_INDEX);
+				db.execSQL(TIMEIN_INDEX);
+				db.execSQL(TIMEOUT_INDEX);
+				db.execSQL("UPDATE " + DATABASE_METADATA + " SET "
+						+ KEY_VERSION + "=" + newVersion);
 			}
 		}
 	}
@@ -800,7 +818,8 @@ public class TimeSheetDbAdapter {
 
 		String[] columns = new String[] { KEY_ROWID, KEY_TASK, KEY_RANGE,
 				KEY_TIMEIN, KEY_TIMEOUT };
-		return getEntryReportCursor(false, columns, todayStart, todayEnd);
+		return getEntryReportCursor(false, columns, null, KEY_TIMEIN,
+				todayStart, todayEnd);
 	}
 
 	/**

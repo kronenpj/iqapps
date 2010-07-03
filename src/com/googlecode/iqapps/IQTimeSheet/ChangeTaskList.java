@@ -68,7 +68,6 @@ public class ChangeTaskList extends ListActivity {
 		try {
 			// Register listeners for the list items.
 			taskList.setOnItemClickListener(new OnItemClickListener() {
-				@Override
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 

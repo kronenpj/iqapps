@@ -4,8 +4,6 @@ High-priority items to do:
 * Look for places to separate user interface code from functionality code.
 
 Medium-priority items to do:
-* Adjust time on previous/next tasks when one is being edited to maintain 
-  continuity of time worked.
 * Stand-alone application to edit / interpret / report on database.
 * Database scrub to find floating 0-time-out clockings.
 * Database scrub to find cross-day clockings that weren't caught.
@@ -14,3 +12,7 @@ Low-priority items to do:
 * Extend TimePicker class to snap to 6- or 15- or X-minute intervals. Somehow.
 
 Uncategorized Items to do:
+
+Completed Items:
+* Adjust time on previous/next tasks when one is being edited to maintain 
+  continuity of time worked.
