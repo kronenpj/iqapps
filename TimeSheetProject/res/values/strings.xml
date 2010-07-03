@@ -44,6 +44,6 @@
 
 	<string name="auto_align_summary">Align to an X minute-increment when clocking in/out or changing times.</string>
 
-	<string name="about_summary">IQTimeSheet is my first Android application.  It is based on a few other similar applications both in function and style.  Hopefully you'll find it useful. The source code is available on <a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a> and is released under the Apache license.</string>
+	<string name="about_summary">IQTimeSheet is my first Android application.  It is based on a few other similar applications both in function and style.  Hopefully you\'ll find it useful. The source code is available on <a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a> and is released under the Apache license.</string>
 <string name="changeadjacent">Accept &amp; Change Adjacent</string>
 </resources>

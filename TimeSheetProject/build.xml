@@ -188,7 +188,9 @@
 				<sourcefolder path="${source.absolute.dir}" />
 				<nativefolder path="${native.libs.absolute.dir}" />
 				<jarfolder path="${external.libs.absolute.dir}" />
-				<extra-jars />
+				<extra-jars>
+                			<jarfile path="${sdk.dir}/tools/lib/jarutils.jar" />
+				</extra-jars>
 			</apkbuilder>
 		</sequential>
 	</macrodef>
@@ -251,6 +253,8 @@
 			<arg path="${resource.absolute.dir}" />
 			<arg value="-I" />
 			<arg path="${android.jar}" />
+			<arg value="-j" />
+			<arg path="${sdk.dir}/tools/lib/jarutils.jar" />
 		</exec>
 	</target>
 
@@ -360,12 +364,16 @@
 
 	<!-- Packages the application and sign it with a debug key. -->
 	<target name="-package-debug-sign" depends="-dex, -package-resources">
-		<package-helper sign.package="true" />
+		<package-helper sign.package="true">
+			<extra-jars>
+                		<jarfile path="${sdk.dir}/tools/lib/jarutils.jar" />
+			</extra-jars>
+		</package-helper>
 	</target>
 
 	<!-- Packages the application without signing it. -->
 	<target name="-package-no-sign" depends="-dex, -package-resources">
-		<package-helper sign.package="false" />
+		<package-helper sign.package="false"/>
 	</target>
 
 	<target name="-compile-tested-if-test" if="tested.project.dir" unless="do.not.compile.again">

@@ -75,7 +75,6 @@ public class EditDayEntriesHandler extends ListActivity {
 		try {
 			// Register listeners for the list items.
 			reportList.setOnItemClickListener(new OnItemClickListener() {
-				@Override
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
 					long itemID = parent.getItemIdAtPosition(position);

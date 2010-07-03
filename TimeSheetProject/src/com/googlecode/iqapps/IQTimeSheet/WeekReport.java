@@ -16,7 +16,7 @@
 
 /**
  * Display a report for a week's worth of entries.
- * 
+ *
  * @author      Paul Kronenwetter <kronenpj@gmail.com>
  */
 package com.googlecode.iqapps.IQTimeSheet;
@@ -36,7 +36,7 @@ import android.widget.TextView;
 
 /**
  * Activity to produce a report for a selected week.
- * 
+ *
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class WeekReport extends ListActivity {
@@ -49,6 +49,7 @@ public class WeekReport extends ListActivity {
 	private long day = TimeHelpers.millisNow();
 	private Button[] child;
 	private float weekHours = -1;
+	private float dayHours = -1;
 
 	/**
 	 * Called when the activity is first created.
@@ -59,6 +60,7 @@ public class WeekReport extends ListActivity {
 		Log.d(TAG, "In onCreate.");
 
 		weekHours = TimeSheetActivity.prefs.getHoursPerWeek();
+		dayHours = TimeSheetActivity.prefs.getHoursPerDay();
 
 		try {
 			showReport();
@@ -133,7 +135,9 @@ public class WeekReport extends ListActivity {
 
 		footerView
 				.setText("Hours worked this week: 0\nHours remaining this week: "
-						+ String.format("%.2f", weekHours));
+						+ String.format("%.2f", weekHours)
+						+ "\nDays remaining this week: "
+						+ String.format("%.2f", weekHours / dayHours));
 
 		try {
 			timeEntryCursor.close();
@@ -167,7 +171,9 @@ public class WeekReport extends ListActivity {
 		footerView.setText("Hours worked this week: "
 				+ String.format("%.2f", accum)
 				+ "\nHours remaining this week: "
-				+ String.format("%.2f", weekHours - accum));
+				+ String.format("%.2f", weekHours - accum)
+				+ "\nDays remaining this week: "
+				+ String.format("%.2f", (weekHours - accum) / dayHours));
 
 		try {
 			reportList.setAdapter(new ReportCursorAdapter(this,
