@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">IQTipCalc</string>
+
+	<string name="none"></string>
+	<string name="total">Bill Total</string>
+	<string name="tax">Tax</string>
+	<string name="coupon">Coupon</string>
+	<string name="tip">Tip</string>
+	<string name="grandtotal">Grand Total</string>
+
+	<string name="tippercent">Tip %</string>
+	<string name="tippercentpref">Default Tip Percentage</string>
+	<string name="taxpercent">Tax %</string>
+	<string name="taxpercentpref">Default Tax Percentage</string>
+
+	<string name="menu_prefs">Settings</string>
+	<string name="menu_about">About</string>
+
+	<string name="plus">+</string>
+	<string name="minus">-</string>
+	<string name="zero">0</string>
+	<string name="one">1</string>
+	<string name="two">2</string>
+	<string name="three">3</string>
+	<string name="four">4</string>
+	<string name="five">5</string>
+	<string name="six">6</string>
+	<string name="seven">7</string>
+	<string name="eight">8</string>
+	<string name="nine">9</string>
+
+	<string name="clear">Clear</string>
+
+	<string name="about_summary">
+		IQTipCalc is my second Android application. It is based on a similar
+		application for the Palm. Hopefully you\'ll find it useful. The source
+		code is available on
+		<a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a>
+		and is released under the Apache license.
+	</string>
+</resources>

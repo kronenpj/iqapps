@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<EditTextPreference android:title="@string/taxpercentpref"
+		android:key="tax.percent" android:order="10" android:summary="@string/taxpercentpref"
+		android:defaultValue="7"></EditTextPreference>
+	<EditTextPreference android:title="@string/tippercentpref"
+		android:key="tip.percent" android:order="20" android:summary="@string/tippercentpref"
+		android:defaultValue="18"></EditTextPreference>
+
+</PreferenceScreen>

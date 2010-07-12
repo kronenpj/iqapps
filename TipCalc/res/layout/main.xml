@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_gravity="center_horizontal|top"
+	android:layout_width="wrap_content" android:layout_height="wrap_content"
+	android:layout_weight="1">
+
+	<TableRow>
+		<TextView android:text="@string/total" android:id="@+id/totallabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="0dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/coupon" android:id="@+id/couponlabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/tip" android:id="@+id/tiplabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/tippercent" android:id="@+id/tipplabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+	</TableRow>
+
+	<TableRow>
+		<EditText android:text="0.00" android:id="@+id/total"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="70dip" />
+		<EditText android:text="0.00" android:id="@+id/coupon"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="65dip" />
+		<EditText android:text="0.00" android:id="@+id/tip"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="65dip" />
+		<EditText android:text="0%" android:id="@+id/tippercent"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="65dip" />
+	</TableRow>
+
+	<TableRow>
+		<TextView android:text="@string/none" android:id="@+id/blank1"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="0dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="0%" android:id="@+id/couponplabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+	</TableRow>
+
+	<TableRow>
+		<TextView android:text="@string/grandtotal" android:id="@+id/grandtotallabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="0dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/tax" android:id="@+id/taxlabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/taxpercent" android:id="@+id/taxplabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+	</TableRow>
+
+	<TableRow>
+		<EditText android:text="0.00" android:id="@+id/grandtotal"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="70dip" />
+		<EditText android:text="0.00" android:id="@+id/tax"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="70dip" />
+		<EditText android:text="0%" android:id="@+id/taxpercent"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="70dip" />
+		<Button android:text="@string/clear" android:id="@+id/clear" />
+	</TableRow>
+</TableLayout>
