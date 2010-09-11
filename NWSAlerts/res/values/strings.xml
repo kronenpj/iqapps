@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">IQNWSAlerts</string>
+	<string name="menu_prefs">Settings</string>
+	<string name="menu_about">About</string>
+
+	<string name="about_summary">This application came to me one day following a
+		Skywarn briefing by a local NWS meteorologist. Some NWS offices
+		started issuing alerts recently where the alert area is related to
+		storm characteristics rather than just the counties affected. This
+		application takes that information and your current location to
+		determine whether an alert is active for your location.
+	</string>
+</resources>

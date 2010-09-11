@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+	<CheckBoxPreference android:title="Read from file"
+		android:defaultValue="false" android:key="alerts.from.file"
+		android:order="100" android:enabled="true"
+		android:summary="Read alerts from a file.  For debugging only."></CheckBoxPreference>
+
+	<CheckBoxPreference android:key="start.at.boot"
+		android:summary="Whether or not the alert monitor should start when the device boots."
+		android:order="200" android:title="Start alert monitor on boot."></CheckBoxPreference>
+
+	<EditTextPreference android:key="update.interval"
+		android:summary="Interval between retrieval of alert information in minutes."
+		android:title="Update Interval" android:inputType="phone"
+		android:defaultValue="10"></EditTextPreference>
+
+
+	<RingtonePreference android:showSilent="true"
+		android:key="audio.tone" android:defaultValue="Silent" android:title="Select alert sound."
+		android:ringtoneType="notification|alarm" android:showDefault="true"></RingtonePreference>
+</PreferenceScreen>
