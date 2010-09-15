@@ -62,7 +62,7 @@ public class TimeSheetDbAdapter {
 	private DatabaseHelper mDbHelper;
 	private SQLiteDatabase mDb;
 
-	private static final String DATABASE_NAME = "TimeSheetDB.db";
+	protected static final String DATABASE_NAME = "TimeSheetDB.db";
 	private static final String TASKS_DATABASE_TABLE = "Tasks";
 	private static final String CLOCK_DATABASE_TABLE = "TimeSheet";
 	private static final String ENTRYITEMS_VIEW = "EntryItems";
