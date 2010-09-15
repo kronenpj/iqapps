@@ -117,7 +117,7 @@ public class ChangeEntryHandler extends Activity {
 	protected void showChangeLayout() {
 		setContentView(R.layout.changeentry);
 
-		// TODO: The order of these is important, the array is referenced
+		// NOTE: The order of these is important, the array is referenced
 		// by index a few times below.
 		child = new Button[] { (Button) findViewById(R.id.defaulttask),
 				(Button) findViewById(R.id.date),
@@ -279,8 +279,6 @@ public class ChangeEntryHandler extends Activity {
 				// bundle.
 				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEIN, newTimeIn);
 				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEOUT, newTimeOut);
-				// TODO: Push option to adjust previous/next task time along
-				// with this one.
 				intent.setAction("accept");
 				setResult(RESULT_OK, intent);
 				finish();
@@ -294,8 +292,6 @@ public class ChangeEntryHandler extends Activity {
 				// bundle.
 				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEIN, newTimeIn);
 				intent.putExtra(TimeSheetDbAdapter.KEY_TIMEOUT, newTimeOut);
-				// TODO: Push option to adjust previous/next task time along
-				// with this one.
 				intent.setAction("acceptadjacent");
 				setResult(RESULT_OK, intent);
 				finish();

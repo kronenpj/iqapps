@@ -9,7 +9,7 @@
 		android:defaultValue="false"
 		android:title="Auto. align minutes?" android:summary="@string/auto_align_summary" android:key="align.minutes.auto" android:order="20"/>
 
-<EditTextPreference android:summary="Hours to work per day" android:key="hours.day" android:title="Hours per day" android:order="30" android:defaultValue="8"></EditTextPreference><EditTextPreference android:order="40" android:summary="Hours to work per week" android:key="hours.week" android:defaultValue="40" android:title="Hours per week"></EditTextPreference><CheckBoxPreference android:title="Store DB on /sdcard" android:defaultValue="false" android:key="db.on.sdcard" android:summary="Not implemented" android:order="100" android:enabled="false"></CheckBoxPreference>
+<EditTextPreference android:summary="Hours to work per day" android:key="hours.day" android:title="Hours per day" android:order="30" android:defaultValue="8"></EditTextPreference><EditTextPreference android:order="40" android:summary="Hours to work per week" android:key="hours.week" android:defaultValue="40" android:title="Hours per week"></EditTextPreference><CheckBoxPreference android:key="db.on.sdcard" android:order="100" android:enabled="true" android:defaultValue="true" android:title="Backups of DB on /sdcard"></CheckBoxPreference>
 
 
 

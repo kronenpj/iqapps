@@ -124,18 +124,6 @@ public class ChangeTaskList extends ListActivity {
 		// Get all of the entries from the database and create the list
 		reloadTaskCursor();
 
-		// String[] items = new String[taskCursor.getCount()];
-		// taskCursor.moveToFirst();
-		// int i = 0;
-		// while (!taskCursor.isAfterLast()) {
-		// items[i] = new String(taskCursor.getString(1));
-		// taskCursor.moveToNext();
-		// i++;
-		// }
-
-		// taskList.setAdapter(new ArrayAdapter<String>(this,
-		// android.R.layout.simple_list_item_single_choice, items));
-
 		// Populate list
 		SimpleCursorAdapter adapter = new SimpleCursorAdapter(this,
 				android.R.layout.simple_list_item_1, taskCursor,
