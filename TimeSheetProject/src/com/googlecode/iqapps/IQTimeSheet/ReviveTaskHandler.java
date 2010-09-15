@@ -71,7 +71,6 @@ public class ReviveTaskHandler extends ListActivity {
 			tasksList.setOnItemClickListener(new OnItemClickListener() {
 				public void onItemClick(AdapterView<?> parent, View view,
 						int position, long id) {
-					// TODO Auto-generated method stub
 					String taskName = (String) parent
 							.getItemAtPosition(position);
 					reactivateTask(taskName);

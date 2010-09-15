@@ -36,13 +36,14 @@ import android.util.Log;
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class PreferenceHelper {
-	private static final String TAG = "ChangeEntryHandler";
+	private static final String TAG = "PreferenceHelper";
 	private SharedPreferences prefs;
 
 	public static final String KEY_ALIGN_MINUTES = "align.minutes";
 	public static final String KEY_ALIGN_MINUTES_AUTO = "align.minutes.auto";
 	public static final String KEY_HOURS_DAY = "hours.day";
 	public static final String KEY_HOURS_WEEK = "hours.week";
+	public static final String KEY_SDCARD_BACKUP = "db.on.sdcard";
 
 	public PreferenceHelper(Context mCtx) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
@@ -52,15 +53,27 @@ public class PreferenceHelper {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		int alignMinutes = Integer.valueOf(prefs.getString(KEY_ALIGN_MINUTES,
-				"1"));
+		int alignMinutes = 1;
+		try {
+			// Throws ClassCastException
+			// alignMinutes = prefs.getInt(KEY_ALIGN_MINUTES, 1);
+			alignMinutes = Integer.valueOf(prefs.getString(KEY_ALIGN_MINUTES,
+					"1"));
+		} catch (Exception e) {
+			Log.e(TAG, KEY_ALIGN_MINUTES + " threw exception: " + e.toString());
+		}
 		Log.d(TAG, "Preference " + KEY_ALIGN_MINUTES + ": " + alignMinutes);
 		return alignMinutes;
 	}
 
 	public boolean getAlignMinutesAuto() {
-		boolean alignMinutesAuto = prefs.getBoolean(KEY_ALIGN_MINUTES_AUTO,
-				false);
+		boolean alignMinutesAuto = false;
+		try {
+			alignMinutesAuto = prefs.getBoolean(KEY_ALIGN_MINUTES_AUTO, false);
+		} catch (Exception e) {
+			Log.e(TAG, KEY_ALIGN_MINUTES_AUTO + " threw exception: "
+					+ e.toString());
+		}
 		Log.d(TAG, "Preference " + KEY_ALIGN_MINUTES_AUTO + ": "
 				+ alignMinutesAuto);
 		return alignMinutesAuto;
@@ -70,7 +83,14 @@ public class PreferenceHelper {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		float hoursDay = Float.valueOf(prefs.getString(KEY_HOURS_DAY, "8"));
+		float hoursDay = (float) 8.0;
+		try {
+			// Throws ClassCastException
+			// hoursDay = prefs.getFloat(KEY_HOURS_DAY, (float) 8.0);
+			hoursDay = Float.valueOf(prefs.getString(KEY_HOURS_DAY, "8"));
+		} catch (Exception e) {
+			Log.e(TAG, KEY_HOURS_DAY + " threw exception: " + e.toString());
+		}
 		Log.d(TAG, "Preference " + KEY_HOURS_DAY + ": " + hoursDay);
 		return hoursDay;
 	}
@@ -79,8 +99,26 @@ public class PreferenceHelper {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		float hoursWeek = Float.valueOf(prefs.getString(KEY_HOURS_WEEK, "40"));
+		float hoursWeek = (float) 40.0;
+		try {
+			// Throws ClassCastException
+			// hoursWeek = prefs.getFloat(KEY_HOURS_WEEK, (float) 40.0);
+			hoursWeek = Float.valueOf(prefs.getString(KEY_HOURS_WEEK, "40"));
+		} catch (Exception e) {
+			Log.e(TAG, KEY_HOURS_WEEK + " threw exception: " + e.toString());
+		}
 		Log.d(TAG, "Preference " + KEY_HOURS_WEEK + ": " + hoursWeek);
 		return hoursWeek;
+	}
+
+	public boolean getSDCardBackup() {
+		boolean backup = false;
+		try {
+			backup = prefs.getBoolean(KEY_SDCARD_BACKUP, true);
+		} catch (Exception e) {
+			Log.e(TAG, KEY_SDCARD_BACKUP + " threw exception: " + e.toString());
+		}
+		Log.d(TAG, "Preference " + KEY_SDCARD_BACKUP + ": " + backup);
+		return backup;
 	}
 }

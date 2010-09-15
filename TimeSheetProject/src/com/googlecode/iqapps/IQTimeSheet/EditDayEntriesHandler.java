@@ -257,8 +257,6 @@ public class EditDayEntriesHandler extends ListActivity {
 									newTimeOut);
 						}
 					} else if (result.equalsIgnoreCase("acceptadjacent")) {
-						// TODO: This should be just an option of the accept
-						// case.
 						// Pass something back in the extra package to specify
 						// adjust adjacent.
 						Bundle extras = data.getExtras();

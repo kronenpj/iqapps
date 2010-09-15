@@ -27,7 +27,6 @@ import android.database.SQLException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.InflateException;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,7 +43,7 @@ import com.googlecode.iqapps.TimeHelpers;
 /**
  * Main activity for the TimeSheet project. Implements the top-level user
  * interface for the application.
- *
+ * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class TimeSheetActivity extends ListActivity {
@@ -52,28 +51,12 @@ public class TimeSheetActivity extends ListActivity {
 
 	private TimeSheetDbAdapter db;
 	private ListView tasksList;
-	private TimeListWrapper timeWrapper;
-	private TimeListAdapter timeAdapter;
+	// private TimeListWrapper timeWrapper;
+	// private TimeListAdapter timeAdapter;
 	private Cursor taskCursor;
 	private Cursor reportCursor;
 	private String applicationName;
 	private static final String TAG = "TimeSheetActivity";
-	private static final int TASKADD_CODE = 0x00;
-	private static final int TASKEDIT_CODE = 0x01;
-	private static final int TASKREVIVE_CODE = 0x02;
-	private static final int EDIT_CODE = 0x03;
-	private static final int REPORT_CODE = 0x04;
-	private static final int PREFS_CODE = 0x05;
-	private static final int ABOUT_CODE = 0x06;
-	private static final int EDIT_ID = 0x20;
-	private static final int RETIRE_ID = 0x21;
-	private static final int MENU_NEW_TASK = 0x30;
-	private static final int MENU_REVIVE_TASK = 0x31;
-	private static final int MENU_EDITDAYENTRIES = 0x32;
-	private static final int MENU_SETTINGS = 0x33;
-	private static final int MENU_DAYREPORT = 0x34;
-	private static final int MENU_WEEKREPORT = 0x35;
-	private static final int MENU_ABOUT = 0x36;
 	private static final int CROSS_DIALOG = 0x40;
 
 	/**
@@ -211,6 +194,8 @@ public class TimeSheetActivity extends ListActivity {
 			if (timeOut == 0 && lastTaskID != taskID)
 				db.closeEntry();
 			db.createEntry(taskID);
+			fillData();
+			setSelected();
 			Log.d(TAG, "processChange ID from " + lastTaskID + " to " + taskID);
 		}
 	}
@@ -389,6 +374,7 @@ public class TimeSheetActivity extends ListActivity {
 			if (taskCursor.getLong(0) == lastTaskID) {
 				Log.d(TAG, "  Selecting item at " + taskCursor.getPosition());
 				tasksList.setItemChecked(taskCursor.getPosition(), true);
+				tasksList.setSelection(taskCursor.getPosition());
 				return;
 			}
 			taskCursor.moveToNext();
@@ -433,7 +419,7 @@ public class TimeSheetActivity extends ListActivity {
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu,
 	 * android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
@@ -441,27 +427,26 @@ public class TimeSheetActivity extends ListActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0, EDIT_ID, 0, "Rename Task");
-		menu.add(0, RETIRE_ID, 0, "Retire Task");
+		menu.add(0, ActivityCodes.EDIT_ID.ordinal(), 0, "Rename Task");
+		menu.add(0, ActivityCodes.RETIRE_ID.ordinal(), 0, "Retire Task");
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
-		switch (item.getItemId()) {
-		case EDIT_ID:
+		if (item.getItemId() == ActivityCodes.EDIT_ID.ordinal()) {
 			Log.d(TAG, "Edit task: " + info.id);
 			Intent intent = new Intent(TimeSheetActivity.this,
 					EditTaskHandler.class);
 			intent.putExtra("taskName", getTaskFromLocation(info.id));
 			try {
-				startActivityForResult(intent, TASKEDIT_CODE);
+				startActivityForResult(intent, ActivityCodes.TASKEDIT.ordinal());
 			} catch (RuntimeException e) {
 				Toast.makeText(TimeSheetActivity.this, "RuntimeException",
 						Toast.LENGTH_SHORT).show();
@@ -469,111 +454,166 @@ public class TimeSheetActivity extends ListActivity {
 				Log.e(TAG, "RuntimeException caught.");
 			}
 			return true;
-		case RETIRE_ID:
+		}
+		if (item.getItemId() == ActivityCodes.RETIRE_ID.ordinal()) {
 			db.deactivateTask(getTaskFromLocation(info.id));
 			fillData();
 			return true;
-		default:
-			return super.onContextItemSelected(item);
 		}
+		return super.onContextItemSelected(item);
 	}
 
 	/*
 	 * Creates the menu items (non-Javadoc)
-	 *
+	 * 
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		MenuItem item = menu.add(0, MENU_NEW_TASK, 1, R.string.menu_new_task);
+		MenuItem item = menu.add(0, MenuItems.NEW_TASK.ordinal(), 1,
+				R.string.menu_new_task);
 		item.setIcon(R.drawable.ic_task_add);
-		item = menu.add(0, MENU_EDITDAYENTRIES, 2,
+		item = menu.add(0, MenuItems.EDITDAY_ENTRIES.ordinal(), 2,
 				R.string.menu_edit_day_entries);
 		item.setIcon(R.drawable.ic_menu_edit);
-		item = menu.add(0, MENU_SETTINGS, 3, R.string.menu_prefs);
+		item = menu
+				.add(0, MenuItems.SETTINGS.ordinal(), 3, R.string.menu_prefs);
 		item.setIcon(R.drawable.ic_menu_preferences);
-		item = menu.add(0, MENU_DAYREPORT, 4, R.string.menu_reports);
+		item = menu.add(0, MenuItems.DAY_REPORT.ordinal(), 4,
+				R.string.menu_reports);
 		item.setIcon(R.drawable.ic_menu_info_details);
-		item = menu.add(0, MENU_WEEKREPORT, 5, R.string.menu_week_reports);
+		item = menu.add(0, MenuItems.WEEK_REPORT.ordinal(), 5,
+				R.string.menu_week_reports);
 		item.setIcon(R.drawable.ic_menu_info_details);
-		item = menu.add(0, MENU_REVIVE_TASK, 6, R.string.menu_revive_task);
+		item = menu.add(0, MenuItems.REVIVE_TASK.ordinal(), 6,
+				R.string.menu_revive_task);
 		item.setIcon(R.drawable.ic_menu_refresh);
-		item = menu.add(0, MENU_ABOUT, 7, R.string.menu_about);
+		if (prefs.getSDCardBackup()) {
+			item = menu.add(0, MenuItems.BACKUP.ordinal(), 7,
+					R.string.menu_backup);
+			item.setIcon(R.drawable.ic_menu_info_details);
+			item = menu.add(0, MenuItems.RESTORE.ordinal(), 8,
+					R.string.menu_restore);
+			item.setIcon(R.drawable.ic_menu_info_details);
+		}
+		item = menu.add(0, MenuItems.ABOUT.ordinal(), 9, R.string.menu_about);
 		item.setIcon(R.drawable.ic_menu_info_details);
 		return true;
 	}
 
 	/*
 	 * Handles item selections (non-Javadoc)
-	 *
+	 * 
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
-		switch (item.getItemId()) {
-		case MENU_NEW_TASK:
+		if (item.getItemId() == MenuItems.NEW_TASK.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, AddTaskHandler.class);
 			try {
-				startActivityForResult(intent, TASKADD_CODE);
+				startActivityForResult(intent, ActivityCodes.TASKADD.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in onOptionsItemSelected");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_REVIVE_TASK:
+		}
+		if (item.getItemId() == MenuItems.REVIVE_TASK.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, ReviveTaskHandler.class);
 			try {
-				startActivityForResult(intent, TASKREVIVE_CODE);
+				startActivityForResult(intent, ActivityCodes.TASKREVIVE
+						.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for ReviveTaskHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_EDITDAYENTRIES:
+		}
+		if (item.getItemId() == MenuItems.EDITDAY_ENTRIES.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this,
 					EditDayEntriesHandler.class);
 			try {
-				startActivityForResult(intent, EDIT_CODE);
+				startActivityForResult(intent, ActivityCodes.EDIT.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for EditDayEntriesHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_DAYREPORT:
+		}
+		if (item.getItemId() == MenuItems.DAY_REPORT.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, DayReport.class);
 			try {
-				startActivityForResult(intent, REPORT_CODE);
+				startActivityForResult(intent, ActivityCodes.REPORT.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for DayReportHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_WEEKREPORT:
+		}
+		if (item.getItemId() == MenuItems.WEEK_REPORT.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, WeekReport.class);
 			try {
-				startActivityForResult(intent, REPORT_CODE);
+				startActivityForResult(intent, ActivityCodes.REPORT.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for WeekReportHandler");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_SETTINGS:
+		}
+		if (item.getItemId() == MenuItems.SETTINGS.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this,
 					MyPreferenceActivity.class);
 			try {
-				startActivityForResult(intent, PREFS_CODE);
+				startActivityForResult(intent, ActivityCodes.PREFS.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for MyPreferenceActivity");
 				Log.e(TAG, e.getLocalizedMessage());
 			}
 			return true;
-		case MENU_ABOUT:
+		}
+		if (item.getItemId() == MenuItems.BACKUP.ordinal()) {
+			if (prefs.getSDCardBackup()) {
+				String myPackage = new String(this.getPackageName());
+				db.close();
+				if (!SDBackup.doSDBackup(TimeSheetDbAdapter.DATABASE_NAME,
+						myPackage)) {
+					Log.w(TAG, "doSDBackup failed.");
+					Toast.makeText(TimeSheetActivity.this,
+							"Database backup failed.", Toast.LENGTH_LONG);
+				} else {
+					Log.i(TAG, "doSDBackup succeeded.");
+					Toast.makeText(TimeSheetActivity.this,
+							"Database backup succeeded.", Toast.LENGTH_SHORT);
+				}
+				setupDB();
+			}
+			return true;
+		}
+		if (item.getItemId() == MenuItems.RESTORE.ordinal()) {
+			if (prefs.getSDCardBackup()) {
+				String myPackage = new String(this.getPackageName());
+				db.close();
+				if (!SDBackup.doSDRestore(TimeSheetDbAdapter.DATABASE_NAME,
+						myPackage)) {
+					Log.w(TAG, "doSDRestore failed.");
+					Toast.makeText(TimeSheetActivity.this,
+							"Database restore failed.", Toast.LENGTH_LONG);
+				} else {
+					Log.i(TAG, "doSDRestore succeeded.");
+					Toast.makeText(TimeSheetActivity.this,
+							"Database restore succeeded.", Toast.LENGTH_SHORT);
+				}
+				setupDB();
+			}
+			return true;
+		}
+		if (item.getItemId() == MenuItems.ABOUT.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, AboutDialog.class);
 			try {
 				startActivity(intent);
@@ -590,7 +630,7 @@ public class TimeSheetActivity extends ListActivity {
 	/**
 	 * This method is called when the sending activity has finished, with the
 	 * result it supplied.
-	 *
+	 * 
 	 * @param requestCode
 	 *            The original request code as given to startActivity().
 	 * @param resultCode
@@ -601,8 +641,7 @@ public class TimeSheetActivity extends ListActivity {
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		// Check to see that what we received is what we wanted to see.
-		switch (requestCode) {
-		case TASKADD_CODE:
+		if (requestCode == ActivityCodes.TASKADD.ordinal()) {
 			// This is a standard resultCode that is sent back if the
 			// activity doesn't supply an explicit result. It will also
 			// be returned if the activity failed to launch.
@@ -614,16 +653,14 @@ public class TimeSheetActivity extends ListActivity {
 				}
 				fillData();
 			}
-			break;
-		case TASKREVIVE_CODE:
+		} else if (requestCode == ActivityCodes.TASKREVIVE.ordinal()) {
 			// This one is a special case, since it has its own database
 			// adapter, we let it change the state itself rather than passing
 			// the result back to us.
 			if (resultCode == RESULT_OK) {
 				fillData();
 			}
-			break;
-		case TASKEDIT_CODE:
+		} else if (requestCode == ActivityCodes.TASKEDIT.ordinal()) {
 			if (resultCode == RESULT_OK) {
 				if (data != null) {
 					String result = data.getAction();
@@ -640,34 +677,6 @@ public class TimeSheetActivity extends ListActivity {
 				}
 				fillData();
 			}
-			break;
-		}
-	}
-
-	/*
-	 * For some bizarre reason, this stuff doesn't work... So, I went in another
-	 * direction.
-	 */
-	private void brokenFillData() {
-		// Get all of the entries from the database and create the list
-		Cursor c = db.fetchAllTaskEntries();
-		startManagingCursor(c);
-
-		String[] from = new String[] { TimeSheetDbAdapter.KEY_ROWID,
-				TimeSheetDbAdapter.KEY_TASK };
-		int[] to = new int[] { R.id.tasklistrow };
-
-		try {
-			// Now create an array adapter and set it to display using our row
-			timeAdapter = new TimeListAdapter(this,
-					android.R.layout.simple_list_item_single_choice, c, from,
-					to);
-			timeWrapper = new TimeListWrapper(timeAdapter);
-
-			tasksList.setAdapter(timeWrapper);
-		} catch (InflateException e) {
-			Log.e(TAG, e.toString());
-			Toast.makeText(this, e.toString(), Toast.LENGTH_LONG).show();
 		}
 	}
 }
