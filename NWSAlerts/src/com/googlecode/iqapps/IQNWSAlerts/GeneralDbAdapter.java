@@ -15,7 +15,6 @@
  */
 package com.googlecode.iqapps.IQNWSAlerts;
 
-import java.util.HashSet;
 import java.util.Vector;
 
 import android.content.ContentValues;
@@ -27,9 +26,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.util.Log;
 
-import com.googlecode.iqapps.BoundingBox;
 import com.googlecode.iqapps.Logger;
-import com.googlecode.iqapps.Point2D;
 
 /**
  * Simple database helper class. Defines the basic CRUD operations for the
@@ -54,7 +51,7 @@ public class GeneralDbAdapter {
 	private SQLiteDatabase mDb;
 	private CursorFactory mCursorFactory;
 
-	protected static final String DATABASE_NAME = "county_corr.db";
+	protected static final String DATABASE_NAME = "capserial.db";
 	private static final int DATABASE_VERSION = 1;
 
 	/**
@@ -64,23 +61,17 @@ public class GeneralDbAdapter {
 			+ "NWSAlertMeta(version integer primary key);";
 	private static final String DATABASE_METADATA = "NWSAlertMeta";
 
-	public static final String COR_TABLE = "correlate";
-	public static final String KEY_STATE = "state";
-	public static final String KEY_COUNTY = "county";
-	public static final String KEY_LAT = "latitude";
-	public static final String KEY_LON = "longitude";
-	public static final String KEY_FIPS = "fips";
+	public static final String CAP_TABLE = "capdata";
+	public static final String KEY_ID = "_id";
+	public static final String KEY_SERIALIZED = "serialized";
+	public static final String KEY_NWSID = "nwsid";
+
 	/**
 	 * Database creation SQL statement
 	 */
-	private static final String COR_TABLE_CREATE = "CREATE TABLE " + COR_TABLE
-			+ " (" + KEY_STATE + " TEXT NOT NULL, " + KEY_COUNTY
-			+ " TEXT NOT NULL, " + KEY_FIPS + " TEXT DEFAULT '00000', "
-			+ KEY_LAT + " REAL DEFAULT 0, " + KEY_LON + " REAL DEFAULT 0);";
-	private static final String COR_LAT_IDX_CREATE = "CREATE INDEX " + KEY_LAT
-			+ " ON " + COR_TABLE + " ( " + KEY_LAT + " );";
-	private static final String COR_LON_IDX_CREATE = "CREATE INDEX " + KEY_LON
-			+ " ON " + COR_TABLE + " ( " + KEY_LON + " );";
+	private static final String COR_TABLE_CREATE = "CREATE TABLE " + CAP_TABLE
+			+ " (" + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_SERIALIZED
+			+ " BLOB NOT NULL, " + KEY_NWSID + " TEXT NOT NULL);";
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -92,8 +83,6 @@ public class GeneralDbAdapter {
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(METADATA_CREATE);
 			db.execSQL(COR_TABLE_CREATE);
-			db.execSQL(COR_LAT_IDX_CREATE);
-			db.execSQL(COR_LON_IDX_CREATE);
 
 			ContentValues initialValues = new ContentValues();
 			initialValues.put(KEY_VERSION, DATABASE_VERSION);
@@ -148,6 +137,7 @@ public class GeneralDbAdapter {
 	 * Close the time sheet database.
 	 */
 	public void close() {
+		logger.trace("In close()");
 		mDbHelper.close();
 	}
 
@@ -161,6 +151,7 @@ public class GeneralDbAdapter {
 	 *             if note could not be found/retrieved
 	 */
 	public int fetchVersion() throws SQLException {
+		logger.trace("In fetchVersion()");
 		Cursor mCursor = mDb.query(true, DATABASE_METADATA,
 				new String[] { MAX_COUNT }, null, null, null, null, null, null);
 		if (mCursor != null) {
@@ -172,171 +163,133 @@ public class GeneralDbAdapter {
 	}
 
 	/**
-	 * Method to search the database to see if a county can be found for the
-	 * bounding box.
 	 * 
-	 * @param location
-	 *            Location representing the center of the box to be searched.
-	 * @param radius
-	 *            Radius around the location to search.
-	 * @return Boolean whether the bounding box can be resolved to a county.
+	 * @param index
+	 * @return
 	 */
-	public boolean inCounty(Point2D.Double location, Double radius) {
-		return inCounty(new BoundingBox(location, radius));
-	}
-
-	/**
-	 * Method to search the database to see if a county can be found for the
-	 * bounding box.
-	 * 
-	 * @param bbox
-	 *            BoundingBox representing the box to be searched.
-	 * @return Boolean whether the bounding box can be resolved to a county.
-	 */
-	public boolean inCounty(BoundingBox bbox) {
-		logger.trace("In inCounty()");
+	public byte[] getCAPSerialized(int index) {
+		logger.trace("In getCAPSerialized()");
+		byte[] output;
 		try {
-			Cursor mCursor = mDb.query(false, COR_TABLE,
-					new String[] { KEY_COUNTY }, KEY_LAT + " > " + bbox.x1()
-							+ " AND " + KEY_LAT + " < " + bbox.x2() + " AND "
-							+ KEY_LON + " > " + bbox.y1() + " AND " + KEY_LON
-							+ " < " + bbox.y2(), null, null, null, null, null);
+			Cursor mCursor = mDb.query(false, CAP_TABLE,
+					new String[] { KEY_SERIALIZED }, KEY_ID + " = " + index,
+					null, null, null, null, null);
 			if (mCursor != null) {
 				mCursor.moveToFirst();
 			} else
-				return false;
+				return null;
 			int responses = mCursor.getCount();
 			mCursor.close();
 			if (responses < 1)
-				return false;
+				return null;
+			output = mCursor.getBlob(0);
 		} catch (SQLException e) {
 			logger.warn(e.toString());
-			return false;
+			return null;
 		}
 
-		return true;
+		return output;
 	}
 
 	/**
 	 * 
-	 * @param location
-	 * @param radius
+	 * @param nwsid
 	 * @return
 	 */
-	public Vector<String> getFIPSCodes(Point2D.Double location, double radius) {
-		return getFIPSCodes(new BoundingBox(location, radius));
-	}
-
-	/**
-	 * 
-	 * @param bbox
-	 * @return
-	 */
-	public Vector<String> getFIPSCodes(BoundingBox bbox) {
-		logger.trace("In getFIPSCodes()");
-		String select = new String("SELECT " + KEY_FIPS + " FROM " + COR_TABLE
-				+ " WHERE (" + KEY_LAT + " > " + bbox.x1() + " AND " + KEY_LAT
-				+ " < " + bbox.x2() + " AND " + KEY_LON + " > " + bbox.y1()
-				+ " AND " + KEY_LON + " < " + bbox.y2() + ");");
-		Cursor mCursor = null;
+	public byte[] getCAPSerialized(String nwsid) {
+		logger.trace("In getCAPSerialized()");
+		byte[] output;
 		try {
-			mCursor = mDb.query(false, COR_TABLE, new String[] { KEY_FIPS },
-					KEY_LAT + " > " + bbox.x1() + " AND " + KEY_LAT + " < "
-							+ bbox.x2() + " AND " + KEY_LON + " > " + bbox.y1()
-							+ " AND " + KEY_LON + " < " + bbox.y2(), null,
-					null, null, null, null);
+			Cursor mCursor = mDb.query(false, CAP_TABLE,
+					new String[] { KEY_SERIALIZED }, KEY_NWSID + " = " + nwsid,
+					null, null, null, null, null);
 			if (mCursor != null) {
 				mCursor.moveToFirst();
 			} else
 				return null;
-		} catch (SQLException e) {
-			logger.warn("executing: " + select);
-			logger.warn(e.toString());
-			return null;
-		}
-
-		HashSet<String> fipsSet = new HashSet<String>();
-		// Iterate over res
-		try {
-			// Can't do this because it apparently "goes backwards," even though
-			// it's at the first record.
-			// res.first();
-			while (!mCursor.isAfterLast()) {
-				fipsSet.add(mCursor.getString(0));
-				mCursor.moveToNext();
-			}
+			int responses = mCursor.getCount();
 			mCursor.close();
+			if (responses < 1)
+				return null;
+			output = mCursor.getBlob(0);
 		} catch (SQLException e) {
 			logger.warn(e.toString());
 			return null;
 		}
 
-		Vector<String> fips = new Vector<String>();
-		for (String string : fipsSet) {
-			fips.add(string);
-		}
-		return fips;
+		return output;
 	}
 
 	/**
 	 * 
-	 * @param bbox
+	 * @param index
 	 * @return
 	 */
-	public String getStateFromFIPS(String fipsLoc) {
-		logger.trace("In getStateFromFIPS(" + fipsLoc + ")");
-		String select = new String("SELECT " + KEY_STATE + " FROM " + COR_TABLE
-				+ " WHERE (" + KEY_FIPS + " = " + fipsLoc + ");");
-		Cursor mCursor = null;
+	public int getCAPIndexForID(String nwsid) {
+		logger.trace("In getCAPIndexForID()");
+		int output;
 		try {
-			logger.debug("Executing query: " + select);
-			mCursor = mDb.query(false, COR_TABLE, new String[] { KEY_STATE },
-					KEY_FIPS + " = '" + fipsLoc + "'", null, null, null, null,
-					null);
-			logger.debug("Back from query.");
+			Cursor mCursor = mDb.query(false, CAP_TABLE,
+					new String[] { KEY_ID }, KEY_SERIALIZED + " =  ?",
+					new String[] { nwsid }, null, null, null, null);
 			if (mCursor != null) {
-				logger.debug("Moving to first entry in the cursor");
 				mCursor.moveToFirst();
-			} else {
-				logger.debug("Cursor is null, returning.");
-				return null;
-			}
+			} else
+				return 0;
+			int responses = mCursor.getCount();
+			mCursor.close();
+			if (responses < 1)
+				return 0;
+			output = mCursor.getInt(0);
 		} catch (SQLException e) {
-			logger.warn("executing: " + select);
 			logger.warn(e.toString());
-			return null;
+			return 0;
 		}
 
-		String state = null;
-		logger.debug("Retrieving state.");
+		return output;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String[] getNWSIDs() {
+		logger.trace("In getNWSIDs()");
+		Vector<String> temp = new Vector<String>();
 		try {
-			state = new String(mCursor.getString(0));
-			logger.debug("Retrieved state: " + state);
+			Cursor mCursor = mDb.query(false, CAP_TABLE,
+					new String[] { KEY_NWSID }, null, null, null, null, null,
+					null);
+			if (mCursor != null) {
+				mCursor.moveToFirst();
+			} else
+				return null;
+			int responses = mCursor.getCount();
+			if (responses < 1)
+				return null;
+			do {
+				temp.add(mCursor.getString(0));
+			} while (mCursor.moveToNext());
 			mCursor.close();
 		} catch (SQLException e) {
 			logger.warn(e.toString());
 			return null;
 		}
 
-		return state;
+		return (String[]) temp.toArray();
 	}
 
 	/**
-	 * Method to insert the provided string.
 	 * 
-	 * @param hashString
-	 *            String representing the hash to be retrieved.
-	 * @param csvLine
-	 * @return Boolean whether the hash was found or not.
+	 * @param serial
 	 */
-	public void insert(String hashString, String csvLine) {
-		logger.trace("In insert(" + hashString + ")");
+	public void putCAPSerialized(byte[] serial, String nwsid) {
+		logger.trace("In putCAPSerialized()");
 
 		try {
-			String sql = "INSERT INTO " + COR_TABLE + " (" + KEY_STATE + ","
-					+ KEY_LAT + "," + KEY_LON + ") VALUES ('" + hashString
-					+ "',1,'" + csvLine + "')";
-			mDb.execSQL(sql);
+			mDb.execSQL("INSERT INTO " + CAP_TABLE + " (" + KEY_SERIALIZED
+					+ ", " + KEY_NWSID + ") VALUES ( ?, ? )", new Object[] {
+					serial, nwsid });
 		} catch (SQLException e) {
 			logger.warn("execute insert: " + e.toString());
 			return;
@@ -345,19 +298,32 @@ public class GeneralDbAdapter {
 	}
 
 	/**
-	 * Method to search the database for the supplied string.
 	 * 
-	 * @param hashString
-	 *            String representing the hash to be retrieved.
-	 * @param csvLine
-	 * @return Boolean whether the hash was found or not.
+	 * @param nwsid
 	 */
-	public void delete(String hashString) {
-		logger.trace("In delete(" + hashString + ")");
+	public void deleteCAP(String nwsid) {
+		logger.trace("In deleteCAP(" + nwsid + ")");
 
 		try {
-			mDb.execSQL("DELETE FROM " + COR_TABLE + " WHERE " + KEY_STATE
-					+ " = '" + hashString + "';");
+			mDb.execSQL("DELETE FROM " + CAP_TABLE + " WHERE " + KEY_NWSID
+					+ " = '" + nwsid + "';");
+		} catch (SQLException e) {
+			logger.warn("execute delete: " + e.toString());
+			return;
+		}
+		return;
+	}
+
+	/**
+	 * 
+	 * @param index
+	 */
+	public void deleteCAP(int index) {
+		logger.trace("In deleteCAP(" + index + ")");
+
+		try {
+			mDb.execSQL("DELETE FROM " + CAP_TABLE + " WHERE " + KEY_ID
+					+ " = '" + index + "';");
 		} catch (SQLException e) {
 			logger.warn("execute delete: " + e.toString());
 			return;

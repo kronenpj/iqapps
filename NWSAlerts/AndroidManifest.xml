@@ -18,16 +18,10 @@
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
+		<service android:name=".service.NWSAlert">
+		</service>
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
-	<service android:name=".NWSAlerts">
-		<intent-filter>
-			<action android:value="com.googlecode.iqapps.IQNWSAlerts.NWSAlert"
-				android:name="NWSAlerts" />
-		</intent-filter>
-		<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION">
-		</uses-permission>
-	</service>
 
 	<uses-permission android:name="android.permission.INTERNET">
 	</uses-permission>

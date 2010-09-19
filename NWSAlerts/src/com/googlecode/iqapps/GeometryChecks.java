@@ -59,7 +59,7 @@ public class GeometryChecks {
 	 * http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/
 	 * pnpoly.html#The C Code
 	 * 
-	 * License statement: Copyright © 1994-2006, W Randolph Franklin (WRF) You
+	 * License statement: Copyright 1994-2006, W Randolph Franklin (WRF) You
 	 * may use my material for non-profit research and education, provided that
 	 * you credit me, and link back to my home page.
 	 * 

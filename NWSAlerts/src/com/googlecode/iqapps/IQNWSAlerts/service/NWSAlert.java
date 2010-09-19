@@ -15,6 +15,14 @@
  */
 package com.googlecode.iqapps.IQNWSAlerts.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -55,6 +63,7 @@ import com.googlecode.iqapps.Logger;
 import com.googlecode.iqapps.Point2D;
 import com.googlecode.iqapps.IQNWSAlerts.CtyCorrelationDB;
 import com.googlecode.iqapps.IQNWSAlerts.EventContainer;
+import com.googlecode.iqapps.IQNWSAlerts.GeneralDbAdapter;
 import com.googlecode.iqapps.IQNWSAlerts.PreferenceHelper;
 import com.googlecode.iqapps.IQNWSAlerts.R;
 import com.googlecode.iqapps.IQNWSAlerts.EventContainer.Events;
@@ -77,6 +86,7 @@ public class NWSAlert extends Service implements Runnable {
 	static PreferenceHelper properties;
 	static Context mCtx = null;
 	CtyCorrelationDB countyDB = null;
+	GeneralDbAdapter capDB = null;
 	Point2D.Double loc = null;
 	public Handler mHandler;
 
@@ -257,6 +267,7 @@ public class NWSAlert extends Service implements Runnable {
 		logger.trace("In setup.");
 		UnpackDatabase.doUnpack(mCtx);
 		countyDB = new CtyCorrelationDB(mCtx);
+		capDB = new GeneralDbAdapter(mCtx);
 
 		logger.debug("Creating event dispatcher.");
 		events = new EventDispatcher[EventContainer.Events.values().length];
@@ -350,6 +361,9 @@ public class NWSAlert extends Service implements Runnable {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	private void doCheck() {
 		logger.trace("In doCheck.");
 
@@ -414,6 +428,9 @@ public class NWSAlert extends Service implements Runnable {
 	}
 
 	/**
+	 * Process the alert to see if it is still effective, place it into the
+	 * database, displays a notification and sounds an alert..
+	 * 
 	 * @param alertEntry
 	 */
 	private void processAlert(CAPStructure alertEntry) {
@@ -437,29 +454,51 @@ public class NWSAlert extends Service implements Runnable {
 					pertinentAlerts.put(alertEntry.getNWSID(), alertEntry);
 					logger.debug(alertEntry.toString());
 					logger.debug("- - - -");
-					showNotification(alertEntry);
+
 					makeAlarm();
+					showNotification(alertEntry);
+					storeAlert(alertEntry);
 				}
 			}
 		}
 	}
 
 	/**
+	 * Store a CAP alert into the database.
+	 * 
+	 * @param alertEntry
+	 */
+	private void storeAlert(CAPStructure alertEntry) {
+		byte[] bOut = CAPStructure.serializeCAP(alertEntry);
+		capDB.putCAPSerialized(bOut, alertEntry.getNWSID());
+		logger.debug("Wrote object to database.");
+	}
+
+	/**
+	 * Process expired CAP entries in the database.
+	 * 
 	 * @param alertEntry
 	 */
 	private void processExpired() {
 		Calendar now = GregorianCalendar.getInstance();
 		now.setTimeInMillis(System.currentTimeMillis());
-		for (String alert : pertinentAlerts.keySet()) {
-			Calendar expiration = pertinentAlerts.get(alert).getExpires();
+		String[] nwsids = capDB.getNWSIDs();
+		for (int idx = 0; idx < nwsids.length; idx++) {
+			byte[] bSer = capDB.getCAPSerialized(capDB
+					.getCAPIndexForID(nwsids[idx]));
+			CAPStructure temp = CAPStructure.deserializeCAP(bSer);
+			Calendar expiration = temp.getExpires();
 			// If now is equal to or after effective...
 			if (now.compareTo(expiration) >= 0) {
-				logger.debug("Removing " + alert + " from alerts.");
-				pertinentAlerts.remove(alert);
+				logger.debug("Removing " + nwsids[idx] + " from alerts.");
+				capDB.deleteCAP(nwsids[idx]);
 			}
 		}
 	}
 
+	/**
+	 * Plays the alert tone.
+	 */
 	private void makeAlarm() {
 		logger.trace("In makeAlarm.");
 		String tone = properties.getAudioAlert();
@@ -472,6 +511,11 @@ public class NWSAlert extends Service implements Runnable {
 			logger.debug("Alert tone empty/null.");
 	}
 
+	/**
+	 * Display a notification.
+	 * 
+	 * @param alert
+	 */
 	private void showNotification(CAPStructure alert) {
 		logger.trace("In showNotification.");
 		// int APP_ID = 0;

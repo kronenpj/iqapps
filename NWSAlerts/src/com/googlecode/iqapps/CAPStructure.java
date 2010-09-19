@@ -15,6 +15,12 @@
  */
 package com.googlecode.iqapps;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.StreamCorruptedException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Vector;
@@ -374,6 +380,57 @@ public class CAPStructure {
 		this.msgType = msgType;
 	}
 
+	/**
+	 * Reconstruct a CAPStructure object from a serialized byte array.
+	 * 
+	 * @param bSer
+	 * @return
+	 */
+	static public CAPStructure deserializeCAP(byte[] bSer) {
+		ByteArrayInputStream bIn = new ByteArrayInputStream(bSer);
+		ObjectInputStream oIn;
+		CAPStructure temp = null;
+		try {
+			oIn = new ObjectInputStream(bIn);
+			temp = (CAPStructure) oIn.readObject();
+		} catch (StreamCorruptedException e) {
+			logger.debug(e.toString());
+		} catch (IOException e) {
+			logger.debug(e.toString());
+		} catch (ClassNotFoundException e) {
+			logger.debug(e.toString());
+		}
+		return temp;
+	}
+
+	/**
+	 * Deconstruct a CAPStructure object into a serialized byte array.
+	 * 
+	 * @param cap
+	 * @return
+	 */
+	static public byte[] serializeCAP(CAPStructure cap) {
+		ByteArrayOutputStream bOut = new ByteArrayOutputStream();
+		ObjectOutputStream oOut;
+		try {
+			oOut = new ObjectOutputStream(bOut);
+		} catch (IOException e) {
+			logger.error("Creating OutputStream: " + e.toString());
+			return null;
+		}
+		try {
+			oOut.writeObject(cap);
+		} catch (IOException e) {
+			logger.error("Writing ObjectOutputStream: " + e.toString());
+			return null;
+		}
+
+		return bOut.toByteArray();
+	}
+
+	/**
+	 * Override the default Object toString method to do something useful.
+	 */
 	public String toString() {
 		Date pub, upd, eff, exp;
 		pub = new Date(published.getTimeInMillis());
