@@ -112,14 +112,10 @@ public class GeneralDbAdapter {
 	}
 
 	/**
-	 * Open the time sheet database. If it cannot be opened, try to create a new
-	 * instance of the database. If it cannot be created, throw an exception to
-	 * signal the failure
+	 * Opens the general database.
 	 * 
-	 * @return this (self reference, allowing this to be chained in an
-	 *         initialization call)
+	 * @return An instance of this class.
 	 * @throws SQLException
-	 *             if the database could be neither opened or created
 	 */
 	public GeneralDbAdapter open() throws SQLException {
 		logger.debug("In open.");
@@ -127,14 +123,13 @@ public class GeneralDbAdapter {
 		try {
 			mDb = mDbHelper.getReadableDatabase();
 		} catch (NullPointerException e) {
-			RetrieveCorrelationDB.GetDBFileFromWeb();
 			mDb = mCtx.openOrCreateDatabase(DATABASE_NAME, 0, mCursorFactory);
 		}
 		return this;
 	}
 
 	/**
-	 * Close the time sheet database.
+	 * Close this database.
 	 */
 	public void close() {
 		logger.trace("In close()");
@@ -142,13 +137,10 @@ public class GeneralDbAdapter {
 	}
 
 	/**
-	 * Return a Cursor positioned at the note that matches the given rowId
+	 * Retrieve the version number of the database.
 	 * 
-	 * @param rowId
-	 *            id of note to retrieve
-	 * @return Cursor positioned to matching note, if found
+	 * @return The version of the database.
 	 * @throws SQLException
-	 *             if note could not be found/retrieved
 	 */
 	public int fetchVersion() throws SQLException {
 		logger.trace("In fetchVersion()");
@@ -163,9 +155,11 @@ public class GeneralDbAdapter {
 	}
 
 	/**
+	 * Retrieve the referenced serialized CAP object.
 	 * 
 	 * @param index
-	 * @return
+	 *            The index of the CAP object to retrieve.
+	 * @return Byte array of the CAP object to retrieve.
 	 */
 	public byte[] getCAPSerialized(int index) {
 		logger.trace("In getCAPSerialized()");
@@ -192,9 +186,11 @@ public class GeneralDbAdapter {
 	}
 
 	/**
+	 * Retrieve the referenced serialized CAP object.
 	 * 
 	 * @param nwsid
-	 * @return
+	 *            NWS ID of the serialized CAP object to retrieve.
+	 * @return Byte array with the serialized CAP object referenced NWS ID.
 	 */
 	public byte[] getCAPSerialized(String nwsid) {
 		logger.trace("In getCAPSerialized()");
@@ -221,8 +217,9 @@ public class GeneralDbAdapter {
 	}
 
 	/**
+	 * Retrieve the index of the CAP entry for the supplied NWS ID.
 	 * 
-	 * @param index
+	 * @param nwsid
 	 * @return
 	 */
 	public int getCAPIndexForID(String nwsid) {
@@ -250,8 +247,9 @@ public class GeneralDbAdapter {
 	}
 
 	/**
+	 * Retrieve all NWS IDs from the database.
 	 * 
-	 * @return
+	 * @return String array of NWS IDs from the database.
 	 */
 	public String[] getNWSIDs() {
 		logger.trace("In getNWSIDs()");
@@ -274,14 +272,22 @@ public class GeneralDbAdapter {
 		} catch (SQLException e) {
 			logger.warn(e.toString());
 			return null;
+		} catch (NullPointerException e) {
+			// Expected if no alerts are in the database.
+			logger.debug("getNWSIDs: " + e.toString());
+			return null;
 		}
 
 		return (String[]) temp.toArray();
 	}
 
 	/**
+	 * Put a serialized CAP entry into the database.
 	 * 
 	 * @param serial
+	 *            The serialized CAP entry.
+	 * @param nwsid
+	 *            The NWS ID of the serialized CAP entry.
 	 */
 	public void putCAPSerialized(byte[] serial, String nwsid) {
 		logger.trace("In putCAPSerialized()");
@@ -292,14 +298,15 @@ public class GeneralDbAdapter {
 					serial, nwsid });
 		} catch (SQLException e) {
 			logger.warn("execute insert: " + e.toString());
-			return;
 		}
 		return;
 	}
 
 	/**
+	 * Delete a CAP entry from the database based on the NWS ID.
 	 * 
 	 * @param nwsid
+	 *            The NWS ID of the serialized CAP entry to delete.
 	 */
 	public void deleteCAP(String nwsid) {
 		logger.trace("In deleteCAP(" + nwsid + ")");
@@ -309,14 +316,15 @@ public class GeneralDbAdapter {
 					+ " = '" + nwsid + "';");
 		} catch (SQLException e) {
 			logger.warn("execute delete: " + e.toString());
-			return;
 		}
 		return;
 	}
 
 	/**
+	 * Delete a CAP entry from the database based on an index number.
 	 * 
 	 * @param index
+	 *            The index of the serialized CAP entry to be deleted.
 	 */
 	public void deleteCAP(int index) {
 		logger.trace("In deleteCAP(" + index + ")");
@@ -326,7 +334,17 @@ public class GeneralDbAdapter {
 					+ " = '" + index + "';");
 		} catch (SQLException e) {
 			logger.warn("execute delete: " + e.toString());
-			return;
+		}
+		return;
+	}
+
+	public void vacuum() {
+		logger.trace("In vacuum");
+
+		try {
+			mDb.execSQL("vacuum;");
+		} catch (SQLException e) {
+			logger.warn("execute vacuum: " + e.toString());
 		}
 		return;
 	}

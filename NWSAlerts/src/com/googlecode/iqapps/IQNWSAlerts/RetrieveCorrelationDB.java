@@ -25,14 +25,18 @@ import java.io.IOException;
 import android.os.Environment;
 
 import com.googlecode.iqapps.GetRequest;
+import com.googlecode.iqapps.Logger;
 
 public class RetrieveCorrelationDB {
-	private static final String dbURL = "http://code.google.com/p/iqapps/";
+	private static final Logger logger = Logger
+			.getLogger("RetrieveCorrelationDB");
+	private static final String dbURL = "http://iqapps.googlecode.com/svn/wiki/";
 	private static final String dbMeta = "corrDB.txt";
 	private static final String dbFile = "county_corr.db";
 	private static String lastFetch = "";
 
 	static public boolean NewerAvailable() {
+		logger.trace("In NewerAvailable.");
 		String response = GetRequest.getRequest(dbURL + dbMeta);
 		if (response == null) {
 			// Assume no network is available and claim there's no update.
@@ -40,7 +44,7 @@ public class RetrieveCorrelationDB {
 		}
 
 		File lastFile = new File(Environment.getExternalStorageDirectory(),
-				"NWSAlerts/" + dbMeta);
+				CorrelationDbAdapter.externalSubdirectory + "/" + dbMeta);
 
 		// See if the file exists, read it if it does.
 		if (lastFile.exists()) {
@@ -74,11 +78,14 @@ public class RetrieveCorrelationDB {
 				out = new FileOutputStream(lastFile);
 				out.write(response.getBytes());
 			} catch (FileNotFoundException e) {
+				logger.debug(e.toString());
 			} catch (IOException e) {
+				logger.debug(e.toString());
 			} finally {
 				try {
 					out.close();
 				} catch (IOException e) {
+					logger.debug(e.toString());
 				}
 			}
 			return true;
@@ -90,10 +97,23 @@ public class RetrieveCorrelationDB {
 	 * Retrieves the pre-defined dbFile from dbURL.
 	 */
 	static public void GetDBFileFromWeb() {
-		byte[] response;
+		logger.trace("In GetDBFileFromWeb.");
+		byte[] response = null;
+		logger.debug("Trying to retrieve " + dbURL + dbFile);
 		response = GetRequest.getRequestBytes(dbURL + dbFile);
 		if (response != null && response.length > 10) {
-			SDUtils.writeToSD(dbFile, "NWSAlerts", response);
+			logger.debug("Retrieved " + response.length + " bytes.");
+			logger.debug("Writing database to " + dbFile);
+			SDUtils.writeToSD(dbFile,
+					CorrelationDbAdapter.externalSubdirectory, response);
+		} else {
+			logger.debug("Invalid response from request.");
+			if (response == null)
+				logger.debug("Response is null.");
+			else if (response.length < 11){
+				logger.debug("Response is 10 bytes or smaller ("
+						+ response.length + " byte(s)).");
+			}
 		}
 	}
 }

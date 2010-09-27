@@ -27,8 +27,10 @@ public class CtyCorrelationDB {
 	private static CorrelationDbAdapter dbHandle;
 
 	public CtyCorrelationDB(Context mCtx) {
-		dbHandle = new CorrelationDbAdapter(mCtx);
-		logger.debug("CtyCorrelationDb constructor.");
+		logger.trace("CtyCorrelationDb constructor.");
+		// Often when invoking the service with a context, weird things occur.
+		// dbHandle = new CorrelationDbAdapter(mCtx);
+		dbHandle = new CorrelationDbAdapter();
 		dbHandle.open();
 	}
 

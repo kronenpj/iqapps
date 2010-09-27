@@ -1,7 +1,6 @@
 package com.googlecode.iqapps.IQNWSAlerts.UI;
 
 import java.util.EventObject;
-import java.util.HashMap;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +15,7 @@ import com.googlecode.iqapps.EventInterface;
 import com.googlecode.iqapps.Logger;
 import com.googlecode.iqapps.IQNWSAlerts.AboutDialog;
 import com.googlecode.iqapps.IQNWSAlerts.ActivityCodes;
+import com.googlecode.iqapps.IQNWSAlerts.GeneralDbAdapter;
 import com.googlecode.iqapps.IQNWSAlerts.MenuItems;
 import com.googlecode.iqapps.IQNWSAlerts.MyPreferenceActivity;
 import com.googlecode.iqapps.IQNWSAlerts.PreferenceHelper;
@@ -25,8 +25,10 @@ import com.googlecode.iqapps.IQNWSAlerts.service.NWSAlert;
 
 public class NWSAlertUI extends Activity {
 	private static Logger logger = Logger.getLogger("NWSAlertUI");
+	private GeneralDbAdapter capDB;
 	static PreferenceHelper properties;
 	static NWSAlert myAlert = null;
+
 	Context mCtx;
 
 	/** Called when the activity is first created. */
@@ -68,6 +70,7 @@ public class NWSAlertUI extends Activity {
 			// Someone said using this was a bad idea...
 			// mCtx = getApplicationContext();
 			mCtx = this;
+
 		myAlert = new NWSAlert(mCtx);
 		logger.debug("Starting service.");
 		// Intent serviceIntent = new Intent();
@@ -75,14 +78,6 @@ public class NWSAlertUI extends Activity {
 		// startService(serviceIntent);
 		myAlert.startservice();
 
-		// Register for events we're interested in here.
-		while (NWSAlert.events == null) {
-			try {
-				logger.debug("Sleeping...");
-				Thread.sleep(1000);
-			} catch (InterruptedException e) {
-			}
-		}
 		NWSAlert.events[Events.UPDATE_AVAILABLE.ordinal()]
 				.addEventListener(new EventInterface() {
 					@Override
@@ -91,27 +86,41 @@ public class NWSAlertUI extends Activity {
 						updateScreen();
 					}
 				});
+
+		capDB = new GeneralDbAdapter(mCtx);
+		capDB.open();
 	}
 
 	void updateScreen() {
 		logger.trace("In updateScreen.");
 		TextView tv = (TextView) findViewById(R.id.infoTV);
 
-		HashMap<String, CAPStructure> alerts = NWSAlert.getPertinentAlerts();
-		logger.debug("alerts size: " + alerts.size());
-		if (NWSAlert.getLastUpdate() < 1) {
-			logger.debug("Setting: Waiting for first update.");
-			tv.setText("Waiting for first update.");
-		} else if (alerts == null || alerts.isEmpty()) {
-			logger.debug("Setting: No alerts for your area.");
-			tv.setText("No alerts for your area.");
-		} else {
-			logger.debug("Displaying alert.");
-			tv.setText("");
-			for (String alert : alerts.keySet()) {
-				tv.append(((CAPStructure) alerts.get(alert)).toString());
-				tv.append("- = - = - = -\n");
+		if (capDB == null)
+			capDB.open();
+		String[] alertIDS = capDB.getNWSIDs();
+		try {
+			logger.debug("alertIDS size: " + alertIDS.length);
+		} catch (Exception e) {
+		}
+		try {
+			if (NWSAlert.getLastUpdate() < 1) {
+				logger.debug("Setting: Waiting for first update.");
+				tv.setText("Waiting for first update.");
+			} else if (alertIDS == null || alertIDS.length == 0) {
+				logger.debug("Setting: No alerts for your area.");
+				tv.setText("No alerts for your area.");
+			} else {
+				logger.debug("Displaying alert.");
+				tv.setText("");
+				for (String alert : alertIDS) {
+					tv.append((CAPStructure.deserializeCAP(capDB
+							.getCAPSerialized(alert))).toString());
+					tv.append("- = - = - = -\n");
+				}
 			}
+		} catch (NullPointerException e) {
+			logger.debug("Displaying alert: " + e.toString());
+			e.printStackTrace();
 		}
 		// logger.debug("Adding textView to layout.");
 		// setContentView(tv);

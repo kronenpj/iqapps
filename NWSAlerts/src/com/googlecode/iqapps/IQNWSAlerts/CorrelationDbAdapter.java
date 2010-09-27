@@ -15,22 +15,19 @@
  */
 package com.googlecode.iqapps.IQNWSAlerts;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Vector;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.util.Log;
 
 import com.googlecode.iqapps.BoundingBox;
 import com.googlecode.iqapps.Logger;
 import com.googlecode.iqapps.Point2D;
-import com.googlecode.iqapps.IQNWSAlerts.ExternalDBHelper;
-import com.googlecode.iqapps.IQNWSAlerts.RetrieveCorrelationDB;
 
 /**
  * Simple correlation database helper class. Defines the basic CRUD operations
@@ -44,6 +41,7 @@ import com.googlecode.iqapps.IQNWSAlerts.RetrieveCorrelationDB;
 public class CorrelationDbAdapter {
 	private final static Logger logger = Logger
 			.getLogger("CorrelationDbAdapter");
+	public static final String externalSubdirectory = "NWSAlerts";
 	public static final String KEY_VERSION = "version";
 	public static final String KEY_ROWID = "_id";
 	public static final String DB_FALSE = "0";
@@ -51,21 +49,14 @@ public class CorrelationDbAdapter {
 	public static final String MAX_ROW = "max(" + KEY_ROWID + ")";
 	public static final String MAX_COUNT = "max(" + KEY_VERSION + ")";
 
-	private static final String TAG = "CorrelationDbAdapter";
-	private final Context mCtx;
-	// private DatabaseHelper mDbHelper;
 	private ExternalDBHelper mDbHelper;
 	private SQLiteDatabase mDb;
 	private CursorFactory mCursorFactory;
 
-	protected static final String DATABASE_NAME = "county_corr.db";
-	private static final int DATABASE_VERSION = 1;
-
 	/**
-	 * Database creation SQL statements
+	 * Database SQL constants.
 	 */
-	private static final String METADATA_CREATE = "create table "
-			+ "NWSAlertMeta(version integer primary key);";
+	protected static final String DATABASE_NAME = "county_corr.db";
 	private static final String DATABASE_METADATA = "NWSAlertMeta";
 
 	public static final String COR_TABLE = "correlate";
@@ -74,62 +65,19 @@ public class CorrelationDbAdapter {
 	public static final String KEY_LAT = "latitude";
 	public static final String KEY_LON = "longitude";
 	public static final String KEY_FIPS = "fips";
-	/**
-	 * Database creation SQL statement
-	 */
-	private static final String COR_TABLE_CREATE = "CREATE TABLE " + COR_TABLE
-			+ " (" + KEY_STATE + " TEXT NOT NULL, " + KEY_COUNTY
-			+ " TEXT NOT NULL, " + KEY_FIPS + " TEXT DEFAULT '00000', "
-			+ KEY_LAT + " REAL DEFAULT 0, " + KEY_LON + " REAL DEFAULT 0);";
-	private static final String COR_LAT_IDX_CREATE = "CREATE INDEX " + KEY_LAT
-			+ " ON " + COR_TABLE + " ( " + KEY_LAT + " );";
-	private static final String COR_LON_IDX_CREATE = "CREATE INDEX " + KEY_LON
-			+ " ON " + COR_TABLE + " ( " + KEY_LON + " );";
-
-	private static class DatabaseHelper extends SQLiteOpenHelper {
-
-		DatabaseHelper(Context context) {
-			super(context, DATABASE_NAME, null, DATABASE_VERSION);
-		}
-
-		@Override
-		public void onCreate(SQLiteDatabase db) {
-			/*
-			 * db.execSQL(METADATA_CREATE); db.execSQL(COR_TABLE_CREATE);
-			 * db.execSQL(COR_LAT_IDX_CREATE); db.execSQL(COR_LON_IDX_CREATE);
-			 * 
-			 * ContentValues initialValues = new ContentValues();
-			 * initialValues.put(KEY_VERSION, DATABASE_VERSION);
-			 * 
-			 * db.insert(DATABASE_METADATA, null, initialValues);
-			 */
-		}
-
-		@Override
-		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.w(TAG, "Upgrading database from version " + oldVersion + " to "
-					+ newVersion + ".");
-			// db.execSQL("ALTER TABLE TimeSheet ADD...");
-			// db.execSQL("UPDATE TimeSheet SET ");
-			switch (newVersion) {
-			case 2:
-				Log.e(TAG, "Version 2 database code but no alterations.");
-			}
-		}
-	}
 
 	/**
 	 * Constructor - takes the context to allow the database to be
 	 * opened/created
 	 */
-	public CorrelationDbAdapter(Context ctx) {
-		this.mCtx = ctx;
+	public CorrelationDbAdapter() {
+		logger.debug("in CorrelationDbAdapter");
 	}
 
 	/**
-	 * Open the time sheet database. If it cannot be opened, try to create a new
-	 * instance of the database. If it cannot be created, throw an exception to
-	 * signal the failure
+	 * Open the correlation database. If it cannot be opened, try to cope as
+	 * best as we can. If it cannot be opened or downloaded, throw an exception
+	 * to signal the failure
 	 * 
 	 * @return this (self reference, allowing this to be chained in an
 	 *         initialization call)
@@ -138,21 +86,36 @@ public class CorrelationDbAdapter {
 	 */
 	public CorrelationDbAdapter open() throws SQLException {
 		logger.debug("In open.");
-		// mDbHelper = new DatabaseHelper(mCtx);
+
+		final String dataPath = new String("/sdcard/" + externalSubdirectory
+				+ "/");
+		File file = new File(dataPath + DATABASE_NAME);
+
+		if (!file.exists() || RetrieveCorrelationDB.NewerAvailable()) {
+			logger.debug("Retrieving Correlation database.");
+			RetrieveCorrelationDB.GetDBFileFromWeb();
+		}
+
+		if (!file.exists()) {
+			logger
+					.error("open: Database file still doesn't exist, returning null.");
+			return null;
+		}
+
 		mDbHelper = new ExternalDBHelper(DATABASE_NAME, mCursorFactory);
 		try {
 			mDb = mDbHelper.getReadableDatabase();
 		} catch (NullPointerException e) {
-			RetrieveCorrelationDB.GetDBFileFromWeb();
 			mDb = mDbHelper.getReadableDatabase();
-			// mDb = mCtx.openOrCreateDatabase(DATABASE_NAME, 0,
-			// mCursorFactory);
+		} catch (SQLiteException e) {
+			logger.error("open: " + e.toString());
+			return null;
 		}
 		return this;
 	}
 
 	/**
-	 * Close the time sheet database.
+	 * Close the database.
 	 */
 	public void close() {
 		mDbHelper.close();
@@ -241,10 +204,6 @@ public class CorrelationDbAdapter {
 	 */
 	public Vector<String> getFIPSCodes(BoundingBox bbox) {
 		logger.trace("In getFIPSCodes()");
-		String select = new String("SELECT " + KEY_FIPS + " FROM " + COR_TABLE
-				+ " WHERE (" + KEY_LAT + " > " + bbox.x1() + " AND " + KEY_LAT
-				+ " < " + bbox.x2() + " AND " + KEY_LON + " > " + bbox.y1()
-				+ " AND " + KEY_LON + " < " + bbox.y2() + ");");
 		Cursor mCursor = null;
 		try {
 			mCursor = mDb.query(false, COR_TABLE, new String[] { KEY_FIPS },
@@ -256,8 +215,10 @@ public class CorrelationDbAdapter {
 				mCursor.moveToFirst();
 			} else
 				return null;
+		} catch (NullPointerException e) {
+			logger.warn(e.toString());
+			return null;
 		} catch (SQLException e) {
-			logger.warn("executing: " + select);
 			logger.warn(e.toString());
 			return null;
 		}
@@ -292,33 +253,25 @@ public class CorrelationDbAdapter {
 	 */
 	public String getStateFromFIPS(String fipsLoc) {
 		logger.trace("In getStateFromFIPS(" + fipsLoc + ")");
-		String select = new String("SELECT " + KEY_STATE + " FROM " + COR_TABLE
-				+ " WHERE (" + KEY_FIPS + " = " + fipsLoc + ");");
 		Cursor mCursor = null;
 		try {
-			logger.debug("Executing query: " + select);
 			mCursor = mDb.query(false, COR_TABLE, new String[] { KEY_STATE },
 					KEY_FIPS + " = '" + fipsLoc + "'", null, null, null, null,
 					null);
-			logger.debug("Back from query.");
 			if (mCursor != null) {
-				logger.debug("Moving to first entry in the cursor");
 				mCursor.moveToFirst();
 			} else {
 				logger.debug("Cursor is null, returning.");
 				return null;
 			}
 		} catch (SQLException e) {
-			logger.warn("executing: " + select);
 			logger.warn(e.toString());
 			return null;
 		}
 
 		String state = null;
-		logger.debug("Retrieving state.");
 		try {
 			state = new String(mCursor.getString(0));
-			logger.debug("Retrieved state: " + state);
 			mCursor.close();
 		} catch (SQLException e) {
 			logger.warn(e.toString());

@@ -45,6 +45,9 @@ public class PreferenceHelper {
 	static final String KEY_UPDATE_INTERVAL = "update.interval";
 	static final String KEY_START_AT_BOOT = "start.at.boot";
 	static final String KEY_AUDIO_ALERT = "audio.tone";
+	static final String KEY_MIN_SEVERITY = "min.severity";
+	static final String KEY_MIN_URGENCY = "min.urgency";
+	static final String KEY_MIN_CERTAINTY = "min.certainty";
 
 	public PreferenceHelper(Context mCtx) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
@@ -79,6 +82,24 @@ public class PreferenceHelper {
 	public String getAudioAlert() {
 		String string = prefs.getString(KEY_AUDIO_ALERT, "Silent");
 		Log.d(TAG, "Preference " + KEY_AUDIO_ALERT + ": " + string);
+		return string;
+	}
+
+	public String getMinSeverity() {
+		String string = prefs.getString(KEY_MIN_SEVERITY, "Moderate");
+		Log.d(TAG, "Preference " + KEY_MIN_SEVERITY + ": " + string);
+		return string;
+	}
+
+	public String getMinUrgency() {
+		String string = prefs.getString(KEY_MIN_URGENCY, "Future");
+		Log.d(TAG, "Preference " + KEY_MIN_URGENCY + ": " + string);
+		return string;
+	}
+
+	public String getMinCertainty() {
+		String string = prefs.getString(KEY_MIN_CERTAINTY, "Possible");
+		Log.d(TAG, "Preference " + KEY_MIN_CERTAINTY + ": " + string);
 		return string;
 	}
 

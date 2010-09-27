@@ -45,27 +45,27 @@ public class RetrieveAlerts {
 		// HttpConnectionManager conManager = client.getHttpConnectionManager();
 		// TODO: This should be a preference.
 		// client.getHostConfiguration().setProxy("localhost", 3128);
-		/*
-		 * HeadMethod method = new HeadMethod(alertIndexURL);
-		 * 
-		 * Header[] response = null; String temp = null; try {
-		 * client.executeMethod(method); response = method.getResponseHeaders();
-		 * 
-		 * if (method.getStatusCode() == HttpStatus.SC_OK) { if
-		 * (method.getResponseHeader("Expires") != null) temp =
-		 * method.getResponseHeader("Expires").getValue(); }
-		 * 
-		 * } catch (IOException e) { e.printStackTrace(); } finally {
-		 * method.releaseConnection(); }
-		 * 
-		 * boolean status = false; if (lastFetch != null) if
-		 * (lastFetch.equalsIgnoreCase(temp)) {
-		 * System.out.println("No Newer Alerts Available."); status = false; }
-		 * else { System.out.println("Newer Alerts Available."); status = true;
-		 * } lastFetch = new String(temp);
-		 * 
-		 * return status;
-		 */
+
+		// HeadMethod method = new HeadMethod(alertIndexURL);
+		//		  
+		// Header[] response = null; String temp = null; try {
+		// client.executeMethod(method); response = method.getResponseHeaders();
+		//		  
+		// if (method.getStatusCode() == HttpStatus.SC_OK) { if
+		// (method.getResponseHeader("Expires") != null) temp =
+		// method.getResponseHeader("Expires").getValue(); }
+		//		  
+		// } catch (IOException e) { e.printStackTrace(); } finally {
+		// method.releaseConnection(); }
+		//		  
+		// boolean status = false; if (lastFetch != null) if
+		// (lastFetch.equalsIgnoreCase(temp)) {
+		// System.out.println("No Newer Alerts Available."); status = false; }
+		// else { System.out.println("Newer Alerts Available."); status = true;
+		// } lastFetch = new String(temp);
+		//		  
+		// return status;
+
 		Header[] response = HeadRequest.headRequest(alertIndexURL);
 		String temp = null;
 		for (int i = 0; i < response.length; i++) {
@@ -89,15 +89,21 @@ public class RetrieveAlerts {
 		// TODO: This should be a preference.
 		// client.getHostConfiguration().setProxy("localhost", 3128);
 		String response = null;
-		/*
-		 * HttpMethod method = new GetMethod(alertIndexURL);
-		 * 
-		 * try { client.executeMethod(method);
-		 * 
-		 * if (method.getStatusCode() == HttpStatus.SC_OK) { response =
-		 * method.getResponseBodyAsString(); } } catch (IOException e) {
-		 * e.printStackTrace(); } finally { method.releaseConnection(); }
-		 */
+
+		// HttpMethod method = new GetMethod(alertIndexURL);
+		//
+		// try {
+		// client.executeMethod(method);
+		//
+		// if (method.getStatusCode() == HttpStatus.SC_OK) {
+		// response = method.getResponseBodyAsString();
+		// }
+		// } catch (IOException e) {
+		// e.printStackTrace();
+		// } finally {
+		// method.releaseConnection();
+		// }
+
 		response = GetRequest.getRequest(alertIndexURL);
 		// SDBackup.doSDBackup("us_atom.xml", "NWSAlerts", response);
 		return response;

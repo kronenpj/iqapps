@@ -4,5 +4,5 @@
 		DO NOT MANUALLY UPDATE VERSION!!! Updating is performed by the ant
 		task "update-version" in build.xml
 	-->
-	<string name="msg_version">IQNWSAlert 2010.0 (r57 2010.09.18)</string>
+	<string name="msg_version">IQNWSAlert 2010.0 (r${Revision} 2010.09.27)</string>
 </resources>

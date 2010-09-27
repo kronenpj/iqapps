@@ -11,4 +11,34 @@
 		application takes that information and your current location to
 		determine whether an alert is active for your location.
 	</string>
+
+	<string name="min_severity">Minimum severity to notify</string>
+	<string name="severity">Severity of the alert</string>
+	<string-array name="severity_levels">
+		<item>Unknown</item>
+		<item>Minor</item>
+		<item>Moderate</item>
+		<item>Severe</item>
+		<item>Extreme</item>
+	</string-array>
+
+	<string name="min_certainty">Minimum certainty to notify</string>
+	<string name="certainty">Certainty of the alert</string>
+	<string-array name="certainty_levels">
+		<item>Unknown</item>
+		<item>Unlikely</item>
+		<item>Possible</item>
+		<item>Likely</item>
+		<item>Observed</item>
+	</string-array>
+
+	<string name="min_urgency">Minimum urgency to notify</string>
+	<string name="urgency">Urgency of the alert</string>
+	<string-array name="urgency_levels">
+		<item>Unknown</item>
+		<item>Past</item>
+		<item>Future</item>
+		<item>Expected</item>
+		<item>Immediate</item>
+	</string-array>
 </resources>

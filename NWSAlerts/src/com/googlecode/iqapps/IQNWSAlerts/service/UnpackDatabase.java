@@ -12,6 +12,11 @@ import android.os.Environment;
 public class UnpackDatabase {
 	final static String DB_NAME = "county_corr.db";
 
+	/**
+	 * Extracts a file from the assets directory of the APK file.
+	 * 
+	 * @param mCtx
+	 */
 	public static void doUnpack(Context mCtx) {
 		File dataDir = Environment.getDataDirectory();
 		final String dbDestination = dataDir.getAbsolutePath() + "/databases/"

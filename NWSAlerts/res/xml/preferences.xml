@@ -13,10 +13,22 @@
 	<EditTextPreference android:key="update.interval"
 		android:summary="Interval between retrieval of alert information in minutes."
 		android:title="Update Interval" android:inputType="phone"
-		android:defaultValue="10"></EditTextPreference>
-
+		android:defaultValue="10" android:order="20"></EditTextPreference>
 
 	<RingtonePreference android:showSilent="true"
 		android:key="audio.tone" android:defaultValue="Silent" android:title="Select alert sound."
-		android:ringtoneType="notification|alarm" android:showDefault="true"></RingtonePreference>
+		android:ringtoneType="notification|alarm" android:showDefault="true"
+		android:order="40"></RingtonePreference>
+
+	<ListPreference android:key="min.severity"
+		android:title="Minimum severity" android:entries="@array/severity_levels"
+		android:summary="@string/min_severity" android:order="10"
+		android:defaultValue="Moderate" android:entryValues="@array/severity_levels"></ListPreference>
+	<ListPreference android:key="min.urgency" android:title="Minimum urgency"
+		android:entries="@array/urgency_levels" android:summary="@string/min_urgency"
+		android:order="11" android:defaultValue="Future" android:entryValues="@array/urgency_levels"></ListPreference>
+	<ListPreference android:key="min.certainty"
+		android:title="Minimum certainty" android:entries="@array/certainty_levels"
+		android:summary="@string/min_certainty" android:order="12"
+		android:defaultValue="Possible" android:entryValues="@array/certainty_levels"></ListPreference>
 </PreferenceScreen>

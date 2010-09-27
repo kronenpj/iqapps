@@ -15,14 +15,6 @@
  */
 package com.googlecode.iqapps.IQNWSAlerts.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.StreamCorruptedException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,6 +32,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
+import android.database.sqlite.SQLiteException;
 import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
@@ -52,7 +46,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.widget.Toast;
 
 import com.googlecode.iqapps.BoundingBox;
 import com.googlecode.iqapps.CAPStructure;
@@ -70,7 +63,7 @@ import com.googlecode.iqapps.IQNWSAlerts.EventContainer.Events;
 import com.googlecode.iqapps.IQNWSAlerts.UI.NWSAlertUI;
 
 public class NWSAlert extends Service implements Runnable {
-	private static Logger logger = Logger.getLogger("NWSAlert");
+	private final static Logger logger = Logger.getLogger("NWSAlert");
 	private static NWSAlert me = null;
 	private static int MAX_DISTANCE = 1000;
 	private static NotificationManager mNotificationManager = null;
@@ -80,7 +73,10 @@ public class NWSAlert extends Service implements Runnable {
 	private static long lastUpdate = 0;
 	private int interval = 10;
 	private Timer timer = new Timer();
-	static HashMap<String, CAPStructure> pertinentAlerts;
+	private static HashMap<String, CAPStructure> pertinentAlerts;
+	private HashMap<String, Integer> certainty = new HashMap<String, Integer>();
+	private HashMap<String, Integer> severity = new HashMap<String, Integer>();
+	private HashMap<String, Integer> urgency = new HashMap<String, Integer>();
 	public static EventDispatcher[] events;
 
 	static PreferenceHelper properties;
@@ -103,39 +99,28 @@ public class NWSAlert extends Service implements Runnable {
 		setup();
 	}
 
-	static public NWSAlert nwsAlertFactory(Context ctx) {
-		logger.trace("In nwsAlertFactory.");
+	/*
+	 * static public NWSAlert nwsAlertFactory(Context ctx) {
+	 * logger.trace("In nwsAlertFactory.");
+	 * 
+	 * if (me == null) { logger.trace("Creating new alert."); me = new
+	 * NWSAlert(ctx); } return me; }
+	 */
 
-		if (me == null) {
-			logger.trace("Creating new alert.");
-			me = new NWSAlert(ctx);
-		}
-		return me;
-	}
-
-	public void onCreate() {
-		super.onCreate();
-		logger.trace("In onCreate.");
-		if (mCtx == null) {
-			try {
-				// Someone said using this was a bad idea...
-				// mCtx = getApplicationContext();
-				mCtx = this;
-			} catch (NullPointerException e) {
-			}
-		}
-		properties = new PreferenceHelper(mCtx);
-
-		// if (locationManager == null) {
-		// logger.trace("Going into getSystemService.");
-		// locationManager = (LocationManager) mCtx
-		// .getSystemService(Context.LOCATION_SERVICE);
-		// logger.trace("Back from getSystemService.");
-		// }
-
-		setup();
-		Toast.makeText(mCtx, "Service started...", Toast.LENGTH_LONG).show();
-	}
+	/*
+	 * public void onCreate() { super.onCreate(); logger.trace("In onCreate.");
+	 * if (mCtx == null) { try { // Someone said using this was a bad idea... //
+	 * mCtx = getApplicationContext(); mCtx = this; } catch
+	 * (NullPointerException e) { } } properties = new PreferenceHelper(mCtx);
+	 * 
+	 * // if (locationManager == null) { //
+	 * logger.trace("Going into getSystemService."); // locationManager =
+	 * (LocationManager) mCtx // .getSystemService(Context.LOCATION_SERVICE); //
+	 * logger.trace("Back from getSystemService."); // }
+	 * 
+	 * setup(); // Toast.makeText(mCtx, "Service started...",
+	 * Toast.LENGTH_LONG).show(); }
+	 */
 
 	public double findMinRadius(Point2D.Double location) {
 		logger.trace("In findMinRadius.");
@@ -144,7 +129,7 @@ public class NWSAlert extends Service implements Runnable {
 
 		while (keepGoing) {
 			BoundingBox bbox = new BoundingBox(location, radius);
-			logger.trace("getFIPS.  radius: " + radius);
+			// logger.trace("getFIPS.  radius: " + radius);
 			Vector<String> fips = countyDB.getFIPS(bbox);
 			if (fips != null && fips.size() > 0) {
 				keepGoing = false;
@@ -160,6 +145,9 @@ public class NWSAlert extends Service implements Runnable {
 
 	public Vector<String> getFIPSCoverage(Point2D.Double loc) {
 		logger.trace("In getFIPSCoverage.");
+		if (countyDB == null)
+			return null;
+
 		double radius = findMinRadius(loc);
 
 		BoundingBox bbox = new BoundingBox();
@@ -167,8 +155,12 @@ public class NWSAlert extends Service implements Runnable {
 
 		Vector<String> fips = countyDB.getFIPS(bbox);
 
-		for (String string : fips) {
-			logger.debug("FIPS: " + string);
+		try {
+			for (String string : fips) {
+				logger.debug("FIPS: " + string);
+			}
+		} catch (NullPointerException e) {
+			return null;
 		}
 		return fips;
 	}
@@ -193,25 +185,6 @@ public class NWSAlert extends Service implements Runnable {
 		timer.scheduleAtFixedRate(new TimerTask() {
 			public void run() {
 				logger.trace("In TimerTask run.");
-				// if (NWSAlert.enabled) {
-				// NWSAlert.running = true;
-				// } else {
-				// NWSAlert.running = false;
-				// System.exit(0);
-				// }
-				//
-				// logger.trace("Preparing looper.");
-				// Looper.prepare();
-				//
-				// logger.trace("Registering handler.");
-				// mHandler = new Handler() {
-				// public void handleMessage(Message msg) {
-				// logger.trace("Received: " + msg.toString());
-				// }
-				// };
-				//
-				// logger.trace("Running looper.loop");
-				// Looper.loop();
 				doCheck();
 			}
 		}, 0, interval * 60 * 1000);
@@ -245,9 +218,9 @@ public class NWSAlert extends Service implements Runnable {
 		stopSelf();
 	}
 
-	public static HashMap<String, CAPStructure> getPertinentAlerts() {
-		return new HashMap<String, CAPStructure>(pertinentAlerts);
-	}
+	// public static HashMap<String, CAPStructure> getPertinentAlerts() {
+	// return new HashMap<String, CAPStructure>(pertinentAlerts);
+	// }
 
 	public static long getLastUpdate() {
 		return lastUpdate;
@@ -265,9 +238,6 @@ public class NWSAlert extends Service implements Runnable {
 
 	private void setup() {
 		logger.trace("In setup.");
-		UnpackDatabase.doUnpack(mCtx);
-		countyDB = new CtyCorrelationDB(mCtx);
-		capDB = new GeneralDbAdapter(mCtx);
 
 		logger.debug("Creating event dispatcher.");
 		events = new EventDispatcher[EventContainer.Events.values().length];
@@ -281,24 +251,40 @@ public class NWSAlert extends Service implements Runnable {
 				// mCtx = getApplicationContext();
 				mCtx = this;
 			}
-		} catch (NullPointerException e) {
-		}
 
-		try {
 			if (properties == null)
 				properties = new PreferenceHelper(mCtx);
 		} catch (NullPointerException e) {
 		}
 
+		// Open databases
+		countyDB = new CtyCorrelationDB(mCtx);
+		capDB = new GeneralDbAdapter(mCtx);
+		capDB.open();
+
+		// Setup local hash maps with values from resource files.
+		Resources res = mCtx.getResources();
+		String[] array = res.getStringArray(R.array.certainty_levels);
+		for (int i = 0; i < array.length; i++) {
+			certainty.put(array[i], i);
+		}
+		array = res.getStringArray(R.array.severity_levels);
+		for (int i = 0; i < array.length; i++) {
+			severity.put(array[i], i);
+		}
+		array = res.getStringArray(R.array.urgency_levels);
+		for (int i = 0; i < array.length; i++) {
+			urgency.put(array[i], i);
+		}
+
 		// Check to see if the monitoring process should start on boot.
-		if (properties.getStartAtBoot()) {
+		if (properties.getStartAtBoot() && !enabled) {
 			BroadcastReceiver receiver = new BroadcastReceiver() {
 				@Override
 				public void onReceive(Context context, Intent intent) {
 					if (!NWSAlert.running) {
 						setup();
 						start(context);
-						startservice();
 					}
 				}
 			};
@@ -331,10 +317,13 @@ public class NWSAlert extends Service implements Runnable {
 				public void onLocationChanged(Location location) {
 					// Called when a new location is found by the network
 					// location provider.
-					loc = new Point2D.Double(location.getLatitude(), location
-							.getLongitude());
-					logger.debug("Updated Location: " + loc.x + "/" + loc.y);
-					doCheck();
+					Point2D.Double tempLoc = new Point2D.Double(location
+							.getLatitude(), location.getLongitude());
+					if (loc != null
+							&& (tempLoc.x != loc.x || tempLoc.y != loc.y)) {
+						logger.debug("Location update...");
+						doCheck();
+					}
 				}
 
 				public void onStatusChanged(String provider, int status,
@@ -362,7 +351,7 @@ public class NWSAlert extends Service implements Runnable {
 	}
 
 	/**
-	 * 
+	 * Main processing piece. Need more documentation.
 	 */
 	private void doCheck() {
 		logger.trace("In doCheck.");
@@ -384,36 +373,75 @@ public class NWSAlert extends Service implements Runnable {
 		if (loc == null)
 			return;
 
-		// TODO: Remove this...
-		if (properties.getReadFromFile())
-			loc = new Point2D.Double(28.603212, -81.322861);
-
 		logger.debug("Location: " + loc.x + " / " + loc.y);
-		Vector<String> fipsCodes = getFIPSCoverage(loc);
+		Vector<String> fipsCodes = null;
+		try {
+			fipsCodes = getFIPSCoverage(loc);
+		} catch (SQLiteException e) {
+			return;
+		} catch (NullPointerException e) {
+			return;
+		}
 		logger.debug("FIPS: " + fipsCodes);
 
-		String state = new String(countyDB.getState(fipsCodes.get(0)));
-		logger.debug("Retrieving alerts for state: " + state);
-		String alertIndex = RetrieveAlerts.GetAlertIndex(state);
-		// String alertIndex = RetrieveAlerts.GetAlertIndex();
+		Vector<CAPStructure> allAlerts = null;
+		ParseAlertIndex alertParser = null;
+		try {
+			String state = new String(countyDB.getState(fipsCodes.get(0)));
+			logger.debug("Retrieving alerts for state: " + state);
+			String alertIndex = RetrieveAlerts.GetAlertIndex(state);
 
-		ParseAlertIndex alertParser = new ParseAlertIndex();
-		Vector<CAPStructure> allAlerts = alertParser.processIndex(alertIndex);
+			alertParser = new ParseAlertIndex();
+			allAlerts = alertParser.processIndex(alertIndex);
+		} catch (SQLiteException e) {
+			return;
+		} catch (NullPointerException e) {
+			return;
+		}
 
 		if (allAlerts == null) {
 			logger.error("Alert Document is null.");
 			return;
 		}
 
+		// TODO: Consider whether and/or how to process message types
+		int minCertainty = certainty.get(properties.getMinCertainty());
+		int minSeverity = severity.get(properties.getMinSeverity());
+		int minUrgency = urgency.get(properties.getMinUrgency());
 		for (CAPStructure alertEntry : allAlerts) {
+			// Skip further processing if the alert's characteristics are less
+			// than thresholds.
+			if (certainty.get(alertEntry.getCertainty()) < minCertainty) {
+				logger.info("Alert certainty under minimum: "
+						+ alertEntry.getCertainty());
+				continue;
+			}
+			if (severity.get(alertEntry.getSeverity()) < minSeverity) {
+				logger.info("Alert severity under minimum: "
+						+ alertEntry.getSeverity());
+				continue;
+			}
+			if (urgency.get(alertEntry.getUrgency()) < minUrgency) {
+				logger.info("Alert urgency under minimum: "
+						+ alertEntry.getUrgency());
+				continue;
+			}
+
 			for (String fipsCode : fipsCodes) {
 				if (alertEntry.getFips().contains(fipsCode)
 						|| alertEntry.getFips().contains("0" + fipsCode)) {
 					logger.trace("Executing fillCapDetail for: "
 							+ alertEntry.getNWSID());
-					alertParser.fillCapDetail(alertEntry);
+					// Retrieve details if the event is null or the status is
+					// Update
+					if (alertEntry.getEvent() == null
+							|| alertEntry.getStatus().compareToIgnoreCase(
+									"Update") == 0)
+						alertParser.fillCapDetail(alertEntry);
 
 					processAlert(alertEntry);
+					// Don't re-process alert for another FIPS code.
+					continue;
 				}
 			}
 		}
@@ -435,25 +463,37 @@ public class NWSAlert extends Service implements Runnable {
 	 */
 	private void processAlert(CAPStructure alertEntry) {
 		Vector<String> polygons = alertEntry.getPolygon();
+		boolean isUpdate = false;
 		if (GeometryChecks.checkPolygon(loc, polygons)) {
-			if (!pertinentAlerts.containsKey(alertEntry.getNWSID())) {
+			try {
+				String status = alertEntry.getStatus();
+				if (status.compareToIgnoreCase("Cancel") == 0) {
+					removeAlert(alertEntry);
+					return;
+				}
+				if (status.compareToIgnoreCase("Update") == 0)
+					isUpdate = true;
+			} catch (NullPointerException e) {
+				logger.debug("processAlert: " + e.toString());
+			}
+			if (!pertinentAlerts.containsKey(alertEntry.getNWSID()) || isUpdate) {
 				Calendar effective = alertEntry.getEffective();
-				Calendar expires = alertEntry.getEffective();
+				Calendar expires = alertEntry.getExpires();
 				Calendar now = GregorianCalendar.getInstance();
 				now.setTimeInMillis(System.currentTimeMillis());
-				// If now is equal to or after effective...
-				// logger.debug("Now      : " + );
+				// logger.debug("Now      : " + new
+				// Date(now.getTimeInMillis()).toString()));
 				logger.debug("Effective: "
 						+ new Date(effective.getTimeInMillis()).toString());
 				logger.debug("Expires  : "
 						+ new Date(expires.getTimeInMillis()).toString());
 				logger.debug("Now/Eff  : " + now.compareTo(effective));
 				logger.debug("Now/Exp  : " + now.compareTo(expires));
+				// If now is equal to or after effective & before expires...
 				if (now.compareTo(effective) >= 0
 						&& now.compareTo(expires) >= 0) {
 					pertinentAlerts.put(alertEntry.getNWSID(), alertEntry);
-					logger.debug(alertEntry.toString());
-					logger.debug("- - - -");
+					logger.debug("Alert is effective, adding to database");
 
 					makeAlarm();
 					showNotification(alertEntry);
@@ -470,8 +510,22 @@ public class NWSAlert extends Service implements Runnable {
 	 */
 	private void storeAlert(CAPStructure alertEntry) {
 		byte[] bOut = CAPStructure.serializeCAP(alertEntry);
+		if (capDB == null)
+			capDB.open();
 		capDB.putCAPSerialized(bOut, alertEntry.getNWSID());
 		logger.debug("Wrote object to database.");
+	}
+
+	/**
+	 * Delete a CAP alert from the database.
+	 * 
+	 * @param alertEntry
+	 */
+	private void removeAlert(CAPStructure alertEntry) {
+		if (capDB == null)
+			capDB.open();
+		capDB.deleteCAP(alertEntry.getNWSID());
+		logger.debug("Deleted object in database.");
 	}
 
 	/**
@@ -482,17 +536,24 @@ public class NWSAlert extends Service implements Runnable {
 	private void processExpired() {
 		Calendar now = GregorianCalendar.getInstance();
 		now.setTimeInMillis(System.currentTimeMillis());
+		if (capDB == null)
+			capDB.open();
 		String[] nwsids = capDB.getNWSIDs();
-		for (int idx = 0; idx < nwsids.length; idx++) {
-			byte[] bSer = capDB.getCAPSerialized(capDB
-					.getCAPIndexForID(nwsids[idx]));
-			CAPStructure temp = CAPStructure.deserializeCAP(bSer);
-			Calendar expiration = temp.getExpires();
-			// If now is equal to or after effective...
-			if (now.compareTo(expiration) >= 0) {
-				logger.debug("Removing " + nwsids[idx] + " from alerts.");
-				capDB.deleteCAP(nwsids[idx]);
+		try {
+			for (int idx = 0; idx < nwsids.length; idx++) {
+				byte[] bSer = capDB.getCAPSerialized(capDB
+						.getCAPIndexForID(nwsids[idx]));
+				CAPStructure temp = CAPStructure.deserializeCAP(bSer);
+				Calendar expiration = temp.getExpires();
+				// If now is equal to or after effective...
+				if (now.compareTo(expiration) >= 0) {
+					logger.debug("Removing " + nwsids[idx] + " from alerts.");
+					capDB.deleteCAP(nwsids[idx]);
+				}
+				capDB.vacuum();
 			}
+		} catch (NullPointerException e) {
+			logger.debug("process expired: " + e.toString());
 		}
 	}
 
