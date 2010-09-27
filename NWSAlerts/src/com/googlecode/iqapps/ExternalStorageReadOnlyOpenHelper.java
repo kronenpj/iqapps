@@ -20,15 +20,18 @@ package com.googlecode.iqapps;
 
 import java.io.File;
 
+import com.googlecode.iqapps.IQNWSAlerts.CorrelationDbAdapter;
+
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Environment;
 import android.util.AndroidRuntimeException;
 
 public abstract class ExternalStorageReadOnlyOpenHelper {
+	private static Logger logger = Logger
+			.getLogger("ExternalStorageReadOnlyOpenHelper");
 	private SQLiteDatabase database;
 	private File dbFile;
 	private SQLiteDatabase.CursorFactory factory;
-	protected String externalSubdirectory="NWSAlerts";
 
 	public ExternalStorageReadOnlyOpenHelper(String dbFileName,
 			SQLiteDatabase.CursorFactory factory) {
@@ -40,11 +43,14 @@ public abstract class ExternalStorageReadOnlyOpenHelper {
 					"External storage (SD-Card) not mounted");
 		}
 		File appDbDir = new File(Environment.getExternalStorageDirectory(),
-				externalSubdirectory);
+				CorrelationDbAdapter.externalSubdirectory);
 		if (!appDbDir.exists()) {
+			logger.trace("Creating dir: " + appDbDir.getPath());
 			appDbDir.mkdirs();
 		}
 		this.dbFile = new File(appDbDir, dbFileName);
+		logger.trace("File " + this.dbFile.getPath() + " "
+				+ (this.dbFile.exists() ? "exists" : "does not exist"));
 	}
 
 	public boolean databaseFileExists() {
@@ -52,9 +58,20 @@ public abstract class ExternalStorageReadOnlyOpenHelper {
 	}
 
 	private void open() {
-		if (dbFile.exists()) {
+		logger.trace("In open");
+		if (databaseFileExists()) {
+			logger.debug("open: Database file exists.");
 			database = SQLiteDatabase.openDatabase(dbFile.getAbsolutePath(),
 					factory, SQLiteDatabase.OPEN_READONLY);
+
+			if (database == null) {
+				logger.error("open: database is null following");
+				logger.error("SQLiteDatabase.openDatabase("
+						+ dbFile.getAbsolutePath()
+						+ ",	factory, SQLiteDatabase.OPEN_READONLY");
+			}
+		} else {
+			logger.error("open: Database file doesn't exist.");
 		}
 	}
 
@@ -70,6 +87,7 @@ public abstract class ExternalStorageReadOnlyOpenHelper {
 	}
 
 	private SQLiteDatabase getDatabase() {
+		logger.trace("In getDatabase");
 		if (database == null) {
 			open();
 		}
