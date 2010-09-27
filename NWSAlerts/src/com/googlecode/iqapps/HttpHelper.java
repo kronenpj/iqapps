@@ -1,16 +1,14 @@
 package com.googlecode.iqapps;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.ByteBuffer;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.util.ByteArrayBuffer;
 
 public class HttpHelper {
+	private static final Logger logger = Logger.getLogger("HttpHelper");
 
 	public static String request(HttpResponse response) {
 		String result = "";
@@ -32,20 +30,19 @@ public class HttpHelper {
 	}
 
 	public static byte[] requestBytes(HttpResponse response) {
-		byte[] result;
-		ByteArrayBuffer buffer = new ByteArrayBuffer(102400);
+		// byte[] result;
+		byte[] chunk = new byte[4096];
 		ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+		int bRead = 0;
 		try {
 			InputStream in = response.getEntity().getContent();
-			BufferedReader reader = new BufferedReader(
-					new InputStreamReader(in));
-			// TODO: This doesn't work.
-			byteStream.write(reader.read());
+			while ((bRead = in.read(chunk)) > 0)
+				byteStream.write(chunk, 0, bRead);
 			in.close();
 		} catch (Exception ex) {
-			result = null;
+			logger.debug("requestBytes: " + ex.toString());
+			return null;
 		}
-		result=byteStream.toByteArray();
-		return result;
+		return byteStream.toByteArray();
 	}
 }
