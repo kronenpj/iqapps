@@ -15,11 +15,9 @@
  */
 package com.googlecode.iqapps.IQNWSAlerts.service;
 
-import java.util.Calendar;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Vector;
@@ -38,224 +36,98 @@ import android.location.Criteria;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.widget.Toast;
 
-import com.googlecode.iqapps.BoundingBox;
 import com.googlecode.iqapps.CAPStructure;
-import com.googlecode.iqapps.EventDispatcher;
-import com.googlecode.iqapps.EventItem;
-import com.googlecode.iqapps.GeometryChecks;
 import com.googlecode.iqapps.Logger;
 import com.googlecode.iqapps.Point2D;
 import com.googlecode.iqapps.IQNWSAlerts.CtyCorrelationDB;
-import com.googlecode.iqapps.IQNWSAlerts.EventContainer;
 import com.googlecode.iqapps.IQNWSAlerts.GeneralDbAdapter;
 import com.googlecode.iqapps.IQNWSAlerts.PreferenceHelper;
 import com.googlecode.iqapps.IQNWSAlerts.R;
-import com.googlecode.iqapps.IQNWSAlerts.EventContainer.Events;
 import com.googlecode.iqapps.IQNWSAlerts.UI.NWSAlertUI;
 
-public class NWSAlert extends Service implements Runnable {
+public class NWSAlert extends Service {
 	private final static Logger logger = Logger.getLogger("NWSAlert");
-	private static NWSAlert me = null;
-	private static int MAX_DISTANCE = 1000;
-	private static NotificationManager mNotificationManager = null;
-	private static LocationManager locationManager = null;
+	/** Keeps track of all current registered clients. */
+	ArrayList<Messenger> mClients = new ArrayList<Messenger>();
+	/** Holds last value set by a client. */
+	int mValue = 0;
+
+	/**
+	 * Command to the service to register a client, receiving callbacks from the
+	 * service. The Message's replyTo field must be a Messenger of the client
+	 * where callbacks should be sent.
+	 */
+	public static final int MSG_REGISTER_CLIENT = 1;
+
+	/**
+	 * Command to the service to unregister a client, ot stop receiving
+	 * callbacks from the service. The Message's replyTo field must be a
+	 * Messenger of the client as previously given with MSG_REGISTER_CLIENT.
+	 */
+	public static final int MSG_UNREGISTER_CLIENT = 2;
+
+	/**
+	 * Command to service to set a new value. This can be sent to the service to
+	 * supply a new value, and will be sent by the service to any registered
+	 * clients with the new value.
+	 */
+//	public static final int MSG_SET_VALUE = 3;
+
+	/**
+	 * Command to client to notify that an update is available. This will be
+	 * sent by the service to any registered clients with the new value.
+	 */
+	public static final int MSG_UPDATE_AVAILABLE = 4;
+
+	/**
+	 * Command from client to notify service that is should stop.
+	 */
+	public static final int MSG_STOP_SERVICE = 5;
+
 	private static boolean enabled = false;
-	private static boolean running = false;
+	private static int running = 0;
 	private static long lastUpdate = 0;
+	private AlertRetriever retriever;
+	private NotificationManager mNM;
 	private int interval = 10;
-	private Timer timer = new Timer();
-	private static HashMap<String, CAPStructure> pertinentAlerts;
+	private Timer timer;
+	private LocListener locationListener;
 	private HashMap<String, Integer> certainty = new HashMap<String, Integer>();
 	private HashMap<String, Integer> severity = new HashMap<String, Integer>();
 	private HashMap<String, Integer> urgency = new HashMap<String, Integer>();
-	public static EventDispatcher[] events;
+	// private final IBinder binder = new AlertBinder();
+	// private EventDispatcher[] events = null;
+	// private static LocationManager locationManager = null;
 
 	static PreferenceHelper properties;
-	static Context mCtx = null;
-	CtyCorrelationDB countyDB = null;
-	GeneralDbAdapter capDB = null;
-	Point2D.Double loc = null;
-	public Handler mHandler;
-
-	public NWSAlert(Context ctx) {
-		logger.trace("In NWSAlert constructor");
-		if (mCtx == null)
-			mCtx = ctx;
-		if (me == null) {
-			logger.debug("First instantiation. Setting me to this.");
-			me = this;
-		} else
-			logger.debug("Subsequent instantiation.");
-
-		setup();
-	}
-
-	/*
-	 * static public NWSAlert nwsAlertFactory(Context ctx) {
-	 * logger.trace("In nwsAlertFactory.");
-	 * 
-	 * if (me == null) { logger.trace("Creating new alert."); me = new
-	 * NWSAlert(ctx); } return me; }
-	 */
-
-	/*
-	 * public void onCreate() { super.onCreate(); logger.trace("In onCreate.");
-	 * if (mCtx == null) { try { // Someone said using this was a bad idea... //
-	 * mCtx = getApplicationContext(); mCtx = this; } catch
-	 * (NullPointerException e) { } } properties = new PreferenceHelper(mCtx);
-	 * 
-	 * // if (locationManager == null) { //
-	 * logger.trace("Going into getSystemService."); // locationManager =
-	 * (LocationManager) mCtx // .getSystemService(Context.LOCATION_SERVICE); //
-	 * logger.trace("Back from getSystemService."); // }
-	 * 
-	 * setup(); // Toast.makeText(mCtx, "Service started...",
-	 * Toast.LENGTH_LONG).show(); }
-	 */
-
-	public double findMinRadius(Point2D.Double location) {
-		logger.trace("In findMinRadius.");
-		double radius = 5;
-		boolean keepGoing = true;
-
-		while (keepGoing) {
-			BoundingBox bbox = new BoundingBox(location, radius);
-			// logger.trace("getFIPS.  radius: " + radius);
-			Vector<String> fips = countyDB.getFIPS(bbox);
-			if (fips != null && fips.size() > 0) {
-				keepGoing = false;
-			} else
-				radius = radius + 5;
-			if (radius >= MAX_DISTANCE)
-				keepGoing = false;
-		}
-
-		logger.debug("radius = " + radius);
-		return radius;
-	}
-
-	public Vector<String> getFIPSCoverage(Point2D.Double loc) {
-		logger.trace("In getFIPSCoverage.");
-		if (countyDB == null)
-			return null;
-
-		double radius = findMinRadius(loc);
-
-		BoundingBox bbox = new BoundingBox();
-		bbox.setBox(loc, radius);
-
-		Vector<String> fips = countyDB.getFIPS(bbox);
-
-		try {
-			for (String string : fips) {
-				logger.debug("FIPS: " + string);
-			}
-		} catch (NullPointerException e) {
-			return null;
-		}
-		return fips;
-	}
-
-	public String getStateForFIPS(String fipsLoc) {
-		logger.trace("In getStateForFIPS.");
-
-		String state = countyDB.getState(fipsLoc);
-
-		return state;
-	}
+	Context mCtx;
+	CtyCorrelationDB countyDB;
+	GeneralDbAdapter capDB;
+	Point2D.Double loc;
 
 	@Override
-	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public void onCreate() {
+		super.onCreate();
 
-	public void startservice() {
-		logger.trace("In startservice.");
-		enabled = true;
-		timer.scheduleAtFixedRate(new TimerTask() {
-			public void run() {
-				logger.trace("In TimerTask run.");
-				doCheck();
-			}
-		}, 0, interval * 60 * 1000);
-	}
+		logger.trace("In setup");
+		mCtx = this;
 
-	@Override
-	public void run() {
-		logger.trace("In NWSAlert run.");
+		mNM = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		// Display a notification about us starting.
+		showNotification();
 
-		logger.trace("Preparing looper.");
-		Looper.prepare();
-
-		logger.trace("Registering handler.");
-		mHandler = new Handler() {
-			public void handleMessage(Message msg) {
-				logger.trace("Received: " + msg.toString());
-			}
-		};
-
-		logger.trace("Running looper.loop");
-		Looper.loop();
-	}
-
-	public void stopservice() {
-		logger.trace("In stopservice.");
-		running = false;
-		enabled = false;
-		if (timer != null) {
-			timer.cancel();
-		}
-		stopSelf();
-	}
-
-	// public static HashMap<String, CAPStructure> getPertinentAlerts() {
-	// return new HashMap<String, CAPStructure>(pertinentAlerts);
-	// }
-
-	public static long getLastUpdate() {
-		return lastUpdate;
-	}
-
-	static void start(Context ctx) {
-		logger.trace("In start.");
-		enabled = true;
-		NWSAlert service = new NWSAlert(ctx);
-		if (!NWSAlert.running)
-			service.startservice();
-		else
-			logger.trace("Not starting service, already running.");
-	}
-
-	private void setup() {
-		logger.trace("In setup.");
-
-		logger.debug("Creating event dispatcher.");
-		events = new EventDispatcher[EventContainer.Events.values().length];
-		for (Events evt : Events.values()) {
-			events[evt.ordinal()] = new EventDispatcher();
-		}
-
-		try {
-			if (mCtx == null) {
-				// Someone said using this was a bad idea...
-				// mCtx = getApplicationContext();
-				mCtx = this;
-			}
-
-			if (properties == null)
-				properties = new PreferenceHelper(mCtx);
-		} catch (NullPointerException e) {
-		}
+		// Set up variables
+		timer = new Timer("NWSAlert");
+		retriever = new AlertRetriever(mCtx);
+		properties = new PreferenceHelper(mCtx);
 
 		// Open databases
 		countyDB = new CtyCorrelationDB(mCtx);
@@ -282,72 +154,120 @@ public class NWSAlert extends Service implements Runnable {
 			BroadcastReceiver receiver = new BroadcastReceiver() {
 				@Override
 				public void onReceive(Context context, Intent intent) {
-					if (!NWSAlert.running) {
-						setup();
-						start(context);
+					if (NWSAlert.running == 0) {
+						Intent serviceIntent = new Intent();
+						serviceIntent.setClass(getApplicationContext(),
+								NWSAlert.class);
+						startService(serviceIntent);
 					}
 				}
 			};
 			IntentFilter filter = new IntentFilter(Intent.ACTION_BOOT_COMPLETED);
 			mCtx.registerReceiver(receiver, filter);
 		}
+	}
 
-		interval = properties.getUpdateInterval();
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		logger.trace("In onStartCommand.");
 
-		// Get the notification manager service.
-		logger.trace("Retrieving the system notification manager service.");
-		mNotificationManager = (NotificationManager) mCtx
-				.getSystemService(NOTIFICATION_SERVICE);
-
-		if (locationManager == null) {
-			logger.trace("Going into getSystemService.");
-			locationManager = (LocationManager) mCtx
-					.getSystemService(Context.LOCATION_SERVICE);
-			logger.trace("Back from getSystemService.");
-			logger.debug("Location providers: "
-					+ locationManager.getAllProviders());
-
-			Criteria criteria = new Criteria();
-			String bestProvider = locationManager.getBestProvider(criteria,
-					false);
-			logger.debug("Best provider: " + bestProvider);
-
-			// Define a listener that responds to location updates
-			LocationListener locationListener = new LocationListener() {
-				public void onLocationChanged(Location location) {
-					// Called when a new location is found by the network
-					// location provider.
-					Point2D.Double tempLoc = new Point2D.Double(location
-							.getLatitude(), location.getLongitude());
-					if (loc != null
-							&& (tempLoc.x != loc.x || tempLoc.y != loc.y)) {
-						logger.debug("Location update...");
-						doCheck();
-					}
-				}
-
-				public void onStatusChanged(String provider, int status,
-						Bundle extras) {
-				}
-
-				public void onProviderEnabled(String provider) {
-				}
-
-				public void onProviderDisabled(String provider) {
-				}
-			};
-
-			// Register the listener with the Location Manager to receive
-			// location updates
-			locationManager.requestLocationUpdates(
-					LocationManager.NETWORK_PROVIDER, interval * 30 * 1000,
-					1000, locationListener);
-			logger.debug("Registered listener.");
+		running++;
+		if (running > 1)
+			return 0;
+		enabled = true;
+		timer.cancel();
+		try {
+			timer = new Timer("NWSAlert");
+			timer.scheduleAtFixedRate(runOnce, 0, interval * 60 * 1000);
+		} catch (IllegalStateException e) {
 		}
 
-		if (pertinentAlerts == null) {
-			pertinentAlerts = new HashMap<String, CAPStructure>();
+		// Register with the Location Manager to receive location updates
+		locationListener = new LocListener();
+
+		return Service.START_STICKY;
+	}
+
+	public void onStop() {
+		logger.trace("In onStop.");
+
+		running = 0;
+		timer.cancel();
+
+		// Un-register the listener to stop receiving location updates
+		locationListener.unregister();
+		logger.debug("De-registered location listener.");
+
+		Toast.makeText(mCtx, "Service stopped...", Toast.LENGTH_LONG).show();
+	}
+
+	public void onDestroy() {
+		logger.trace("In onDestroy.");
+
+		running = 0;
+		enabled = false;
+		if (timer != null)
+			timer.cancel();
+		
+		countyDB.close();
+		capDB.close();
+
+		// Cancel the persistent notification.
+		mNM.cancel(R.string.app_name);
+
+		// Tell the user we stopped.
+		Toast.makeText(this, "NWSAlert service stopped", Toast.LENGTH_SHORT)
+				.show();
+
+		logger.trace("Calling super.onDestroy.");
+		super.onDestroy();
+	}
+
+	private TimerTask runOnce = new TimerTask() {
+		public void run() {
+			logger.trace("In TimerTask run.");
+			doCheck();
 		}
+	};
+
+	public void stopService() {
+		logger.trace("In stopservice.");
+		running--;
+		if (running == 0) {
+			enabled = false;
+			if (timer != null) {
+				timer.cancel();
+			}
+			stopSelf();
+		}
+	}
+
+	public double getLat() {
+		logger.trace("In getLat.");
+
+		try {
+			return loc.x;
+		} catch (NullPointerException e) {
+			return 0.0;
+		}
+	}
+
+	public double getLon() {
+		logger.trace("In getLon.");
+
+		try {
+			return loc.y;
+		} catch (NullPointerException e) {
+			return 0.0;
+		}
+	}
+
+	public void locationChanged(Point2D.Double tmpLoc) {
+		loc = new Point2D.Double(tmpLoc.x, tmpLoc.y);
+		doCheck();
+	}
+
+	public static long getLastUpdate() {
+		return lastUpdate;
 	}
 
 	/**
@@ -356,27 +276,15 @@ public class NWSAlert extends Service implements Runnable {
 	private void doCheck() {
 		logger.trace("In doCheck.");
 
-		List<String> providers = locationManager.getProviders(false);
-		logger.trace("Providers: " + providers);
-		for (String provider : providers) {
-			Location location = locationManager.getLastKnownLocation(provider);
-			try {
-				loc = new Point2D.Double(location.getLatitude(), location
-						.getLongitude());
-				logger.trace("Back from getLat/Lon.");
-			} catch (NullPointerException e) {
-				// TODO: Do something more appropriate...
-				logger.debug("getLastKnownLocation " + provider
-						+ " threw NPE. Trying another.");
-			}
-		}
-		if (loc == null)
+		if (loc == null) {
+			logger.debug("doCheck: loc is null, returning.");
 			return;
+		}
 
 		logger.debug("Location: " + loc.x + " / " + loc.y);
 		Vector<String> fipsCodes = null;
 		try {
-			fipsCodes = getFIPSCoverage(loc);
+			fipsCodes = retriever.getFIPSCoverage(loc);
 		} catch (SQLiteException e) {
 			return;
 		} catch (NullPointerException e) {
@@ -409,22 +317,35 @@ public class NWSAlert extends Service implements Runnable {
 		int minSeverity = severity.get(properties.getMinSeverity());
 		int minUrgency = urgency.get(properties.getMinUrgency());
 		for (CAPStructure alertEntry : allAlerts) {
+
 			// Skip further processing if the alert's characteristics are less
 			// than thresholds.
-			if (certainty.get(alertEntry.getCertainty()) < minCertainty) {
-				logger.info("Alert certainty under minimum: "
-						+ alertEntry.getCertainty());
-				continue;
+			try {
+				if (certainty.get(alertEntry.getCertainty()) < minCertainty) {
+					logger.info("Alert certainty under minimum: "
+							+ alertEntry.getCertainty());
+					continue;
+				}
+			} catch (NullPointerException e) {
+				logger.info("Skipping certainty check, NULL");
 			}
-			if (severity.get(alertEntry.getSeverity()) < minSeverity) {
-				logger.info("Alert severity under minimum: "
-						+ alertEntry.getSeverity());
-				continue;
+			try {
+				if (severity.get(alertEntry.getSeverity()) < minSeverity) {
+					logger.info("Alert severity under minimum: "
+							+ alertEntry.getSeverity());
+					continue;
+				}
+			} catch (NullPointerException e) {
+				logger.info("Skipping severity check, NULL");
 			}
-			if (urgency.get(alertEntry.getUrgency()) < minUrgency) {
-				logger.info("Alert urgency under minimum: "
-						+ alertEntry.getUrgency());
-				continue;
+			try {
+				if (urgency.get(alertEntry.getUrgency()) < minUrgency) {
+					logger.info("Alert urgency under minimum: "
+							+ alertEntry.getUrgency());
+					continue;
+				}
+			} catch (NullPointerException e) {
+				logger.info("Skipping urgency check, NULL");
 			}
 
 			for (String fipsCode : fipsCodes) {
@@ -433,168 +354,189 @@ public class NWSAlert extends Service implements Runnable {
 					logger.trace("Executing fillCapDetail for: "
 							+ alertEntry.getNWSID());
 					// Retrieve details if the event is null or the status is
-					// Update
+					// Update.
 					if (alertEntry.getEvent() == null
 							|| alertEntry.getStatus().compareToIgnoreCase(
 									"Update") == 0)
 						alertParser.fillCapDetail(alertEntry);
 
-					processAlert(alertEntry);
+					retriever.processAlert(alertEntry);
 					// Don't re-process alert for another FIPS code.
-					continue;
+					break;
 				}
 			}
 		}
 
-		processExpired();
+		retriever.processExpired();
 		lastUpdate = System.currentTimeMillis();
 		logger.debug("Set lastUpdate to: " + lastUpdate);
 		logger.debug(new Date(lastUpdate).toString());
 		logger.debug("Firing UPDATE_AVAILABLE event.");
-		events[Events.UPDATE_AVAILABLE.ordinal()]
-				.fireEvent(new EventItem(this));
-	}
 
-	/**
-	 * Process the alert to see if it is still effective, place it into the
-	 * database, displays a notification and sounds an alert..
-	 * 
-	 * @param alertEntry
-	 */
-	private void processAlert(CAPStructure alertEntry) {
-		Vector<String> polygons = alertEntry.getPolygon();
-		boolean isUpdate = false;
-		if (GeometryChecks.checkPolygon(loc, polygons)) {
-			try {
-				String status = alertEntry.getStatus();
-				if (status.compareToIgnoreCase("Cancel") == 0) {
-					removeAlert(alertEntry);
-					return;
-				}
-				if (status.compareToIgnoreCase("Update") == 0)
-					isUpdate = true;
-			} catch (NullPointerException e) {
-				logger.debug("processAlert: " + e.toString());
-			}
-			if (!pertinentAlerts.containsKey(alertEntry.getNWSID()) || isUpdate) {
-				Calendar effective = alertEntry.getEffective();
-				Calendar expires = alertEntry.getExpires();
-				Calendar now = GregorianCalendar.getInstance();
-				now.setTimeInMillis(System.currentTimeMillis());
-				// logger.debug("Now      : " + new
-				// Date(now.getTimeInMillis()).toString()));
-				logger.debug("Effective: "
-						+ new Date(effective.getTimeInMillis()).toString());
-				logger.debug("Expires  : "
-						+ new Date(expires.getTimeInMillis()).toString());
-				logger.debug("Now/Eff  : " + now.compareTo(effective));
-				logger.debug("Now/Exp  : " + now.compareTo(expires));
-				// If now is equal to or after effective & before expires...
-				if (now.compareTo(effective) >= 0
-						&& now.compareTo(expires) >= 0) {
-					pertinentAlerts.put(alertEntry.getNWSID(), alertEntry);
-					logger.debug("Alert is effective, adding to database");
-
-					makeAlarm();
-					showNotification(alertEntry);
-					storeAlert(alertEntry);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Store a CAP alert into the database.
-	 * 
-	 * @param alertEntry
-	 */
-	private void storeAlert(CAPStructure alertEntry) {
-		byte[] bOut = CAPStructure.serializeCAP(alertEntry);
-		if (capDB == null)
-			capDB.open();
-		capDB.putCAPSerialized(bOut, alertEntry.getNWSID());
-		logger.debug("Wrote object to database.");
-	}
-
-	/**
-	 * Delete a CAP alert from the database.
-	 * 
-	 * @param alertEntry
-	 */
-	private void removeAlert(CAPStructure alertEntry) {
-		if (capDB == null)
-			capDB.open();
-		capDB.deleteCAP(alertEntry.getNWSID());
-		logger.debug("Deleted object in database.");
-	}
-
-	/**
-	 * Process expired CAP entries in the database.
-	 * 
-	 * @param alertEntry
-	 */
-	private void processExpired() {
-		Calendar now = GregorianCalendar.getInstance();
-		now.setTimeInMillis(System.currentTimeMillis());
-		if (capDB == null)
-			capDB.open();
-		String[] nwsids = capDB.getNWSIDs();
+		Message upd = Message.obtain(null, MSG_UPDATE_AVAILABLE);
 		try {
-			for (int idx = 0; idx < nwsids.length; idx++) {
-				byte[] bSer = capDB.getCAPSerialized(capDB
-						.getCAPIndexForID(nwsids[idx]));
-				CAPStructure temp = CAPStructure.deserializeCAP(bSer);
-				Calendar expiration = temp.getExpires();
-				// If now is equal to or after effective...
-				if (now.compareTo(expiration) >= 0) {
-					logger.debug("Removing " + nwsids[idx] + " from alerts.");
-					capDB.deleteCAP(nwsids[idx]);
-				}
-				capDB.vacuum();
+			mMessenger.send(upd);
+		} catch (RemoteException e) {
+			// Probably because no clients are registered.
+		}
+	}
+
+	private class LocListener implements LocationListener {
+		private final Logger logger = Logger.getLogger("NWSAlert:LocListener");
+		private LocationManager locationManager;
+		private Point2D.Double loc;
+		private int interval = 10;
+
+		public LocListener() {
+			logger.trace("In constructor");
+			interval = properties.getUpdateInterval();
+
+			if (locationManager == null) {
+				logger.trace("Copying location manager.");
+				locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
+				logger.debug("Location providers: "
+						+ locationManager.getAllProviders());
+
+				Criteria criteria = new Criteria();
+				criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+				criteria.setPowerRequirement(Criteria.POWER_LOW);
+				criteria.setAltitudeRequired(false);
+				criteria.setBearingRequired(false);
+				criteria.setSpeedRequired(false);
+				criteria.setCostAllowed(true);
+				String bestProvider = locationManager.getBestProvider(criteria,
+						true);
+				logger.debug("Best provider: " + bestProvider);
+				locationManager.requestLocationUpdates(bestProvider,
+						interval * 60 * 1000, 1000, this);
+				logger.debug("Registered locationListener.");
 			}
-		} catch (NullPointerException e) {
-			logger.debug("process expired: " + e.toString());
+
+			Toast.makeText(mCtx, "Location listener registered...",
+					Toast.LENGTH_LONG).show();
+		}
+
+		@Override
+		public void onLocationChanged(Location location) {
+			logger.trace("In onLocationChanged");
+			// Called when a new location is found by the location provider.
+			Point2D.Double tempLoc = new Point2D.Double(location.getLatitude(),
+					location.getLongitude());
+			if (loc != null && (tempLoc.x != loc.x || tempLoc.y != loc.y)) {
+				loc.setLocation(tempLoc.x, tempLoc.y);
+				logger.debug("Location update: " + loc.x + ", " + loc.y);
+				locationChanged(loc);
+			}
+			if (loc == null) {
+				loc = new Point2D.Double(tempLoc.x, tempLoc.y);
+				logger.debug("Location update: " + loc.x + ", " + loc.y);
+				locationChanged(loc);
+			}
+		}
+
+		@Override
+		public void onStatusChanged(String provider, int status, Bundle extras) {
+		}
+
+		@Override
+		public void onProviderEnabled(String provider) {
+		}
+
+		@Override
+		public void onProviderDisabled(String provider) {
+		}
+
+		public void unregister() {
+			logger.trace("In unRegister");
+			locationManager.removeUpdates(this);
+			Toast.makeText(mCtx, "Stopped listener...", Toast.LENGTH_LONG)
+					.show();
 		}
 	}
 
 	/**
-	 * Plays the alert tone.
+	 * Handler of incoming messages from clients.
 	 */
-	private void makeAlarm() {
-		logger.trace("In makeAlarm.");
-		String tone = properties.getAudioAlert();
-		if (tone != null && tone.length() > 0) {
-			Uri ringUri = Uri.parse(tone);
-			Ringtone ring = RingtoneManager.getRingtone(mCtx, ringUri);
-			if (!ring.isPlaying())
-				ring.play();
-		} else
-			logger.debug("Alert tone empty/null.");
+	class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_REGISTER_CLIENT:
+				logger.debug("Handling Register client");
+				mClients.add(msg.replyTo);
+				break;
+			case MSG_UNREGISTER_CLIENT:
+				logger.debug("Handling Unregister client");
+				mClients.remove(msg.replyTo);
+				break;
+			case MSG_UPDATE_AVAILABLE:
+				logger.debug("Handling Update Available");
+				for (int i = mClients.size() - 1; i >= 0; i--) {
+					try {
+						Message mesg = Message.obtain(null,
+								MSG_UPDATE_AVAILABLE);
+						Bundle data = new Bundle();
+						data.putDouble("lat", loc.x);
+						data.putDouble("lon", loc.y);
+						mesg.setData(data);
+						mClients.get(i).send(mesg);
+					} catch (RemoteException e) {
+						// The client is dead. Remove it from the list;
+						// we are going through the list from back to front
+						// so this is safe to do inside the loop.
+						mClients.remove(i);
+					}
+				}
+				break;
+			case MSG_STOP_SERVICE:
+				logger.debug("Handling Stop Service");
+				stopService();
+				break;
+			default:
+				super.handleMessage(msg);
+			}
+		}
 	}
 
 	/**
-	 * Display a notification.
-	 * 
-	 * @param alert
+	 * Target we publish for clients to send messages to IncomingHandler.
 	 */
-	private void showNotification(CAPStructure alert) {
-		logger.trace("In showNotification.");
-		// int APP_ID = 0;
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
 
-		logger.trace("Creating new intent.");
-		Intent intent = new Intent(mCtx, NWSAlertUI.class);
+	/**
+	 * When binding to the service, we return an interface to our messenger for
+	 * sending messages to the service.
+	 */
+	@Override
+	public IBinder onBind(Intent intent) {
+		return mMessenger.getBinder();
+	}
 
-		logger.trace("Creating new notification.");
-		Notification notification = new Notification(
-				R.drawable.ic_notify_alert, "Weather Alert!", alert
-						.getEffective().getTimeInMillis());
+	/**
+	 * Show a notification while this service is running.
+	 */
+	private void showNotification() {
+		// In this sample, we'll use the same text for the ticker and the
+		// expanded notification
+		CharSequence text = getText(R.string.app_name);
 
-		logger.trace("Setting latest event information.");
-		notification.setLatestEventInfo(mCtx, "NWSAlerts", alert.getTitle(),
-				PendingIntent.getActivity(mCtx, alert.hashCode(), intent,
-						PendingIntent.FLAG_CANCEL_CURRENT));
+		// Set the icon, scrolling text and timestamp
+		Notification notification = new Notification(R.drawable.icon_small,
+				text, System.currentTimeMillis());
 
-		logger.trace("Notifying the notification manager.");
-		mNotificationManager.notify(alert.hashCode(), notification);
+		// The PendingIntent to launch our activity if the user selects this
+		// notification
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
+				new Intent(this, NWSAlertUI.class), 0);
+
+		// Set the info for the views that show in the notification panel.
+		notification.setLatestEventInfo(this, getText(R.string.app_name), text,
+				contentIntent);
+
+		// Send the notification.
+		// We use a string id because it is a unique number. We use it later to
+		// cancel.
+		mNM.notify(R.string.app_name, notification);
 	}
 }

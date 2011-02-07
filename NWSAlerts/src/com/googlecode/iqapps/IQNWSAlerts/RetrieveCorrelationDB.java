@@ -106,11 +106,13 @@ public class RetrieveCorrelationDB {
 			logger.debug("Writing database to " + dbFile);
 			SDUtils.writeToSD(dbFile,
 					CorrelationDbAdapter.externalSubdirectory, response);
+			// Maybe this'll make it easier to keep it around...
+			// SDUtils.makeReadOnly(dbFile);
 		} else {
 			logger.debug("Invalid response from request.");
 			if (response == null)
 				logger.debug("Response is null.");
-			else if (response.length < 11){
+			else if (response.length < 11) {
 				logger.debug("Response is 10 bytes or smaller ("
 						+ response.length + " byte(s)).");
 			}

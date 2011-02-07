@@ -3,6 +3,10 @@
 	<string name="app_name">IQNWSAlerts</string>
 	<string name="menu_prefs">Settings</string>
 	<string name="menu_about">About</string>
+	<string name="remote.service.connected">NWSAlert Service Connected</string>
+	<string name="remote.service.disconnected">NWSAlert Service Disconnected</string>
+	<string name="remote.service.binding">NWSAlert Service Bound</string>
+	<string name="remote.service.unbinding">NWSAlert Service Unbound</string>
 
 	<string name="about_summary">This application came to me one day following a
 		Skywarn briefing by a local NWS meteorologist. Some NWS offices
@@ -40,5 +44,134 @@
 		<item>Future</item>
 		<item>Expected</item>
 		<item>Immediate</item>
+	</string-array>
+
+	<string name="event_desc">Alert type</string>
+	<string-array name="warnings">
+		<item>911 Telephone Outage</item>
+		<item>Ashfall Warning</item>
+		<item>Avalanche Warning</item>
+		<item>Blizzard Warning</item>
+		<item>Child Abduction Emergency</item>
+		<item>Civil Danger Warning</item>
+		<item>Civil Emergency Message</item>
+		<item>Coastal Flood Warning</item>
+		<item>Dust Storm Warning</item>
+		<item>Earthquake Warning</item>
+		<item>Evacuation Immediate</item>
+		<item>Excessive Heat Warning</item>
+		<item>Extreme Cold Warning</item>
+		<item>Extreme Fire Danger</item>
+		<item>Extreme Wind Warning</item>
+		<item>Fire Warning</item>
+		<item>Flash Flood Warning</item>
+		<item>Flood Warning</item>
+		<item>Freeze Warning</item>
+		<item>Gale Warning</item>
+		<item>Hard Freeze Warning</item>
+		<item>Hazardous Materials Warning</item>
+		<item>Hazardous Seas Warning</item>
+		<item>Heavy Freezing Spray Warning</item>
+		<item>Heavy Snow Warning</item>
+		<item>High Surf Warning</item>
+		<item>High Wind Warning</item>
+		<item>Hurricane Force Wind Warning</item>
+		<item>Hurricane Warning</item>
+		<item>Hurricane Wind Warning</item>
+		<item>Ice Storm Warning</item>
+		<item>Lake Effect Snow Warning</item>
+		<item>Lakeshore Flood Warning</item>
+		<item>Law Enforcement Warning</item>
+		<item>Nuclear Power Plant Warning</item>
+		<item>Radiological Hazard Warning</item>
+		<item>Red Flag Warning</item>
+		<item>Severe Thunderstorm Warning</item>
+		<item>Shelter In Place Warning</item>
+		<item>Sleet Warning</item>
+		<item>Special Marine Warning</item>
+		<item>Storm Warning</item>
+		<item>Tornado Warning</item>
+		<item>Tropical Storm Warning</item>
+		<item>Tropical Storm Wind Warning</item>
+		<item>Tsunami Warning</item>
+		<item>Typhoon Warning</item>
+		<item>Volcano Warning</item>
+		<item>Wind Chill Warning</item>
+		<item>Winter Storm Warning</item>
+	</string-array>
+	<string-array name="watches">
+		<item>Air Quality Alert</item>
+		<item>Avalanche Watch</item>
+		<item>Blizzard Watch</item>
+		<item>Coastal Flood Watch</item>
+		<item>Excessive Heat Watch</item>
+		<item>Extreme Cold Watch</item>
+		<item>Fire Weather Watch</item>
+		<item>Flash Flood Watch</item>
+		<item>Flood Watch</item>
+		<item>Freeze Watch</item>
+		<item>Gale Watch</item>
+		<item>Hard Freeze Watch</item>
+		<item>Hazardous Seas Watch</item>
+		<item>Heavy Freezing Spray Watch</item>
+		<item>High Wind Watch</item>
+		<item>Hurricane Force Wind Watch</item>
+		<item>Hurricane Watch</item>
+		<item>Hurricane Wind Watch</item>
+		<item>Lake Effect Snow Watch</item>
+		<item>Lakeshore Flood Watch</item>
+		<item>Local Area Emergency</item>
+		<item>Severe Thunderstorm Watch</item>
+		<item>Storm Watch</item>
+		<item>Tornado Watch</item>
+		<item>Tropical Storm Watch</item>
+		<item>Tropical Storm Wind Watch</item>
+		<item>Tsunami Watch</item>
+		<item>Typhoon Watch</item>
+		<item>Wind Chill Watch</item>
+		<item>Winter Storm Watch</item>
+	</string-array>
+	<string-array name="advisories">
+		<item>Air Stagnation Advisory</item>
+		<item>Ashfall Advisory</item>
+		<item>Blowing Dust Advisory</item>
+		<item>Blowing Snow Advisory</item>
+		<item>Brisk Wind Advisory</item>
+		<item>Coastal Flood Advisory</item>
+		<item>Dense Fog Advisory</item>
+		<item>Dense Smoke Advisory</item>
+		<item>Flood Advisory</item>
+		<item>Freezing Drizzle Advisory</item>
+		<item>Freezing Fog Advisory</item>
+		<item>Freezing Rain Advisory</item>
+		<item>Freezing Spray Advisory</item>
+		<item>Frost Advisory</item>
+		<item>Heat Advisory</item>
+		<item>High Surf Advisory</item>
+		<item>Hydrologic Advisory</item>
+		<item>Lake Effect Snow Advisory</item>
+		<item>Lake Effect Snow and Blowing Snow Advisory</item>
+		<item>Lake Wind Advisory</item>
+		<item>Lakeshore Flood Advisory</item>
+		<item>Low Water Advisory</item>
+		<item>Sleet Advisory</item>
+		<item>Small Craft Advisory</item>
+		<item>Snow Advisory</item>
+		<item>Snow and Blowing Snow Advisory</item>
+		<item>Tsunami Advisory</item>
+		<item>Wind Advisory</item>
+		<item>Wind Chill Advisory</item>
+		<item>Winter Weather Advisory</item>
+	</string-array>
+	<string-array name="statements">
+		<item>Coastal Flood Statement</item>
+		<item>Flash Flood Statement</item>
+		<item>Flood Statement</item>
+		<item>Hurricane Statement</item>
+		<item>Lakeshore Flood Statement</item>
+		<item>Marine Weather Statement</item>
+		<item>Severe Weather Statement</item>
+		<item>Special Weather Statement</item>
+		<item>Typhoon Statement</item>
 	</string-array>
 </resources>

@@ -34,6 +34,10 @@ public class CtyCorrelationDB {
 		dbHandle.open();
 	}
 
+	public void close() {
+		dbHandle.close();
+	}
+
 	public Vector<String> getFIPS(BoundingBox bbox) {
 		Vector<String> fips = dbHandle.getFIPSCodes(bbox);
 

@@ -245,7 +245,7 @@ public class BoundingBox {
 	 * Calculate the distance between the two points of the bounding box using
 	 * the haversine formula.
 	 * 
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public double distanceH() {
 		return distanceH(x1, y1, x2, y2);
@@ -255,7 +255,7 @@ public class BoundingBox {
 	 * Calculate the distance between two points using the haversine formula.
 	 * 
 	 * @param boundingBox
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public static double distanceH(BoundingBox x) {
 		return distanceH(x.x1(), x.y1(), x.x2(), x.y2());
@@ -266,7 +266,7 @@ public class BoundingBox {
 	 * 
 	 * @param location1
 	 * @param location2
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public static double distanceH(Point2D.Double location1,
 			Point2D.Double location2) {
@@ -280,7 +280,7 @@ public class BoundingBox {
 	 * @param lon1
 	 * @param lat2
 	 * @param lon2
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public static double distanceH(double lat1, double lon1, double lat2,
 			double lon2) {
@@ -300,7 +300,7 @@ public class BoundingBox {
 	 * Calculate the distance between two points of the bounding box using the
 	 * spherical law of cosines formula.
 	 * 
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public double distanceC() {
 		return distanceC(x1, y1, x2, y2);
@@ -312,7 +312,7 @@ public class BoundingBox {
 	 * 
 	 * @param location1
 	 * @param location2
-	 * @return
+	 * @return Distance between two points along the Earth.
 	 */
 	public static double distanceC(Point2D.Double location1,
 			Point2D.Double location2) {
@@ -323,11 +323,11 @@ public class BoundingBox {
 	 * Calculate the distance between two points using the spherical law of
 	 * cosines formula.
 	 * 
-	 * @param lat1
-	 * @param lon1
-	 * @param lat2
-	 * @param lon2
-	 * @return
+	 * @param lat1 Latitude of point one
+	 * @param lon1 Longitude of point one
+	 * @param lat2 Latitude of point two
+	 * @param lon2 Longitude of point two
+	 * @return Distance between two points along the Earth.
 	 */
 	public static double distanceC(double lat1, double lon1, double lat2,
 			double lon2) {

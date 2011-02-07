@@ -20,12 +20,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.io.StreamCorruptedException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Vector;
 
-public class CAPStructure {
+public class CAPStructure implements Serializable{
+	private static final long serialVersionUID = -7717934903833258453L;
 	private static Logger logger = Logger.getLogger("CAPStructure");
 	private String URL, NWSID;
 	private Vector<String> fips, polygon;
@@ -398,6 +400,8 @@ public class CAPStructure {
 		} catch (IOException e) {
 			logger.debug(e.toString());
 		} catch (ClassNotFoundException e) {
+			logger.debug(e.toString());
+		} catch (NullPointerException e) {
 			logger.debug(e.toString());
 		}
 		return temp;

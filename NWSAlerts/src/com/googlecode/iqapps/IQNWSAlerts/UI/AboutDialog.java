@@ -23,7 +23,12 @@
  * @see         
  * @deprecated  (see How and When To Deprecate APIs)
  */
-package com.googlecode.iqapps.IQNWSAlerts;
+package com.googlecode.iqapps.IQNWSAlerts.UI;
+
+import com.googlecode.iqapps.IQNWSAlerts.R;
+import com.googlecode.iqapps.IQNWSAlerts.R.id;
+import com.googlecode.iqapps.IQNWSAlerts.R.layout;
+import com.googlecode.iqapps.IQNWSAlerts.R.string;
 
 import android.app.Activity;
 import android.os.Bundle;

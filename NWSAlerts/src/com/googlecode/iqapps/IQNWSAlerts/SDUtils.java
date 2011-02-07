@@ -40,7 +40,6 @@ public class SDUtils {
 	public static boolean writeToSD(String outputFileName, String packageName,
 			byte[] data) {
 		// FIXME: Make this a separate thread.
-		// FIXME: Get the downloaded file to have the correct content... :(
 		try {
 			File sd = Environment.getExternalStorageDirectory();
 			Log.d(TAG, "writeToSD: databaseName: " + outputFileName);
@@ -109,5 +108,16 @@ public class SDUtils {
 			Log.e(TAG, "WriteToSD threw exception: " + e.toString());
 		}
 		return false;
+	}
+
+	/**
+	 * 
+	 * @param filename
+	 */
+	public static void makeReadOnly(String filename) {
+		File file = new File(filename);
+		if (!file.exists())
+			return;
+		file.setReadOnly();
 	}
 }

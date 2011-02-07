@@ -22,8 +22,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import com.googlecode.iqapps.Logger;
@@ -37,7 +37,7 @@ import com.googlecode.iqapps.Logger;
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class GeneralDbAdapter {
-	private final static Logger logger = Logger.getLogger("GeneralDbAdapter");
+	private static final Logger logger = Logger.getLogger("GeneralDbAdapter");
 	public static final String KEY_VERSION = "version";
 	public static final String KEY_ROWID = "_id";
 	public static final String DB_FALSE = "0";
@@ -278,7 +278,13 @@ public class GeneralDbAdapter {
 			return null;
 		}
 
-		return (String[]) temp.toArray();
+		String[] retString = new String[temp.size()];
+		int i = 0;
+		for (String string : temp) {
+			retString[i] = new String(string);
+			i++;
+		}
+		return retString;
 	}
 
 	/**
