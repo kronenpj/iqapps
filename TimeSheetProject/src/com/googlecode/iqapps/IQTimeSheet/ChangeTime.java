@@ -16,8 +16,6 @@
 
 package com.googlecode.iqapps.IQTimeSheet;
 
-import com.googlecode.iqapps.TimeHelpers;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -25,12 +23,14 @@ import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
-import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.googlecode.iqapps.TimeHelpers;
+import com.googlecode.iqapps.TimePicker;
 
 /**
  * Activity that provides an interface to change the time of an entry.
- *
+ * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeTime extends Activity {
@@ -56,6 +56,10 @@ public class ChangeTime extends Activity {
 			timeChange.setIs24HourView(true);
 			timeChange.setCurrentHour(TimeHelpers.millisToHour(timeMillis));
 			timeChange.setCurrentMinute(TimeHelpers.millisToMinute(timeMillis));
+
+			if (TimeSheetActivity.prefs.getAlignTimePicker())
+				timeChange.setInterval(TimeSheetActivity.prefs
+						.getAlignMinutes());
 		}
 
 		Button[] child = new Button[] { (Button) findViewById(R.id.changeok),
@@ -78,8 +82,8 @@ public class ChangeTime extends Activity {
 	 */
 	private OnClickListener mButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-			long newTime = TimeHelpers.millisSetTime(timeMillis, timeChange
-					.getCurrentHour(), timeChange.getCurrentMinute());
+			long newTime = TimeHelpers.millisSetTime(timeMillis,
+					timeChange.getCurrentHour(), timeChange.getCurrentMinute());
 
 			Log.d(TAG, "onClickListener view id: " + v.getId());
 			Log.d(TAG, "onClickListener defaulttask id: " + R.id.defaulttask);
@@ -90,8 +94,8 @@ public class ChangeTime extends Activity {
 				finish();
 				break;
 			case R.id.changeok:
-				setResult(RESULT_OK, new Intent().setAction(Long
-						.toString(newTime)));
+				setResult(RESULT_OK,
+						new Intent().setAction(Long.toString(newTime)));
 				finish();
 				break;
 			}

@@ -43,4 +43,5 @@
 		<a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a>
 		and is released under the Apache license.
 	</string>
+<string name="timepicker_align_summary">Whether adjusting minutes in the time picker dialog should behave as usual, or step by align minutes steps at a time.</string>
 </resources>

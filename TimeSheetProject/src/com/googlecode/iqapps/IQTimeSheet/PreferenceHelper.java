@@ -41,6 +41,7 @@ public class PreferenceHelper {
 
 	public static final String KEY_ALIGN_MINUTES = "align.minutes";
 	public static final String KEY_ALIGN_MINUTES_AUTO = "align.minutes.auto";
+	public static final String KEY_ALIGN_TIME_PICKER = "align.time.picker";
 	public static final String KEY_HOURS_DAY = "hours.day";
 	public static final String KEY_HOURS_WEEK = "hours.week";
 	public static final String KEY_SDCARD_BACKUP = "db.on.sdcard";
@@ -77,6 +78,19 @@ public class PreferenceHelper {
 		Log.d(TAG, "Preference " + KEY_ALIGN_MINUTES_AUTO + ": "
 				+ alignMinutesAuto);
 		return alignMinutesAuto;
+	}
+
+	public boolean getAlignTimePicker() {
+		boolean alignTimePicker = true;
+		try {
+			alignTimePicker = prefs.getBoolean(KEY_ALIGN_TIME_PICKER, true);
+		} catch (Exception e) {
+			Log.e(TAG, KEY_ALIGN_TIME_PICKER + " threw exception: "
+					+ e.toString());
+		}
+		Log.d(TAG, "Preference " + KEY_ALIGN_TIME_PICKER + ": "
+				+ alignTimePicker);
+		return alignTimePicker;
 	}
 
 	public float getHoursPerDay() {

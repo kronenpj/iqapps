@@ -34,7 +34,7 @@ import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity to provide an interface to change an entry.
- *
+ * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeEntryHandler extends Activity {
@@ -43,7 +43,7 @@ public class ChangeEntryHandler extends Activity {
 	private static final int CHANGETIMEIN_CODE = 0x02;
 	private static final int CHANGETIMEOUT_CODE = 0x03;
 	private static final int CHANGEDATE_CODE = 0x04;
-	private static final int CONFIRM_DIALOG = 0x10;
+	private static final int CONFIRM_DELETE_DIALOG = 0x10;
 	private Cursor entryCursor;
 	private Button child[];
 	private TimeSheetDbAdapter db;
@@ -92,9 +92,11 @@ public class ChangeEntryHandler extends Activity {
 	/** Called when the activity is first created to create a dialog. */
 	@Override
 	protected Dialog onCreateDialog(int dialogId) {
+		Dialog dialog = null;
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setMessage("Are you sure you want to delete this entry?")
-				.setCancelable(true).setPositiveButton("Yes",
+				.setCancelable(true)
+				.setPositiveButton("Yes",
 						new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int id) {
 								Intent intent = new Intent();
@@ -104,14 +106,14 @@ public class ChangeEntryHandler extends Activity {
 								setResult(RESULT_OK, intent);
 								ChangeEntryHandler.this.finish();
 							}
-						}).setNegativeButton("No",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								dialog.cancel();
-							}
-						});
-		AlertDialog alert = builder.create();
-		return alert;
+						})
+				.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int id) {
+						dialog.cancel();
+					}
+				});
+		dialog = builder.create();
+		return dialog;
 	}
 
 	protected void showChangeLayout() {
@@ -127,8 +129,7 @@ public class ChangeEntryHandler extends Activity {
 				(Button) findViewById(R.id.changecancel),
 				(Button) findViewById(R.id.changedelete),
 				(Button) findViewById(R.id.changealign),
-				(Button) findViewById(R.id.changeadjacent)
-				};
+				(Button) findViewById(R.id.changeadjacent) };
 
 		for (int count = 0; count < child.length; count++) {
 			try {
@@ -297,7 +298,7 @@ public class ChangeEntryHandler extends Activity {
 				finish();
 				break;
 			case R.id.changedelete:
-				showDialog(CONFIRM_DIALOG);
+				showDialog(CONFIRM_DELETE_DIALOG);
 				break;
 			}
 		}
@@ -306,7 +307,7 @@ public class ChangeEntryHandler extends Activity {
 	/**
 	 * This method is called when the sending activity has finished, with the
 	 * result it supplied.
-	 *
+	 * 
 	 * @param requestCode
 	 *            The original request code as given to startActivity().
 	 * @param resultCode
@@ -353,12 +354,12 @@ public class ChangeEntryHandler extends Activity {
 				if (data != null) {
 					Log.d(TAG, "onActivityResult action: " + data.getAction());
 					newDate = Long.valueOf(data.getAction());
-					newTimeIn = TimeHelpers.millisSetTime(newDate, TimeHelpers
-							.millisToHour(newTimeIn), TimeHelpers
-							.millisToMinute(newTimeIn));
-					newTimeOut = TimeHelpers.millisSetTime(newDate, TimeHelpers
-							.millisToHour(newTimeOut), TimeHelpers
-							.millisToMinute(newTimeOut));
+					newTimeIn = TimeHelpers.millisSetTime(newDate,
+							TimeHelpers.millisToHour(newTimeIn),
+							TimeHelpers.millisToMinute(newTimeIn));
+					newTimeOut = TimeHelpers.millisSetTime(newDate,
+							TimeHelpers.millisToHour(newTimeOut),
+							TimeHelpers.millisToMinute(newTimeOut));
 					fillData();
 				}
 			}

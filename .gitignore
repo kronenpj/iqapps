@@ -1,0 +1,10 @@
+bin
+build
+gen
+local.properties
+TimeSheetDB.db
+*.apk
+.settings
+support
+build.xml.orig
+build.xml.old
