@@ -56,8 +56,10 @@ public class TimeSheetActivity extends ListActivity {
 	private Cursor taskCursor;
 	private Cursor reportCursor;
 	private String applicationName;
+	private String myPackage;
 	private static final String TAG = "TimeSheetActivity";
 	private static final int CROSS_DIALOG = 0x40;
+	private static final int CONFIRM_RESTORE_DIALOG = 0x41;
 
 	/**
 	 * Called when the activity is first created.
@@ -71,6 +73,7 @@ public class TimeSheetActivity extends ListActivity {
 		Log.d(TAG, "onCreate.");
 
 		prefs = new PreferenceHelper(this);
+		myPackage = new String(this.getPackageName());
 
 		try {
 			tasksList = (ListView) findViewById(android.R.id.list);
@@ -211,9 +214,8 @@ public class TimeSheetActivity extends ListActivity {
 			db.open();
 		} catch (SQLException e) {
 			Log.e(TAG, e.toString());
-			Toast
-					.makeText(this, e.toString() + " - Exiting",
-							Toast.LENGTH_LONG).show();
+			Toast.makeText(this, e.toString() + " - Exiting", Toast.LENGTH_LONG)
+					.show();
 			finish();
 		}
 
@@ -314,8 +316,9 @@ public class TimeSheetActivity extends ListActivity {
 				.millisToDayOfYear(lastClockIn));
 		// If the difference in days is 1, ask. If it's greater than 1, just
 		// close it.
-		Log.d(TAG, "checkCrossDayClock: now=" + now + " / "
-				+ TimeHelpers.millisToTimeDate(now));
+		Log.d(TAG,
+				"checkCrossDayClock: now=" + now + " / "
+						+ TimeHelpers.millisToTimeDate(now));
 		Log.d(TAG, "checkCrossDayClock: lastClockIn=" + lastClockIn + " / "
 				+ TimeHelpers.millisToTimeDate(lastClockIn));
 		Log.d(TAG, "checkCrossDayClock: delta=" + delta);
@@ -384,37 +387,83 @@ public class TimeSheetActivity extends ListActivity {
 	/** Called when the activity is first created to create a dialog. */
 	@Override
 	protected Dialog onCreateDialog(int dialogId) {
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(
-				"The last entry is still open from yesterday."
-						+ "  What should I do?").setCancelable(false)
-				.setPositiveButton("Close",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								long taskID = db.taskIDForLastClockEntry();
-								long now = TimeHelpers.millisNow();
-								long today = TimeHelpers
-										.millisToStartOfDay(now);
-								db.closeEntry(taskID, today);
-								// TODO: The item selected remains so, even
-								// though that task has been closed.
-								tasksList.clearChoices();
-								setSelected();
-							}
-						}).setNegativeButton("Close & Re-open",
-						new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int id) {
-								long taskID = db.taskIDForLastClockEntry();
-								long now = TimeHelpers.millisNow();
-								long today = TimeHelpers
-										.millisToStartOfDay(now);
-								db.closeEntry(taskID, today);
-								db.createEntry(taskID, today);
-								setSelected();
-							}
-						});
-		AlertDialog alert = builder.create();
-		return alert;
+		Dialog dialog = null;
+		AlertDialog.Builder builder = null;
+		switch (dialogId) {
+		case CROSS_DIALOG:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(
+					"The last entry is still open from yesterday."
+							+ "  What should I do?")
+					.setCancelable(false)
+					.setPositiveButton("Close",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									long taskID = db.taskIDForLastClockEntry();
+									long now = TimeHelpers.millisNow();
+									long today = TimeHelpers
+											.millisToStartOfDay(now)-1000;
+									db.closeEntry(taskID, today);
+									// TODO: The item selected remains so, even
+									// though that task has been closed.
+									tasksList.clearChoices();
+									setSelected();
+								}
+							})
+					.setNegativeButton("Close & Re-open",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									long taskID = db.taskIDForLastClockEntry();
+									long now = TimeHelpers.millisNow();
+									long today = TimeHelpers
+											.millisToStartOfDay(now)-1000;
+									db.closeEntry(taskID, today);
+									db.createEntry(taskID, today);
+									setSelected();
+								}
+							});
+			dialog = builder.create();
+			break;
+		case CONFIRM_RESTORE_DIALOG:
+			builder = new AlertDialog.Builder(this);
+			builder.setMessage(
+					"This will overwrite the database." + "  Proceed?")
+					.setCancelable(true)
+					.setPositiveButton("Yes",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									db.close();
+									if (!SDBackup.doSDRestore(
+											TimeSheetDbAdapter.DATABASE_NAME,
+											myPackage)) {
+										Log.w(TAG, "doSDRestore failed.");
+										Toast.makeText(TimeSheetActivity.this,
+												"Database restore failed.",
+												Toast.LENGTH_LONG);
+									} else {
+										Log.i(TAG, "doSDRestore succeeded.");
+										Toast.makeText(TimeSheetActivity.this,
+												"Database restore succeeded.",
+												Toast.LENGTH_SHORT);
+									}
+									setupDB();
+								}
+							})
+					.setNegativeButton("No",
+							new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog,
+										int id) {
+									dialog.cancel();
+								}
+							});
+			dialog = builder.create();
+			break;
+		}
+
+		return dialog;
 	}
 
 	/*
@@ -522,8 +571,8 @@ public class TimeSheetActivity extends ListActivity {
 		if (item.getItemId() == MenuItems.REVIVE_TASK.ordinal()) {
 			intent = new Intent(TimeSheetActivity.this, ReviveTaskHandler.class);
 			try {
-				startActivityForResult(intent, ActivityCodes.TASKREVIVE
-						.ordinal());
+				startActivityForResult(intent,
+						ActivityCodes.TASKREVIVE.ordinal());
 			} catch (RuntimeException e) {
 				Log.e(TAG, "RuntimeException caught in "
 						+ "onOptionsItemSelected for ReviveTaskHandler");
@@ -579,7 +628,6 @@ public class TimeSheetActivity extends ListActivity {
 		}
 		if (item.getItemId() == MenuItems.BACKUP.ordinal()) {
 			if (prefs.getSDCardBackup()) {
-				String myPackage = new String(this.getPackageName());
 				db.close();
 				if (!SDBackup.doSDBackup(TimeSheetDbAdapter.DATABASE_NAME,
 						myPackage)) {
@@ -597,19 +645,8 @@ public class TimeSheetActivity extends ListActivity {
 		}
 		if (item.getItemId() == MenuItems.RESTORE.ordinal()) {
 			if (prefs.getSDCardBackup()) {
-				String myPackage = new String(this.getPackageName());
-				db.close();
-				if (!SDBackup.doSDRestore(TimeSheetDbAdapter.DATABASE_NAME,
-						myPackage)) {
-					Log.w(TAG, "doSDRestore failed.");
-					Toast.makeText(TimeSheetActivity.this,
-							"Database restore failed.", Toast.LENGTH_LONG);
-				} else {
-					Log.i(TAG, "doSDRestore succeeded.");
-					Toast.makeText(TimeSheetActivity.this,
-							"Database restore succeeded.", Toast.LENGTH_SHORT);
-				}
-				setupDB();
+				// TODO: Need a confirmation dialog here.
+				showDialog(CONFIRM_RESTORE_DIALOG);
 			}
 			return true;
 		}

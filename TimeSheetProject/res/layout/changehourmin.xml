@@ -5,7 +5,7 @@
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	android:background="#80000000">
 
-	<TimePicker android:id="@+id/TimePicker01"
+	<com.googlecode.iqapps.TimePicker android:id="@+id/TimePicker01"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:layout_gravity="center_horizontal"
 		android:layout_centerHorizontal="true" android:layout_marginBottom="0dip" />

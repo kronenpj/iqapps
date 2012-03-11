@@ -16,6 +16,9 @@
 
 package com.googlecode.iqapps.IQTimeSheet;
 
+import java.text.SimpleDateFormat;
+import java.util.GregorianCalendar;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -24,19 +27,22 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.DatePicker;
+import android.widget.DatePicker.OnDateChangedListener;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity that provides an interface to change the date of an entry.
- *
+ * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class ChangeDate extends Activity {
 	private DatePicker dateChange;
-	private final static String TAG = "ChangeTime";
+	private final static String TAG = "ChangeDate";
 	private long timeMillis = -1;
+	private TextView dateText;
 
 	/**
 	 * Called when the activity is first created.
@@ -46,15 +52,28 @@ public class ChangeDate extends Activity {
 		super.onCreate(savedInstanceState);
 		setTitle("Choose a date");
 		setContentView(R.layout.changedate);
+		dateText = (TextView) findViewById(R.id.DateText);
 
 		Bundle extras = getIntent().getExtras();
 		timeMillis = extras.getLong("time");
 
 		dateChange = (DatePicker) findViewById(R.id.DatePicker01);
 
-		dateChange.updateDate(TimeHelpers.millisToYear(timeMillis), TimeHelpers
-				.millisToMonthOfYear(timeMillis), TimeHelpers
-				.millisToDayOfMonth(timeMillis));
+		DatePicker.OnDateChangedListener mDateChangedListener = new OnDateChangedListener() {
+			@Override
+			public void onDateChanged(DatePicker view, int year,
+					int monthOfYear, int dayOfMonth) {
+				updateDateText(year, monthOfYear, dayOfMonth);
+			}
+		};
+
+		dateChange.init(TimeHelpers.millisToYear(timeMillis),
+				TimeHelpers.millisToMonthOfYear(timeMillis),
+				TimeHelpers.millisToDayOfMonth(timeMillis),
+				mDateChangedListener);
+		updateDateText(TimeHelpers.millisToYear(timeMillis),
+				TimeHelpers.millisToMonthOfYear(timeMillis),
+				TimeHelpers.millisToDayOfMonth(timeMillis));
 
 		Button[] child = new Button[] { (Button) findViewById(R.id.changeok),
 				(Button) findViewById(R.id.changecancel) };
@@ -88,11 +107,18 @@ public class ChangeDate extends Activity {
 				finish();
 				break;
 			case R.id.changeok:
-				setResult(RESULT_OK, new Intent().setAction(Long
-						.toString(newDate)));
+				setResult(RESULT_OK,
+						new Intent().setAction(Long.toString(newDate)));
 				finish();
 				break;
 			}
 		}
 	};
+
+	private void updateDateText(int year, int monthOfYear, int dayOfMonth) {
+		GregorianCalendar date = new GregorianCalendar(year, monthOfYear,
+				dayOfMonth);
+		SimpleDateFormat simpleDate = new SimpleDateFormat("E, MMM d, yyyy");
+		dateText.setText(simpleDate.format(date.getTime()));
+	}
 }

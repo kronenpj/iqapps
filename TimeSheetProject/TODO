@@ -1,18 +1,26 @@
 High-priority items to do:
+
+Medium-priority items to do:
 * Move everything possible into preferences.
 * Increase jUnit test coverage.
 * Look for places to separate user interface code from functionality code.
-
-Medium-priority items to do:
 * Stand-alone application to edit / interpret / report on database.
 * Database scrub to find floating 0-time-out clockings.
 * Database scrub to find cross-day clockings that weren't caught.
+* Alarm when 8h/day is reached and 40h/week.
+* Properly adjust for Time Zone changes, eg: travel.
+* Use DatePickerDialog rather than a separate activity.
+* Use TimePickerDialog rather than a separate activity.
+* Year-end database purge.
+* CSV database export between dates.
 
 Low-priority items to do:
-* Extend TimePicker class to snap to 6- or 15- or X-minute intervals. Somehow.
 
 Uncategorized Items to do:
 
 Completed Items:
 * Adjust time on previous/next tasks when one is being edited to maintain 
   continuity of time worked.
+* Figure out how to get the task list to scroll to the selected item.
+* Backup / restore onto / from SD card.
+* Extend TimePicker class to snap to 6- or 15- or X-minute intervals. Somehow.
