@@ -22,7 +22,7 @@
  * @exception   (@throws is a synonym added in Javadoc 1.2)
  * @see         
  */
-package com.googlecode.iqapps.IQTimeSheet.Test;
+package com.googlecode.iqapps.IQTimeSheet;
 
 import static com.googlecode.autoandroid.positron.PositronAPI.Key.DOWN;
 import static org.junit.Assert.assertEquals;

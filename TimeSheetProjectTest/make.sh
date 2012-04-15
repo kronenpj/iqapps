@@ -1,8 +1,8 @@
 #!/bin/sh
 
 AND_SERIAL="emulator-5554"
-TARGET="android-1.1"
-AND_HOME="/opt/android-sdk-update-manager/platforms/$TARGET"
+TARGET="android-7"
+AND_HOME="/opt/android-sdk-linux_x86/platforms/$TARGET"
 
 BASE=$(/bin/ls -1 /opt | grep android | head)
 

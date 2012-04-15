@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/robotium/robotium-solo-1.0.1.jar" sourcepath="/export/home1/users/kronenpj/src/android/robotium/robotium-solo-1.0.1-sources.jar"/>
-	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/TimeSheetProjectTest/lib/junit.jar"/>
-	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/android/TimeSheetProjectTest/lib/positron.jar" sourcepath="/export/home1/users/kronenpj/src/android/positron/positron-src-1.0-rc5.jar"/>
+	<classpathentry excluding="com/googlecode/iqapps/IQTimeSheet/AAA_CreateDBPrefs.java|com/googlecode/iqapps/IQTimeSheet/AboutDialogTest.java|com/googlecode/iqapps/IQTimeSheet/CrossDayCheck.java|com/googlecode/iqapps/IQTimeSheet/DevelopingTests.java|com/googlecode/iqapps/IQTimeSheet/TimeAlignTests.java|com/googlecode/iqapps/IQTimeSheet/TimeHelpersTest.java|com/googlecode/iqapps/IQTimeSheet/TimeSheetActivityRobotium.java|com/googlecode/iqapps/IQTimeSheet/WeekReportTest.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/IQTimeSheet"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Android1.1"/>
-	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/CalendarMerge/support/commons-logging-1.1.1.jar"/>
-	<classpathentry kind="lib" path="/export/home1/users/kronenpj/src/CalendarMerge/support/log4j-1.2.15.jar"/>
-	<classpathentry kind="output" path="bin"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/IQTimeSheet"/>
+	<classpathentry kind="lib" path="/home/kronenpj/src/svn/iqapps/TimeSheetProjectTest/libs/commons-logging.jar"/>
+	<classpathentry kind="lib" path="/home/kronenpj/src/svn/iqapps/TimeSheetProjectTest/libs/robotium-solo-3.2.2-SNAPSHOT.jar" sourcepath="/home/kronenpj/src/svn/robotium/robotium-solo/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/3"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="output" path="bin/classes"/>
 </classpath>

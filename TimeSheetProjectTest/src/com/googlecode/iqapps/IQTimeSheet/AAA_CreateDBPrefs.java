@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.googlecode.iqapps.IQTimeSheet.Test;
+package com.googlecode.iqapps.IQTimeSheet;
 
 import static org.junit.Assert.assertTrue;
 

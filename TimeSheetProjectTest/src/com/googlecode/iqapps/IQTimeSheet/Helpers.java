@@ -22,12 +22,10 @@
  * @exception   (@throws is a synonym added in Javadoc 1.2)
  * @see         
  */
-package com.googlecode.iqapps.IQTimeSheet.Test;
+package com.googlecode.iqapps.IQTimeSheet;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Ignore;
-import org.junit.Test;
 
 /**
  * @author kronenpj
@@ -58,8 +56,6 @@ public class Helpers {
 	}
 
 	// Keep the test runner happy.
-	// @Ignore
-	@Test
 	public void empty() {
 	}
 }

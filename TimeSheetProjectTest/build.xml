@@ -1,178 +1,83 @@
-<?xml version="1.0" encoding="utf-8"?>
-<project name="IQTimeSheetTest" default="precommit" xmlns:android="antlib:com.googlecode.autoandroid.ant">
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="TimeSheetActivityTest" default="help">
 
-	<!-- Requires ant 1.7 or better -->
+    <!-- The local.properties file is created and updated by the 'android' tool.
+         It contains the path to the SDK. It should *NOT* be checked into
+         Version Control Systems. -->
+    <property file="local.properties" />
 
-	<taskdef uri="antlib:com.googlecode.autoandroid.ant" classpath="lib/android-ant.jar" />
+    <!-- The ant.properties file can be created by you. It is only edited by the
+         'android' tool to add properties to it.
+         This is the place to change some Ant specific build properties.
+         Here are some properties you may want to change/update:
 
-	<property name="android-home" location="/opt/android-sdk-update-manager/platforms/android-1.1" />
-	<!-- Set the detected android-home property to the sdk root. -->
-	<android:home />
+         source.dir
+             The name of the source directory. Default is 'src'.
+         out.dir
+             The name of the output directory. Default is 'bin'.
 
-	<!-- Main application source -->
-	<property name="main.loc" location="/home/kronenpj/src/android/TimeSheetProject" />
-	<!--
-	<property name="main.loc" location="." />
-	-->
-	<property name="main.source" location="${main.loc}/src" />
-	<property name="main.gen" location="${main.loc}/gen" />
-	<property name="main.res" location="${main.loc}/res" />
+         For other overridable properties, look at the beginning of the rules
+         files in the SDK, at tools/ant/build.xml
 
-	<!-- Dependencies -->
+         Properties related to the SDK location or the project target should
+         be updated using the 'android' tool with the 'update' action.
 
-	<fileset dir="lib" id="main.jars">
-		<include name="positron.jar" />
-	</fileset>
+         This file is an integral part of the build system for your
+         application and should be checked into Version Control Systems.
 
-	<fileset dir="lib" id="test.jars">
-		<include name="positron.jar" />
-		<include name="junit.jar" />
-		<include name="commons-logging-1.1.1.jar" />
-	</fileset>
+         -->
+    <property file="ant.properties" />
 
-	<!-- Rules -->
+    <!-- The project.properties file is created and updated by the 'android'
+         tool, as well as ADT.
 
-	<target name="clean" description="Delete the output directories.">
-		<delete dir="target" />
-	</target>
+         This contains project specific properties such as project target, and library
+         dependencies. Lower level build properties are stored in ant.properties
+         (or in .classpath for Eclipse projects).
 
-	<target name="resource-src" description="Generate the R.java file for this project's resources.">
-		<android:aapt>
-			<arg value="package" />
-			<arg value="-m" />
-			<arg value="-J" />
-			<arg file="${main.gen}" />
-			<!-- Create R.java in the src directory -->
-			<arg value="-M" />
-			<arg file="${main.loc}/AndroidManifest.xml" />
-			<arg value="-S" />
-			<arg file="${main.res}" />
-			<arg value="-I" />
-			<arg file="${android-home}/android.jar" />
-		</android:aapt>
-	</target>
+         This file is an integral part of the build system for your
+         application and should be checked into Version Control Systems. -->
+    <loadproperties srcFile="project.properties" />
 
-	<target name="compile-main" depends="resource-src" description="Compile the java source.">
-		<mkdir dir="target/main-classes" />
-		<javac encoding="ascii" target="1.5" debug="true" extdirs="" srcdir="${main.gen}" destdir="target/main-classes" bootclasspath="${android-home}/android.jar">
-			<classpath>
-				<fileset refid="main.jars" />
-			</classpath>
-		</javac>
-		<javac encoding="ascii" target="1.5" debug="true" extdirs="" srcdir="${main.source}" destdir="target/main-classes" bootclasspath="${android-home}/android.jar">
-			<classpath>
-				<fileset refid="main.jars" />
-			</classpath>
-		</javac>
-	</target>
+    <!-- quick check on sdk.dir -->
+    <fail
+            message="sdk.dir is missing. Make sure to generate local.properties using 'android update project' or to inject it through an env var"
+            unless="sdk.dir"
+    />
 
-	<target name="dex" depends="compile-main" description="Convert the .class files into .dex files.">
-		<property name="classes.dex" location="target/classes.dex" />
-		<android:dx inputref="main.jars">
-			<arg value="--dex" />
-			<arg value="--output=${classes.dex}" />
-			<arg path="./target/main-classes" />
-		</android:dx>
-	</target>
+    <!--
+        Import per project custom build rules if present at the root of the project.
+        This is the place to put custom intermediary targets such as:
+            -pre-build
+            -pre-compile
+            -post-compile (This is typically used for code obfuscation.
+                           Compiled code location: ${out.classes.absolute.dir}
+                           If this is not done in place, override ${out.dex.input.absolute.dir})
+            -post-package
+            -post-build
+            -pre-clean
+    -->
+    <import file="custom_rules.xml" optional="true" />
 
-	<target name="package-res" description="Put the project's resources into the output package file.">
-		<android:aapt>
-			<arg value="package" />
-			<arg value="-f" />
-			<arg value="-M" />
-			<!--
-			<arg file="${main.loc}/AndroidManifest.xml" />
-			-->
-			<arg file="AndroidManifest.xml" />
-			<arg value="-S" />
-			<arg file="${main.res}" />
-			<!-- No assets directory -->
-			<arg value="-I" />
-			<arg file="${android-home}/android.jar" />
-			<arg value="-F" />
-			<arg file="target/IQTimeSheetTest.ap_" />
-		</android:aapt>
-	</target>
+    <!-- Import the actual build file.
 
-	<target name="package-apk" depends="dex, package-res" description="Package the application and sign it with a debug key.">
-		<android:apk-builder>
-			<arg file="target/IQTimeSheetTest.apk" />
-			<arg value="-z" />
-			<arg file="target/IQTimeSheetTest.ap_" />
-			<arg value="-f" />
-			<arg file="target/classes.dex" />
-			<arg value="-rf" />
-			<arg file="${main.source}" />
-			<arg value="-rf" />
-			<arg file="src" />
-			<arg value="-rj" />
-			<arg file="lib" />
-		</android:apk-builder>
-	</target>
+         To customize existing targets, there are two options:
+         - Customize only one target:
+             - copy/paste the target into this file, *before* the
+               <import> task.
+             - customize it to your needs.
+         - Customize the whole content of build.xml
+             - copy/paste the content of the rules files (minus the top node)
+               into this file, replacing the <import> task.
+             - customize to your needs.
 
-	<target name="start-emulator" description="Start an emulator.">
-		<android:adb>
-			<arg value="start-server" />
-		</android:adb>
-		<android:start-emulator only-if-not-running="true">
-			<arg line="-skin 320x480 -no-boot-anim" />
-		</android:start-emulator>
-	</target>
-
-	<target name="stop-emulator" description="Stop the emulator we started.">
-		<android:stop-emulator />
-	</target>
-
-	<target name="install" depends="package-apk, start-emulator" description="Install the package on the default emulator.">
-		<android:adb>
-			<arg value="install" />
-			<arg value="-r" />
-			<arg file="target/IQTimeSheetTest.apk" />
-		</android:adb>
-	</target>
-
-	<target name="demo" depends="install" description="Run the application until Return is hit.">
-		<input>Have fun with the demo, press Return when you're done.</input>
-	</target>
-
-	<target name="compile-stories" depends="compile-main" description="Compile the stories.">
-		<mkdir dir="target/story-classes" />
-		<!--
-		<javac target="1.5" debug="true" srcdir="gen" destdir="target/story-classes">
-			<classpath>
-				<pathelement location="target/main-classes" />
-				<fileset refid="test.jars" />
-				<pathelement location="${android-home}/android.jar" />
-			</classpath>
-		</javac>
-		-->
-		<javac target="1.5" debug="true" srcdir="src" destdir="target/story-classes">
-			<classpath>
-				<pathelement location="target/main-classes" />
-				<fileset refid="test.jars" />
-				<pathelement location="${android-home}/android.jar" />
-			</classpath>
-		</javac>
-	</target>
-
-	<target name="run-stories" depends="compile-stories" description="Run the stories on an existing emulator">
-		<mkdir dir="target/junit-reports" />
-		<junit haltonfailure="true" fork="true" forkMode="once" printsummary="true">
-			<sysproperty key="positron.instrumentedPackage" value="com.googlecode.iqapps.IQTimeSheet" />
-			<sysproperty key="positron.apk" file="target/IQTimeSheetTest.apk" />
-
-			<formatter type="plain" />
-			<batchtest todir="target/junit-reports">
-				<fileset dir="target/story-classes" />
-			</batchtest>
-			<classpath>
-				<pathelement location="target/main-classes" />
-				<pathelement location="target/story-classes" />
-				<fileset refid="test.jars" />
-			</classpath>
-		</junit>
-	</target>
-
-	<target name="precommit" depends="clean, install, run-stories, stop-emulator" description="If this passes you are safe to commit." />
+         ***********************
+         ****** IMPORTANT ******
+         ***********************
+         In all cases you must update the value of version-tag below to read 'custom' instead of an integer,
+         in order to avoid having your file be overridden by tools such as "android update project"
+    -->
+    <!-- version-tag: 1 -->
+    <import file="${sdk.dir}/tools/ant/build.xml" />
 
 </project>

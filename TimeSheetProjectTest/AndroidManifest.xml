@@ -1,60 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-
+<!-- package name must be unique so suffix with "tests" so package loader doesn't ignore us -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="com.googlecode.iqapps.IQTimeSheet" android:versionCode="1"
-	android:versionName="1.0">
-
-	<application android:icon="@drawable/icon" android:label="@string/app_name">
-
-		<activity android:name=".TimeSheetActivity" android:label="@string/app_name">
-			<intent-filter>
-				<action android:name="android.intent.action.MAIN" />
-				<category android:name="android.intent.category.LAUNCHER" />
-			</intent-filter>
-		</activity>
-
-		<activity android:name=".AboutDialog" />
-		<activity android:name=".AddTaskHandler" />
-		<activity android:name=".ChangeDate" />
-		<activity android:name=".ChangeEntryHandler" />
-		<activity android:name=".ChangeTaskList" />
-		<activity android:name=".ChangeTime" />
-		<activity android:name=".DayReport" />
-		<activity android:name=".EditDayEntriesHandler" />
-		<activity android:name=".EditTaskHandler" />
-		<activity android:name=".MyPreferenceActivity" />
-		<activity android:name=".ReviveTaskHandler" />
-		<activity android:name=".WeekReport" />
-	
-</application>
-
-	<uses-sdk android:minSdkVersion="2" />
-
-	<!-- Required for positron to open it's server socket. -->
-	<uses-permission android:name="android.permission.INTERNET" />
-
-	<!--
-		Required for positron to disable the keyguard, should it be on during
-		tests.
-	-->
-	<uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
-
-	<!--
-		<instrumentation
-		android:targetPackage="com.googlecode.iqapps.IQTimeSheet"
-		android:name="android.test.InstrumentationTestRunner"
-		android:label="Test Suite for IQTimeSheet Project" />
-	-->
-
-	<!--
-		<instrumentation android:label="Test Suite for IQTimeSheet Project"
-		android:targetPackage="com.googlecode.iqapps.IQTimeSheet"
-		android:functionalTest="true"
-		android:name="com.googlecode.autoandroid.positron.Positron" />
-	-->
-
-	<instrumentation android:label="Test Suite for IQTimeSheet Project"
-		android:targetPackage="com.googlecode.iqapps.IQTimeSheet"
-		android:name="com.googlecode.autoandroid.positron.Positron" />
-
-</manifest> 
+          package="com.googlecode.iqapps.IQTimeSheetTest"
+          android:versionCode="1"
+          android:versionName="1.0">
+    <!-- We add an application tag here just so that we can indicate that
+         this package needs to link against the android.test library,
+         which is needed when building test cases. -->
+    <application>
+        <uses-library android:name="android.test.runner" />
+    </application>
+    <!--
+    This declares that this application uses the instrumentation test runner targeting
+    the package of com.googlecode.iqapps.IQTimeSheet.  To run the tests use the command:
+    "adb shell am instrument -w com.googlecode.iqapps.IQTimeSheet.tests/android.test.InstrumentationTestRunner"
+    -->
+    <instrumentation android:name="android.test.InstrumentationTestRunner"
+                     android:targetPackage="com.googlecode.iqapps.IQTimeSheet"
+                     android:label="Tests for com.googlecode.iqapps.IQTimeSheet"/>
+</manifest>
