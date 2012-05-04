@@ -22,8 +22,9 @@ import java.util.Vector;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteException;
+import android.os.Environment;
 
 import com.googlecode.iqapps.BoundingBox;
 import com.googlecode.iqapps.Logger;
@@ -87,7 +88,11 @@ public class CorrelationDbAdapter {
 	public CorrelationDbAdapter open() throws SQLException {
 		logger.debug("In open.");
 
-		final String dataPath = new String("/sdcard/" + externalSubdirectory
+		// final String dataPath = new String("/sdcard/" + externalSubdirectory
+		// + "/");
+		final String dataPath = new String(Environment
+				.getExternalStorageDirectory().getPath()
+				+ externalSubdirectory
 				+ "/");
 		File file = new File(dataPath + DATABASE_NAME);
 
@@ -97,8 +102,7 @@ public class CorrelationDbAdapter {
 		}
 
 		if (!file.exists()) {
-			logger
-					.error("open: Database file still doesn't exist, returning null.");
+			logger.error("open: Database file still doesn't exist, returning null.");
 			return null;
 		}
 
@@ -118,7 +122,11 @@ public class CorrelationDbAdapter {
 	 * Close the database.
 	 */
 	public void close() {
-		mDbHelper.close();
+		try {
+			mDbHelper.close();
+		} catch (NullPointerException e) {
+			logger.warn("close: " + e.toString());
+		}
 	}
 
 	/**

@@ -79,7 +79,7 @@ public class NWSAlert extends Service {
 	 * supply a new value, and will be sent by the service to any registered
 	 * clients with the new value.
 	 */
-//	public static final int MSG_SET_VALUE = 3;
+	// public static final int MSG_SET_VALUE = 3;
 
 	/**
 	 * Command to client to notify that an update is available. This will be
@@ -167,12 +167,28 @@ public class NWSAlert extends Service {
 		}
 	}
 
+	// This is the old onStart method that will be called on the pre-2.0
+	// platform.  On 2.0 or later we override onStartCommand() so this
+	// method will not be called.
+	@Override
+	public void onStart(Intent intent, int startId) {
+	    handleCommand(intent);
+	}
+
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
+	    handleCommand(intent);
+	    // We want this service to continue running until it is explicitly
+	    // stopped, so return sticky.
+	    return START_STICKY;
+	}
+	
+	public void handleCommand(Intent intent) {
 		logger.trace("In onStartCommand.");
 
 		running++;
 		if (running > 1)
-			return 0;
+			return;
 		enabled = true;
 		timer.cancel();
 		try {
@@ -183,8 +199,6 @@ public class NWSAlert extends Service {
 
 		// Register with the Location Manager to receive location updates
 		locationListener = new LocListener();
-
-		return Service.START_STICKY;
 	}
 
 	public void onStop() {
@@ -197,6 +211,7 @@ public class NWSAlert extends Service {
 		locationListener.unregister();
 		logger.debug("De-registered location listener.");
 
+		stopService();
 		Toast.makeText(mCtx, "Service stopped...", Toast.LENGTH_LONG).show();
 	}
 
@@ -207,7 +222,7 @@ public class NWSAlert extends Service {
 		enabled = false;
 		if (timer != null)
 			timer.cancel();
-		
+
 		countyDB.close();
 		capDB.close();
 

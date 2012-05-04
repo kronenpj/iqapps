@@ -200,6 +200,16 @@ public class NWSAlertUI extends Activity {
 		}
 	}
 
+	// Need handler for callbacks to the UI thread
+    final Handler mHandler = new Handler();
+
+    // Create runnable for posting
+    final Runnable mUpdateResults = new Runnable() {
+        public void run() {
+            updateScreen();
+        }
+    };
+    
 	// Update the screen as a result of some change.
 	private void updateScreen() {
 		logger.trace("In updateScreen.");

@@ -41,6 +41,8 @@ public class Helpers {
 	public static final String text3 = "Task 3";
 	public static final String text4 = "Task 4";
 	public static final String text5 = "Renamed task";
+	public static final String RENAMETASK = "Rename Task";
+	public static final String EDITTASKNAME = "Edit Task Name";
 
 	public static void sleep() {
 		sleep(5000);
