@@ -82,25 +82,8 @@ public class TimeSheetActivity extends ListActivity {
 			Log.e(TAG, "tasksList: " + e.toString());
 		}
 
-		db = new TimeSheetDbAdapter(this);
-		setupDB();
-
 		Resources res = getResources();
 		applicationName = res.getString(R.string.app_name);
-
-		// Candidate for onResume or onStart
-		try {
-			fillData();
-		} catch (Exception e) {
-			Log.e(TAG, "fillData: " + e.toString());
-		}
-
-		// Candidate for onResume or onStart
-		try {
-			checkCrossDayClock();
-		} catch (Exception e) {
-			Log.d(TAG, "checkCrossDayClock: " + e.toString());
-		}
 
 		try {
 			// Register listeners for the list items.
@@ -127,6 +110,21 @@ public class TimeSheetActivity extends ListActivity {
 	public void onResume() {
 		Log.d(TAG, "onResume");
 		super.onResume();
+
+		db = new TimeSheetDbAdapter(this);
+		setupDB();
+
+		try {
+			fillData();
+		} catch (Exception e) {
+			Log.e(TAG, "onResume: (fillData) " + e.toString());
+		}
+
+		try {
+			checkCrossDayClock();
+		} catch (Exception e) {
+			Log.d(TAG, "onResume: (checkCrossDayClock) " + e.toString());
+		}
 
 		try {
 			setSelected();
