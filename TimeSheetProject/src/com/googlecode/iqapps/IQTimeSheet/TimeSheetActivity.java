@@ -49,7 +49,7 @@ import com.googlecode.iqapps.TimeHelpers;
 public class TimeSheetActivity extends ListActivity {
 	static PreferenceHelper prefs;
 
-	private TimeSheetDbAdapter db;
+	TimeSheetDbAdapter db;
 	private ListView tasksList;
 	// private TimeListWrapper timeWrapper;
 	// private TimeListAdapter timeAdapter;
@@ -207,7 +207,7 @@ public class TimeSheetActivity extends ListActivity {
 	 * Encapsulate what's needed to open the database and make sure something is
 	 * in it.
 	 */
-	private void setupDB() {
+	void setupDB() {
 		Log.d(TAG, "setupDB");
 
 		try {
@@ -230,11 +230,11 @@ public class TimeSheetActivity extends ListActivity {
 		}
 	}
 
-	private void reloadTaskCursor() {
+	void reloadTaskCursor() {
 		taskCursor = db.fetchAllTaskEntries();
 	}
 
-	private String getTaskFromLocation(long position) {
+	String getTaskFromLocation(long position) {
 		Log.d(TAG, "getTaskFromLocation");
 
 		taskCursor.moveToPosition((int) position);
@@ -245,7 +245,7 @@ public class TimeSheetActivity extends ListActivity {
 		return null;
 	}
 
-	private void fillData() {
+	void fillData() {
 		Log.d(TAG, "fillData");
 		// Get all of the entries from the database and create the list
 		reloadTaskCursor();
@@ -265,7 +265,7 @@ public class TimeSheetActivity extends ListActivity {
 		updateTitleBar();
 	}
 
-	private void updateTitleBar() {
+	void updateTitleBar() {
 		Log.d(TAG, "updateTitleBar");
 		float hoursPerDay = prefs.getHoursPerDay();
 		// Display the time accumulated for today with time remaining.
@@ -291,7 +291,7 @@ public class TimeSheetActivity extends ListActivity {
 		}
 	}
 
-	private void checkCrossDayClock() {
+	void checkCrossDayClock() {
 		long lastRowID = db.lastClockEntry();
 		long lastTaskID = db.taskIDForLastClockEntry();
 		Cursor tempClockCursor = db.fetchEntry(lastRowID);
@@ -340,7 +340,7 @@ public class TimeSheetActivity extends ListActivity {
 		tempClockCursor.close();
 	}
 
-	private void setSelected() {
+	void setSelected() {
 		long lastRowID = db.lastClockEntry();
 		long lastTaskID = db.taskIDForLastClockEntry();
 

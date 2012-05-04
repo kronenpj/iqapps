@@ -1175,4 +1175,8 @@ public class TimeSheetDbAdapter {
 		mCursor.close();
 		return response;
 	}
+
+	void runSQL(String sqlTorun) {
+		mDb.execSQL(sqlTorun);
+	}
 }
