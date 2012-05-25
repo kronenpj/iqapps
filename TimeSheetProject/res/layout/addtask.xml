@@ -9,7 +9,7 @@
 		android:layout_width="fill_parent" android:layout_height="wrap_content" />
 
 	<EditText android:id="@+id/EditTask" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_below="@+id/TextLabel" />
+		android:layout_height="wrap_content" android:layout_below="@+id/TextLabel" android:inputType="text" />
 
 	<Button android:id="@+id/ChangeTask" android:text="@string/accept"
 		android:width="150dip" android:layout_width="wrap_content"
