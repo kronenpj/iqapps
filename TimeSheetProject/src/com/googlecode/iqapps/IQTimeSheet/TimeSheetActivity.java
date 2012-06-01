@@ -225,6 +225,8 @@ public class TimeSheetActivity extends ListActivity {
 			}
 		} catch (SQLException e) {
 			Log.e(TAG, e.toString());
+		} catch (NullPointerException e) {
+			Log.e(TAG, e.toString());
 		}
 	}
 

@@ -552,9 +552,7 @@ public class TimeSheetDbAdapter {
 	public long lastTaskEntry() {
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 				new String[] { MAX_ROW }, null, null, null, null, null, null);
-		if (mCursor != null) {
-			mCursor.moveToFirst();
-		}
+		mCursor.moveToFirst();
 		long response = mCursor.getLong(0);
 		mCursor.close();
 		return response;
