@@ -151,8 +151,8 @@ public class TimeSheetDbAdapter {
 					+ newVersion + ".");
 			// db.execSQL("ALTER TABLE TimeSheet ADD...");
 			// db.execSQL("UPDATE TimeSheet SET ");
-			switch (newVersion) {
-			case 2:
+			switch (oldVersion) {
+			case 1:
 				db.execSQL(CHARGENO_INDEX);
 				db.execSQL(TIMEIN_INDEX);
 				db.execSQL(TIMEOUT_INDEX);
@@ -493,9 +493,7 @@ public class TimeSheetDbAdapter {
 	public long lastTaskEntry() {
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 				new String[] { MAX_ROW }, null, null, null, null, null, null);
-		if (mCursor != null) {
-			mCursor.moveToFirst();
-		}
+		mCursor.moveToFirst();
 		long response = mCursor.getLong(0);
 		mCursor.close();
 		return response;
