@@ -5,18 +5,6 @@
     android:layout="@layout/report"
     android:orientation="vertical" >
 
-    <!--
-    <ScrollView
-        android:id="@+id/top_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="1"
-        android:background="@android:color/transparent"
-        android:fadingEdge="none"
-        android:fillViewport="true"
-        android:scrollbarStyle="outsideInset" >
-    -->
-
     <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="fill_parent"
@@ -26,15 +14,8 @@
         android:layout="@layout/report"
         android:orientation="vertical" >
 
-        <!--
-				<ListView android:id="@android:id/list"
-				android:layout_width="fill_parent"
-				android:layout_height="fill_parent" />
-        -->
-
         <include layout="@layout/reportlist" />
     </LinearLayout>
-<!--         </ScrollView> -->
 
     <include layout="@layout/daybuttons" />
 

@@ -17,6 +17,7 @@
 package com.googlecode.iqapps.IQTimeSheet;
 
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
@@ -146,12 +147,12 @@ public class TimeSheetActivity extends ListActivity {
 		try {
 			taskCursor.close();
 		} catch (Exception e) {
-			Log.e(TAG, "onDestroy: (taskCursor) " + e.toString());
+			Log.i(TAG, "onDestroy: (taskCursor) " + e.toString());
 		}
 		try {
 			reportCursor.close();
 		} catch (Exception e) {
-			Log.e(TAG, "onDestroy: (reportCursor) " + e.toString());
+			Log.i(TAG, "onDestroy: (reportCursor) " + e.toString());
 		}
 		db.close();
 
@@ -403,7 +404,7 @@ public class TimeSheetActivity extends ListActivity {
 									long taskID = db.taskIDForLastClockEntry();
 									long now = TimeHelpers.millisNow();
 									long today = TimeHelpers
-											.millisToStartOfDay(now)-1000;
+											.millisToStartOfDay(now) - 1000;
 									db.closeEntry(taskID, today);
 									// TODO: The item selected remains so, even
 									// though that task has been closed.
@@ -418,7 +419,7 @@ public class TimeSheetActivity extends ListActivity {
 									long taskID = db.taskIDForLastClockEntry();
 									long now = TimeHelpers.millisNow();
 									long today = TimeHelpers
-											.millisToStartOfDay(now)-1000;
+											.millisToStartOfDay(now) - 1000;
 									db.closeEntry(taskID, today);
 									db.createEntry(taskID, today);
 									setSelected();
@@ -686,7 +687,13 @@ public class TimeSheetActivity extends ListActivity {
 				// Our protocol with the sending activity is that it will send
 				// text in 'data' as its result.
 				if (data != null) {
-					db.createTask(data.getAction());
+					if (!data.hasExtra("parent"))
+						db.createTask(data.getAction());
+					else {
+						db.createTask(data.getAction(),
+								data.getStringExtra("parent"),
+								data.getIntExtra("percentage", 100));
+					}
 				}
 				fillData();
 			}
@@ -711,6 +718,15 @@ public class TimeSheetActivity extends ListActivity {
 					if (oldData != null && result != null) {
 						db.renameTask(oldData, result);
 					}
+
+					// TODO: Determine what needs to be done to change these
+					// database fields.
+					if (data.hasExtra("parent")) {
+						// db.createTask(data.getAction(),
+						// data.getStringExtra("parent"),
+						// data.getIntExtra("percentage", 100));
+					}
+
 				}
 				fillData();
 			}

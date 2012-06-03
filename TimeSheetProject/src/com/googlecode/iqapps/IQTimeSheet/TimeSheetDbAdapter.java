@@ -1123,11 +1123,11 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Create a new time entry using the charge number provided. If the entry is
-	 * successfully created return the new rowId for that note, otherwise return
+	 * successfully created return the new rowId for that number, otherwise return
 	 * a -1 to indicate failure.
 	 * 
 	 * @param task
-	 *            the charge number for the entry
+	 *            the charge number text for the entry
 	 * 
 	 * @return rowId or -1 if failed
 	 */
@@ -1138,6 +1138,47 @@ public class TimeSheetDbAdapter {
 		initialValues.put(KEY_LASTUSED, tempDate);
 
 		return mDb.insert(TASKS_DATABASE_TABLE, null, initialValues);
+	}
+
+	/**
+	 * Create a new split time entry using the information provided. If the
+	 * entry is successfully created return the new rowId for that number,
+	 * otherwise return a -1 to indicate failure.
+	 * 
+	 * @param task
+	 *            the charge number text for the entry
+	 * @param parent
+	 *            The parent for the split task
+	 * @param percentage
+	 *            The amount this task contributes to the task.
+	 * 
+	 * @return rowId or -1 if failed
+	 */
+	public long createTask(String task, String parent, int percentage) {
+		long tempDate = System.currentTimeMillis(); // Local time...
+		long parentId = getTaskIDByName(parent);
+
+		ContentValues initialValues = new ContentValues();
+		initialValues.put(KEY_TASK, task);
+		initialValues.put(KEY_LASTUSED, tempDate);
+		initialValues.put(KEY_CHARGENO, parentId);
+		initialValues.put(KEY_PERCENTAGE, percentage / 100.0);
+
+		return mDb.insert(TASKSPLIT_DATABASE_TABLE, null, initialValues);
+	}
+
+	/**
+	 * Return a Cursor over the list of all tasks in the database eligible to be
+	 * split task parents.
+	 * 
+	 * @return Cursor over all database entries
+	 */
+	public Cursor fetchParentTasks() {
+		Log.d(TAG, "Issuing DB query.");
+		return mDb.query(TASKS_DATABASE_TABLE, new String[] { KEY_ROWID,
+				KEY_TASK, KEY_ACTIVE, KEY_SPLIT }, KEY_ACTIVE + "='" + DB_TRUE
+				+ "' and " + KEY_SPLIT + "='" + DB_FALSE + "'", null, null,
+				null, KEY_TASK);
 	}
 
 	/**

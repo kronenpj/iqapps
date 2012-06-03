@@ -5,6 +5,7 @@ local.properties
 TimeSheetDB.db
 *.apk
 .settings
+.ant-targets-build.xml
 support
 build.xml.orig
 build.xml.old

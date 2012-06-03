@@ -1,47 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-	<string name="app_name">IQTimeSheet</string>
 
-	<string name="icon_add_task">ic_task_add.png</string>
-	<string name="taskedit">Edit Task Name</string>
-
-	<string name="menu_new_task">New Task</string>
-	<string name="menu_revive_task">Revive Task</string>
-	<string name="menu_edit_day_entries">Edit Entries</string>
-	<string name="menu_reports">Day Report</string>
-	<string name="menu_week_reports">Week Report</string>
-	<string name="menu_prefs">Settings</string>
-	<string name="menu_backup">Backup Database</string>
-	<string name="menu_restore">Restore Database</string>
-	<string name="menu_about">About</string>
-
-	<string name="startlabel">Start Time</string>
-	<string name="endlabel">End Time</string>
-
-	<string name="day_prev_action">Previous</string>
-	<string name="day_today_action">Today</string>
-	<string name="day_next_action">Next</string>
-
-	<string name="in_out_toggle_button">In/Out</string>
-	<string name="hour_button">Hours</string>
-	<string name="min_button">Minutes</string>
-
-	<string name="cancel">Cancel</string>
-	<string name="accept">Accept</string>
-	<string name="delete">Delete</string>
-	<string name="sixminalign">Align (1 min)</string>
-	<string name="change">Change</string>
-	<string name="changeadjacent">Accept &amp; Change Adjacent</string>
-
-	<string name="auto_align_summary">Align to an X minute-increment when clocking in/out
+    <string name="app_name">IQTimeSheet</string>
+    <string name="icon_add_task">ic_task_add.png</string>
+    <string name="taskedit">Edit Task Name</string>
+    <string name="menu_new_task">New Task</string>
+    <string name="menu_revive_task">Revive Task</string>
+    <string name="menu_edit_day_entries">Edit Entries</string>
+    <string name="menu_reports">Day Report</string>
+    <string name="menu_week_reports">Week Report</string>
+    <string name="menu_prefs">Settings</string>
+    <string name="menu_backup">Backup Database</string>
+    <string name="menu_restore">Restore Database</string>
+    <string name="menu_about">About</string>
+    <string name="startlabel">Start Time</string>
+    <string name="endlabel">End Time</string>
+    <string name="day_prev_action">Previous</string>
+    <string name="day_today_action">Today</string>
+    <string name="day_next_action">Next</string>
+    <string name="cancel">Cancel</string>
+    <string name="accept">Accept</string>
+    <string name="delete">Delete</string>
+    <string name="sixminalign">Align (1 min)</string>
+    <string name="changeadjacent">Accept &amp; Change Adjacent</string>
+    <string name="auto_align_summary">Align to an X minute-increment when clocking in/out
 		or changing times.</string>
-
-	<string name="about_summary">
-		IQTimeSheet is my first Android application. It is based on a few
+    <string name="about_summary">IQTimeSheet is my first Android application. It is based on a few
 		other similar applications both in function and style. Hopefully
-		you\'ll find it useful. The source code is available on
-		<a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a>
-		and is released under the Apache license.
-	</string>
-<string name="timepicker_align_summary">Whether adjusting minutes in the time picker dialog should behave as usual, or step by align minutes steps at a time.</string>
+		you\'ll find it useful. The source code is available on <a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a> and is released under the Apache license.</string>
+    <string name="timepicker_align_summary">Whether adjusting minutes in the time picker dialog should behave as usual, or step by align minutes steps at a time.</string>
+    <string name="split_task_desc">This is part of a split task</string>
+
 </resources>

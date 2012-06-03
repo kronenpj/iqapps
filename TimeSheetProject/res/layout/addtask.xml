@@ -1,24 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/list"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:layout="@layout/addtask" >
 
-<RelativeLayout android:id="@android:id/list"
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:layout="@layout/addtask" android:layout_width="fill_parent"
-	android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/TextLabel"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/taskedit" />
 
-	<TextView android:id="@+id/TextLabel" android:text="@string/taskedit"
-		android:layout_width="fill_parent" android:layout_height="wrap_content" />
+    <EditText
+        android:id="@+id/EditTask"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/TextLabel"
+        android:inputType="text" />
 
-	<EditText android:id="@+id/EditTask" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_below="@+id/TextLabel" android:inputType="text" />
+    <CheckBox
+        android:id="@+id/SplitTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/EditTask"
+        android:layout_gravity="left"
+        android:text="@string/split_task_desc" />
 
-	<Button android:id="@+id/ChangeTask" android:text="@string/accept"
-		android:width="150dip" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_gravity="left"
-		android:layout_below="@+id/EditTask" android:layout_marginLeft="7dip" />
+    <Button
+        android:id="@+id/ChangeTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/SplitTask"
+        android:layout_gravity="left"
+        android:layout_marginLeft="7dip"
+        android:text="@string/accept"
+        android:width="150dip" />
 
-	<Button android:id="@+id/CancelEdit" android:text="@string/cancel"
-		android:width="150dip" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_gravity="right"
-		android:layout_below="@+id/EditTask" android:layout_toRightOf="@+id/ChangeTask"
-		android:layout_marginRight="7dip" />
+    <Button
+        android:id="@+id/CancelEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/SplitTask"
+        android:layout_gravity="right"
+        android:layout_marginRight="7dip"
+        android:layout_toRightOf="@+id/ChangeTask"
+        android:text="@string/cancel"
+        android:width="150dip" />
+
+    <TextView
+        android:id="@+id/ParentLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingTop="2dip"
+        android:layout_below="@+id/CancelEdit"
+        android:layout_alignParentLeft="true"
+        android:visibility="invisible"
+        android:text="Select parent task" />
+    
+    <Spinner
+        android:id="@+id/TaskSpinner"
+        style="@android:style/TextAppearance"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/ParentLabel"
+        android:visibility="invisible" >
+
+        <!-- android:textColor="@android:color/primary_text_dark" -->
+        <!-- Preview: listitem=@android:layout/simple_spinner_item -->
+    </Spinner>
+
+    <SeekBar
+        android:id="@+id/PercentSlider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/TaskSpinner"
+        android:visibility="invisible"
+        android:layout_alignParentLeft="true" />
+
+    <EditText
+        android:id="@+id/PercentLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/PercentSlider"
+        android:layout_centerHorizontal="true"
+        android:selectAllOnFocus="true"
+        android:inputType="number"
+        android:visibility="invisible"
+        android:text="100" />
+
+    <TextView
+        android:id="@+id/PercentSymbol"
+        style="@android:style/TextAppearance.Large"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/PercentSlider"
+        android:layout_toRightOf="@+id/PercentLabel"
+        android:visibility="invisible"
+        android:text="%" />
+
 </RelativeLayout>
