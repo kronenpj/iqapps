@@ -451,6 +451,7 @@ public class TimeSheetActivity extends ListActivity {
 												Toast.LENGTH_SHORT);
 									}
 									setupDB();
+									fillData();
 								}
 							})
 					.setNegativeButton("No",
@@ -722,9 +723,11 @@ public class TimeSheetActivity extends ListActivity {
 					// TODO: Determine what needs to be done to change these
 					// database fields.
 					if (data.hasExtra("parent")) {
-						// db.createTask(data.getAction(),
-						// data.getStringExtra("parent"),
-						// data.getIntExtra("percentage", 100));
+						long taskID = db.getTaskIDByName(oldData);
+						long parentID = db.getTaskIDByName(data
+								.getStringExtra("parent"));
+						db.alterSplitTask(taskID, parentID,
+								data.getIntExtra("percentage", 100));
 					}
 
 				}

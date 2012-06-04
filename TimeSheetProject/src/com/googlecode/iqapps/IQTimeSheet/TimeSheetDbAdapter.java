@@ -98,9 +98,10 @@ public class TimeSheetDbAdapter {
 			+ TASKSPLIT_DATABASE_TABLE + "(" + KEY_ROWID
 			+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_CHARGENO
 			+ " INTEGER NOT NULL REFERENCES " + TASKS_DATABASE_TABLE + "("
-			+ KEY_ROWID + "), " + KEY_TASK + " TEXT NOT NULL, "
-			+ KEY_PERCENTAGE + " REAL NOT NULL DEFAULT 1 CHECK("
-			+ KEY_PERCENTAGE + ">=0 AND " + KEY_PERCENTAGE + "<=1)" + ");";
+			+ KEY_ROWID + "), " + KEY_TASK + " INTEGER NOT NULL REFERENCES "
+			+ TASKS_DATABASE_TABLE + "(" + KEY_ROWID + "), " + KEY_PERCENTAGE
+			+ " REAL NOT NULL DEFAULT 100 CHECK(" + KEY_PERCENTAGE + ">=0 AND "
+			+ KEY_PERCENTAGE + "<=100)" + ");";
 	private static final String TASK_TABLE_ALTER3 = "ALTER TABLE "
 			+ TASKS_DATABASE_TABLE + " ADD COLUMN " + KEY_SPLIT
 			+ " BOOLEAN DEFAULT " + DB_FALSE + ";";
@@ -1123,8 +1124,8 @@ public class TimeSheetDbAdapter {
 
 	/**
 	 * Create a new time entry using the charge number provided. If the entry is
-	 * successfully created return the new rowId for that number, otherwise return
-	 * a -1 to indicate failure.
+	 * successfully created return the new rowId for that number, otherwise
+	 * return a -1 to indicate failure.
 	 * 
 	 * @param task
 	 *            the charge number text for the entry
@@ -1132,6 +1133,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long createTask(String task) {
+		Log.d(TAG, "createTask: " + task);
 		long tempDate = System.currentTimeMillis(); // Local time...
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_TASK, task);
@@ -1155,14 +1157,23 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long createTask(String task, String parent, int percentage) {
+		Log.d(TAG, "createTask: " + task);
+		Log.d(TAG, "    parent: " + parent);
+		Log.d(TAG, "percentage: " + percentage);
 		long tempDate = System.currentTimeMillis(); // Local time...
 		long parentId = getTaskIDByName(parent);
 
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_TASK, task);
 		initialValues.put(KEY_LASTUSED, tempDate);
+		initialValues.put(KEY_SPLIT, true);
+		long newRow = mDb.insert(TASKS_DATABASE_TABLE, null, initialValues);
+
+		Log.d(TAG, "new row   : " + newRow);
+		initialValues = new ContentValues();
+		initialValues.put(KEY_TASK, newRow);
 		initialValues.put(KEY_CHARGENO, parentId);
-		initialValues.put(KEY_PERCENTAGE, percentage / 100.0);
+		initialValues.put(KEY_PERCENTAGE, percentage);
 
 		return mDb.insert(TASKSPLIT_DATABASE_TABLE, null, initialValues);
 	}
@@ -1174,7 +1185,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchParentTasks() {
-		Log.d(TAG, "Issuing DB query.");
+		Log.d(TAG, "fetchParentTasks: Issuing DB query.");
 		return mDb.query(TASKS_DATABASE_TABLE, new String[] { KEY_ROWID,
 				KEY_TASK, KEY_ACTIVE, KEY_SPLIT }, KEY_ACTIVE + "='" + DB_TRUE
 				+ "' and " + KEY_SPLIT + "='" + DB_FALSE + "'", null, null,
@@ -1187,6 +1198,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchAllTaskEntries() {
+		Log.d(TAG, "fetchAllTaskEntries: Issuing DB query.");
 		return mDb.query(TASKS_DATABASE_TABLE, new String[] { KEY_ROWID,
 				KEY_TASK, KEY_ACTIVE, KEY_USAGE, KEY_OLDUSAGE, KEY_LASTUSED },
 				"active='" + DB_TRUE + "'", null, null, null,
@@ -1199,6 +1211,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over all database entries
 	 */
 	public Cursor fetchAllDisabledTasks() {
+		Log.d(TAG, "fetchAllDisabledTasks: Issuing DB query.");
 		return mDb.query(TASKS_DATABASE_TABLE, new String[] { KEY_ROWID,
 				KEY_TASK, KEY_ACTIVE, KEY_USAGE, KEY_OLDUSAGE, KEY_LASTUSED },
 				"active='" + DB_FALSE + "'", null, null, null, KEY_TASK);
@@ -1214,6 +1227,7 @@ public class TimeSheetDbAdapter {
 	 *             if entry could not be found/retrieved
 	 */
 	public Cursor fetchTask(long rowId) throws SQLException {
+		Log.d(TAG, "fetchTask: Issuing DB query.");
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE, new String[] {
 				KEY_ROWID, KEY_TASK, KEY_ACTIVE, KEY_USAGE, KEY_OLDUSAGE,
 				KEY_LASTUSED }, KEY_ROWID + "=" + rowId, null, null, null,
@@ -1231,6 +1245,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long getTaskIDByName(String name) {
+		Log.d(TAG, "getTaskIDByName: Issuing DB query.");
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 				new String[] { KEY_ROWID }, KEY_TASK + " = '" + name + "'",
 				null, null, null, null, null);
@@ -1241,6 +1256,7 @@ public class TimeSheetDbAdapter {
 		}
 		long response = mCursor.getLong(0);
 		mCursor.close();
+		Log.d(TAG, "getTaskIDByName: " + response);
 		return response;
 	}
 
@@ -1251,6 +1267,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public String getTaskNameByID(long taskID) {
+		Log.d(TAG, "getTaskNameByID: Issuing DB query.");
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 				new String[] { KEY_TASK }, KEY_ROWID + " = '" + taskID + "'",
 				null, null, null, null, null);
@@ -1261,16 +1278,140 @@ public class TimeSheetDbAdapter {
 		}
 		String response = mCursor.getString(0);
 		mCursor.close();
+		Log.d(TAG, "getTaskNameByID: " + response);
 		return response;
 	}
 
 	/**
-	 * Retrieve the last entry in the table. Hopefully this will be deprecated
-	 * in favor of something a little more robust in the future.
+	 * Return the entry that matches the given rowId
 	 * 
-	 * @return rowId or -1 if failed
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public long getSplitTaskParent(String splitTask) {
+		Log.d(TAG, "getSplitTaskParent: " + splitTask);
+		return getSplitTaskParent(getTaskIDByName(splitTask));
+	}
+
+	/**
+	 * Return the entry that matches the given rowId
+	 * 
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public long getSplitTaskParent(long rowId) {
+		Log.d(TAG, "getSplitTaskParent: Issuing DB query.");
+		long ret;
+		try {
+			Cursor mCursor = mDb.query(true, TASKSPLIT_DATABASE_TABLE,
+					new String[] { KEY_CHARGENO }, KEY_TASK + "=" + rowId,
+					null, null, null, null, null);
+			if (mCursor != null) {
+				mCursor.moveToFirst();
+			}
+			ret = mCursor.getLong(0);
+			mCursor.close();
+		} catch (SQLException e) {
+			Log.i(TAG, "getSplitTaskParent: " + e.toString());
+			ret = 0;
+		}
+		Log.d(TAG, "getSplitTaskParent: " + ret + " / " + getTaskNameByID(ret));
+		return ret;
+	}
+
+	/**
+	 * Return the entry that matches the given rowId
+	 * 
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public int getSplitTaskPercentage(String splitTask) {
+		Log.d(TAG, "getSplitTaskPercentage: " + splitTask);
+		return getSplitTaskPercentage(getTaskIDByName(splitTask));
+	}
+
+	/**
+	 * Return the entry that matches the given rowId
+	 * 
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public int getSplitTaskPercentage(long rowId) {
+		Log.d(TAG, "getSplitTaskPercentage: Issuing DB query.");
+		int ret;
+		try {
+			Cursor mCursor = mDb.query(true, TASKSPLIT_DATABASE_TABLE,
+					new String[] { KEY_PERCENTAGE }, KEY_TASK + "=" + rowId,
+					null, null, null, null, null);
+			if (mCursor != null) {
+				mCursor.moveToFirst();
+			}
+			ret = mCursor.getInt(0);
+			mCursor.close();
+		} catch (SQLException e) {
+			Log.i(TAG, "getSplitTaskPercentage: " + e.toString());
+			ret = 0;
+		}
+		Log.d(TAG, "getSplitTaskPercentage: " + ret);
+		return ret;
+	}
+
+	/**
+	 * Return the flag whether the task that matches the given rowId is a split
+	 * task.
+	 * 
+	 * @param splitTask
+	 *            name of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public boolean getSplitTaskFlag(String splitTask) {
+		Log.d(TAG, "getSplitTaskFlag: " + splitTask);
+		return getSplitTaskFlag(getTaskIDByName(splitTask));
+	}
+
+	/**
+	 * Return the flag whether the task that matches the given rowId is a split
+	 * task.
+	 * 
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public boolean getSplitTaskFlag(long rowId) {
+		Log.d(TAG, "getSplitTaskFlag: Issuing DB query.");
+		boolean ret;
+		try {
+			Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
+					new String[] { KEY_SPLIT }, KEY_ROWID + "=" + rowId, null,
+					null, null, null, null);
+			if (mCursor != null) {
+				mCursor.moveToFirst();
+			}
+			ret = mCursor.getInt(0) != 0 ? true : false;
+			Log.i(TAG, "getSplitTaskFlag: " + mCursor.getInt(0));
+			mCursor.close();
+		} catch (SQLException e) {
+			Log.i(TAG, "getSplitTaskPercentage: " + e.toString());
+			ret = false;
+		}
+		Log.d(TAG, "getSplitTaskFlag: " + ret);
+		return ret;
+	}
+
+	/**
+	 * Rename specified task
+	 * 
+	 * @param origName
+	 *            Old task name
+	 * @param newName
+	 *            New task name
 	 */
 	public void renameTask(String origName, String newName) {
+		Log.d(TAG, "renameTask: Issuing DB query.");
 		long taskID = getTaskIDByName(origName);
 		ContentValues newData = new ContentValues(1);
 		newData.put(KEY_TASK, newName);
@@ -1285,12 +1426,38 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
+	 * Alter specified split task
+	 * 
+	 * @param rowID
+	 *            Task ID to change
+	 * @param parentID
+	 *            New parent ID
+	 * @param percentage
+	 *            New percentage
+	 */
+	public void alterSplitTask(long rowID, long parentID, int percentage) {
+		Log.d(TAG, "alterSplitTask: Issuing DB query.");
+		ContentValues newData = new ContentValues(2);
+		newData.put(KEY_CHARGENO, parentID);
+		newData.put(KEY_PERCENTAGE, percentage);
+		try {
+			// update(String table, ContentValues values, String whereClause,
+			// String[] whereArgs)
+			mDb.update(TASKSPLIT_DATABASE_TABLE, newData, KEY_TASK + "=?",
+					new String[] { String.valueOf(rowID).toString() });
+		} catch (RuntimeException e) {
+			Log.e(TAG, e.getLocalizedMessage());
+		}
+	}
+
+	/**
 	 * Retrieve the last entry in the table. Hopefully this will be deprecated
 	 * in favor of something a little more robust in the future.
 	 * 
 	 * @return rowId or -1 if failed
 	 */
 	public void deactivateTask(String taskName) {
+		Log.d(TAG, "deactivateTask: Issuing DB query.");
 		long taskID = getTaskIDByName(taskName);
 		deactivateTask(taskID);
 	}
@@ -1302,6 +1469,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public void deactivateTask(long taskID) {
+		Log.d(TAG, "deactivateTask: Issuing DB query.");
 		ContentValues newData = new ContentValues(1);
 		newData.put(KEY_ACTIVE, DB_FALSE);
 		try {
@@ -1319,6 +1487,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public void activateTask(String taskName) {
+		Log.d(TAG, "activateTask: Issuing DB query.");
 		long taskID = getTaskIDByName(taskName);
 		activateTask(taskID);
 	}
@@ -1330,6 +1499,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public void activateTask(long taskID) {
+		Log.d(TAG, "activateTask: Issuing DB query.");
 		ContentValues newData = new ContentValues(1);
 		newData.put(KEY_ACTIVE, DB_TRUE);
 		try {
@@ -1347,6 +1517,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	private void incrementTaskUsage(long taskID) {
+		Log.d(TAG, "incrementTaskUsage: Issuing DB query.");
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE, new String[] {
 				KEY_USAGE, KEY_OLDUSAGE, KEY_LASTUSED }, KEY_ROWID + " = "
 				+ taskID, null, null, null, null, null);
@@ -1387,6 +1558,7 @@ public class TimeSheetDbAdapter {
 	 *             if note could not be found/retrieved
 	 */
 	public int fetchVersion() throws SQLException {
+		Log.d(TAG, "fetchVersion: Issuing DB query.");
 
 		Cursor mCursor = mDb.query(true, DATABASE_METADATA,
 				new String[] { MAX_COUNT }, null, null, null, null, null, null);
