@@ -23,6 +23,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.SQLException;
+import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -92,8 +93,8 @@ public class TimeSheetDbAdapter {
 			+ " TEXT NOT NULL, " + KEY_ACTIVE + " BOOLEAN NOT NULL DEFAULT '"
 			+ DB_TRUE + "', " + KEY_USAGE + " INTEGER NOT NULL DEFAULT 0, "
 			+ KEY_OLDUSAGE + " INTEGER NOT NULL DEFAULT 0, " + KEY_LASTUSED
-			+ " INTEGER NOT NULL DEFAULT 0, " + KEY_SPLIT + " BOOLEAN DEFAULT "
-			+ DB_FALSE + ");";
+			+ " INTEGER NOT NULL DEFAULT 0, " + KEY_SPLIT
+			+ " INTEGER DEFAULT 0);";
 	private static final String TASKSPLIT_TABLE_CREATE = "CREATE TABLE "
 			+ TASKSPLIT_DATABASE_TABLE + "(" + KEY_ROWID
 			+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_CHARGENO
@@ -104,7 +105,7 @@ public class TimeSheetDbAdapter {
 			+ KEY_PERCENTAGE + "<=100)" + ");";
 	private static final String TASK_TABLE_ALTER3 = "ALTER TABLE "
 			+ TASKS_DATABASE_TABLE + " ADD COLUMN " + KEY_SPLIT
-			+ " BOOLEAN DEFAULT " + DB_FALSE + ";";
+			+ " INTEGER DEFAULT 0;";
 	private static final String ENTRYITEMS_VIEW_CREATE = "CREATE VIEW "
 			+ ENTRYITEMS_VIEW + " AS SELECT " + CLOCK_DATABASE_TABLE + "."
 			+ KEY_ROWID + " as " + KEY_ROWID + "," + TASKS_DATABASE_TABLE + "."
@@ -176,6 +177,7 @@ public class TimeSheetDbAdapter {
 			db.execSQL(TASKSPLIT_TABLE_CREATE);
 			db.execSQL(ENTRYITEMS_VIEW_CREATE);
 			db.execSQL(ENTRYREPORT_VIEW_CREATE);
+			db.execSQL(TASKSPLITREPORT_VIEW_CREATE);
 			db.execSQL(TASKS_INDEX);
 			db.execSQL(CHARGENO_INDEX);
 			db.execSQL(TIMEIN_INDEX);
@@ -209,6 +211,8 @@ public class TimeSheetDbAdapter {
 				db.execSQL(TASK_TABLE_ALTER3);
 				Log.d(TAG, "Running: " + TASKSPLIT_TABLE_CREATE);
 				db.execSQL(TASKSPLIT_TABLE_CREATE);
+				Log.d(TAG, "Running: " + TASKSPLITREPORT_VIEW_CREATE);
+				db.execSQL(TASKSPLITREPORT_VIEW_CREATE);
 				Log.d(TAG, "Running: " + SPLIT_INDEX);
 				db.execSQL(SPLIT_INDEX);
 			default:
@@ -946,6 +950,9 @@ public class TimeSheetDbAdapter {
 	 * Method that retrieves the entries for a single specified day from the
 	 * entry view.
 	 * 
+	 * @param time
+	 *            Time, in milliseconds, within the day to be summarized.
+	 * 
 	 * @return Cursor over the results.
 	 */
 	public Cursor daySummary(long time) {
@@ -1107,8 +1114,8 @@ public class TimeSheetDbAdapter {
 				+ "(sum((CASE WHEN " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
 				+ " = 0 THEN time() ELSE " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEOUT + " END - " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEIN + ")/3600000.0) * " + TASKSPLIT_DATABASE_TABLE
-				+ "." + KEY_PERCENTAGE + ") AS " + KEY_TOTAL + " FROM "
+				+ KEY_TIMEIN + ")/3600000.0) * (" + TASKSPLIT_DATABASE_TABLE
+				+ "." + KEY_PERCENTAGE + "/100.0)) AS " + KEY_TOTAL + " FROM "
 				+ CLOCK_DATABASE_TABLE + ", " + TASKSPLIT_DATABASE_TABLE + ", "
 				+ TASKS_DATABASE_TABLE + " WHERE " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEOUT + " <= " + todayEnd + " AND "
@@ -1166,8 +1173,17 @@ public class TimeSheetDbAdapter {
 		ContentValues initialValues = new ContentValues();
 		initialValues.put(KEY_TASK, task);
 		initialValues.put(KEY_LASTUSED, tempDate);
-		initialValues.put(KEY_SPLIT, true);
+		initialValues.put(KEY_SPLIT, 1);
 		long newRow = mDb.insert(TASKS_DATABASE_TABLE, null, initialValues);
+
+		initialValues = new ContentValues();
+		initialValues.put(KEY_SPLIT, 2);
+		try {
+			mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID + "=?",
+					new String[] { String.valueOf(parentId) });
+		} catch (SQLiteConstraintException e) {
+			Log.d(TAG, "createTask: " + e.toString());
+		}
 
 		Log.d(TAG, "new row   : " + newRow);
 		initialValues = new ContentValues();
@@ -1188,8 +1204,7 @@ public class TimeSheetDbAdapter {
 		Log.d(TAG, "fetchParentTasks: Issuing DB query.");
 		return mDb.query(TASKS_DATABASE_TABLE, new String[] { KEY_ROWID,
 				KEY_TASK, KEY_ACTIVE, KEY_SPLIT }, KEY_ACTIVE + "='" + DB_TRUE
-				+ "' and " + KEY_SPLIT + "='" + DB_FALSE + "'", null, null,
-				null, KEY_TASK);
+				+ "' and " + KEY_SPLIT + "!=1", null, null, null, KEY_TASK);
 	}
 
 	/**
@@ -1368,7 +1383,7 @@ public class TimeSheetDbAdapter {
 	 *            name of task to retrieve
 	 * @return parent's task ID, if found, 0 if not
 	 */
-	public boolean getSplitTaskFlag(String splitTask) {
+	public int getSplitTaskFlag(String splitTask) {
 		Log.d(TAG, "getSplitTaskFlag: " + splitTask);
 		return getSplitTaskFlag(getTaskIDByName(splitTask));
 	}
@@ -1381,9 +1396,9 @@ public class TimeSheetDbAdapter {
 	 *            id of task to retrieve
 	 * @return parent's task ID, if found, 0 if not
 	 */
-	public boolean getSplitTaskFlag(long rowId) {
+	public int getSplitTaskFlag(long rowId) {
 		Log.d(TAG, "getSplitTaskFlag: Issuing DB query.");
-		boolean ret;
+		int ret;
 		try {
 			Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 					new String[] { KEY_SPLIT }, KEY_ROWID + "=" + rowId, null,
@@ -1391,14 +1406,41 @@ public class TimeSheetDbAdapter {
 			if (mCursor != null) {
 				mCursor.moveToFirst();
 			}
-			ret = mCursor.getInt(0) != 0 ? true : false;
+			ret = mCursor.getInt(0);
 			Log.i(TAG, "getSplitTaskFlag: " + mCursor.getInt(0));
 			mCursor.close();
 		} catch (SQLException e) {
 			Log.i(TAG, "getSplitTaskPercentage: " + e.toString());
-			ret = false;
+			ret = 0;
 		}
 		Log.d(TAG, "getSplitTaskFlag: " + ret);
+		return ret;
+	}
+
+	/**
+	 * Return the entry that matches the given rowId
+	 * 
+	 * @param rowId
+	 *            id of task to retrieve
+	 * @return parent's task ID, if found, 0 if not
+	 */
+	public long getQuantityOfSplits(long rowId) {
+		Log.d(TAG, "getQuantityOfSplits: Issuing DB query.");
+		long ret;
+		try {
+			Cursor mCursor = mDb.query(true, TASKSPLIT_DATABASE_TABLE,
+					new String[] { "count(" + KEY_TASK + ")" }, KEY_CHARGENO
+							+ "=" + rowId, null, null, null, null, null);
+			if (mCursor != null) {
+				mCursor.moveToFirst();
+			}
+			ret = mCursor.getLong(0);
+			mCursor.close();
+		} catch (SQLException e) {
+			Log.i(TAG, "getQuantityOfSplits: " + e.toString());
+			ret = 0;
+		}
+		Log.d(TAG, "getQuantityOfSplits: " + ret + " / " + getTaskNameByID(ret));
 		return ret;
 	}
 
@@ -1438,6 +1480,21 @@ public class TimeSheetDbAdapter {
 	public void alterSplitTask(long rowID, long parentID, int percentage) {
 		Log.d(TAG, "alterSplitTask: Issuing DB query.");
 		ContentValues newData = new ContentValues(2);
+		long currentParent = getSplitTaskParent(rowID);
+		// If the number of sub-splits under the parent task is 1 (<2) and we
+		// are changing the parent, set the split flag to 0.
+		if (getQuantityOfSplits(currentParent) < 2 && currentParent != parentID) {
+			ContentValues initialValues = new ContentValues(1);
+			initialValues.put(KEY_SPLIT, 0);
+			mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID + "=?",
+					new String[] { String.valueOf(currentParent) });
+		}
+		if (currentParent != parentID) {
+			ContentValues initialValues = new ContentValues(1);
+			initialValues.put(KEY_SPLIT, 2);
+			mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID + "=?",
+					new String[] { String.valueOf(parentID) });
+		}
 		newData.put(KEY_CHARGENO, parentID);
 		newData.put(KEY_PERCENTAGE, percentage);
 		try {

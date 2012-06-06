@@ -32,10 +32,9 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.SeekBar;
-import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
-import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 /**
@@ -57,7 +56,7 @@ public class EditTaskHandler extends Activity {
 	private TextView percentSymbol;
 	private TimeSheetDbAdapter db;
 	private Cursor parents;
-	boolean oldSplitState = false;
+	int oldSplitState = 0;
 	long oldParent;
 	int oldPercentage = 100;
 	String[] items;
@@ -70,7 +69,9 @@ public class EditTaskHandler extends Activity {
 	// showTaskEdit();
 	// }
 
-	/** Called when the activity is resumed or created. */
+	/**
+	 * Called when the activity is resumed or created.
+	 */
 	public void onResume() {
 		super.onResume();
 		Log.d(TAG, "In onResume.");
@@ -108,7 +109,7 @@ public class EditTaskHandler extends Activity {
 			oldPercentage = db.getSplitTaskPercentage(oldData);
 			oldSplitState = db.getSplitTaskFlag(oldData);
 
-			splitTask.setChecked(oldSplitState);
+			splitTask.setChecked(oldSplitState == 1 ? true : false);
 			// TODO: There must be a better way to find a string in the spinner.
 			String parentName = db.getTaskNameByID(oldParent);
 			Log.d(TAG, "showTaskEdit: trying to find: " + parentName);
@@ -126,7 +127,7 @@ public class EditTaskHandler extends Activity {
 			percentSlider.setProgress(oldPercentage);
 			percentLabel.setText(String.valueOf(oldPercentage));
 
-			if (oldSplitState) {
+			if (oldSplitState == 1) {
 				parentLabel.setVisibility(View.VISIBLE);
 				taskSpinner.setVisibility(View.VISIBLE);
 				percentLabel.setVisibility(View.VISIBLE);
@@ -197,7 +198,13 @@ public class EditTaskHandler extends Activity {
 				Intent intent = new Intent();
 				intent.setAction(result);
 				intent.putExtra("oldTaskName", oldData);
-				intent.putExtra("split", splitTask.isChecked());
+				// TODO: Test case to make sure this doesn't clobber split in
+				// parent tasks, where it == 2.
+				if (oldSplitState != 2) {
+					intent.putExtra("split", splitTask.isChecked() ? 1 : 0);
+				} else {
+					intent.putExtra("split", oldSplitState);
+				}
 				intent.putExtra("oldSplit", oldSplitState);
 				if (splitTask.isChecked()) {
 					intent.putExtra("parent",
@@ -214,7 +221,7 @@ public class EditTaskHandler extends Activity {
 	};
 
 	/**
-	 * 
+	 * Attempts to close both the cursor and the database connection.
 	 */
 	private void closeCursorDB() {
 		try {

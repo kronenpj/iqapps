@@ -478,7 +478,7 @@ public class TimeSheetActivity extends ListActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0, ActivityCodes.EDIT_ID.ordinal(), 0, "Rename Task");
+		menu.add(0, ActivityCodes.EDIT_ID.ordinal(), 0, "Edit Task");
 		menu.add(0, ActivityCodes.RETIRE_ID.ordinal(), 0, "Retire Task");
 	}
 
