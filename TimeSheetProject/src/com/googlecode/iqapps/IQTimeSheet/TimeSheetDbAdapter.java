@@ -18,6 +18,7 @@ package com.googlecode.iqapps.IQTimeSheet;
 
 import java.sql.Date;
 
+import android.R.integer;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -25,6 +26,7 @@ import android.database.CursorIndexOutOfBoundsException;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteConstraintException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 import android.widget.Toast;
@@ -58,7 +60,6 @@ public class TimeSheetDbAdapter {
 	public static final String KEY_PERCENTAGE = "percentage";
 	public static final String KEY_SPLIT = "split";
 	public static final String KEY_HOURS = "hours";
-	public static final String KEY_STOTAL = "stotal";
 	public static final String DB_FALSE = "0";
 	public static final String DB_TRUE = "1";
 
@@ -74,7 +75,7 @@ public class TimeSheetDbAdapter {
 	private static final String SUMMARY_DATABASE_TABLE = "Summary";
 	private static final String ENTRYITEMS_VIEW = "EntryItems";
 	private static final String ENTRYREPORT_VIEW = "EntryReport";
-	private static final String SUMMARY_TEMP_TABLE = "Summary";
+	private static final String TASKSPLITREPORT_VIEW = "TaskSplitReport";
 	private static final String DATABASE_METADATA = "TimeSheetMeta";
 	private static final int DATABASE_VERSION = 3;
 
@@ -130,19 +131,18 @@ public class TimeSheetDbAdapter {
 			+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID + ";";
 	private static final String TASKSPLITREPORT_VIEW_CREATE = "CREATE VIEW TaskSplitReport AS "
 			+ "SELECT Tasks._id as _id, "
-			+ "Tasks.task as parenttask, "
-			+ "CASE WHEN Tasks.split = 0 THEN Tasks.task "
-			+ "ELSE TaskSplit.task END as task, "
-			+ "CASE WHEN Tasks.split = 0 THEN 1 "
-			+ "ELSE TaskSplit.percentage END as percentage "
-			+ "FROM Tasks,TaskSplit WHERE Tasks._id=TaskSplit.chargeno";
+			+ "TaskSplit.chargeno as parenttask, "
+			+ "Tasks.task as taskdesc, "
+			// + "TaskSplit.task as task, "
+			+ "TaskSplit.percentage as percentage "
+			+ "FROM Tasks, TaskSplit WHERE Tasks._id = TaskSplit.task";
 
 	private static final String SUMMARY_TABLE_CREATE = "CREATE TEMP TABLE"
-			+ " IF NOT EXISTS " + SUMMARY_TEMP_TABLE + " (" + KEY_ROWID
+			+ " IF NOT EXISTS " + SUMMARY_DATABASE_TABLE + " (" + KEY_ROWID
 			+ " INTEGER PRIMARY KEY AUTOINCREMENT, " + KEY_TASK
 			+ " TEXT NOT NULL, " + KEY_TOTAL + " REAL DEFAULT 0);";
 	private static final String SUMMARY_TABLE_CLEAN = "DELETE FROM "
-			+ SUMMARY_TEMP_TABLE + ";";
+			+ SUMMARY_DATABASE_TABLE + ";";
 
 	private static final String TASKS_INDEX = "CREATE UNIQUE INDEX "
 			+ TASKS_DATABASE_TABLE + "_index ON " + TASKS_DATABASE_TABLE + " ("
@@ -878,17 +878,44 @@ public class TimeSheetDbAdapter {
 
 		// Log.d(TAG, "getSummaryReportCursor: Selection criteria: " +
 		// selection);
+		try {
+			Log.d(TAG, "getSummaryReportCursor: Columns: " + columns[0] + ", "
+					+ columns[1] + " and " + columns[2]);
+		} catch (Exception e) {
+			Log.d(TAG, "getSummaryReportCursor has fewer than 3 columns.");
+		}
 		Log.d(TAG, "getSummaryReportCursor: Selection arguments: " + start
 				+ ", " + end);
 		// Cursor mCursor = mDb.query(distinct, SUMMARY_DATABASE_TABLE, columns,
 		// selection, new String[] { String.valueOf(start).toString(),
 		// String.valueOf(end).toString() }, groupBy, null,
 		// orderBy, null);
-		Cursor mCursor = mDb.query(distinct, SUMMARY_DATABASE_TABLE, columns,
-				KEY_TOTAL + " > 0", new String[] {
-						String.valueOf(start).toString(),
-						String.valueOf(end).toString() }, groupBy, null,
-				orderBy, null);
+
+		// TODO: Below KEY_STOTAL was KEY_TOTAL
+		// Cursor mCursor = mDb.query(distinct, SUMMARY_DATABASE_TABLE,
+		// columns,
+		// KEY_STOTAL + " > 0",
+		// new String[] { String.valueOf(0).toString(),
+		// String.valueOf(end).toString() }, groupBy, null,
+		// orderBy, null);
+
+		String select = new String("SELECT ");
+		if (distinct)
+			select = select.concat("DISTINCT ");
+		for (int c = 0; c < columns.length; c++) {
+			if (c == 0) {
+				select = select.concat(columns[c]);
+			} else {
+				select = select.concat(", " + columns[c]);
+			}
+		}
+		select = select.concat(" FROM " + SUMMARY_DATABASE_TABLE);
+		select = select.concat(" WHERE " + KEY_TOTAL + " > 0");
+		select = select.concat(" GROUP BY " + groupBy);
+		select = select.concat(" ORDER BY " + orderBy);
+		Log.d(TAG, "getSummaryCursor: query: " + select);
+		Cursor mCursor = mDb.rawQuery(select, null);
+
 		if (mCursor != null) {
 			mCursor.moveToLast();
 		} else {
@@ -955,9 +982,9 @@ public class TimeSheetDbAdapter {
 	 * 
 	 * @return Cursor over the results.
 	 */
-	public Cursor daySummary(long time) {
+	public Cursor daySummaryOld(long time) {
 		if (time < 0)
-			daySummary();
+			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfDay(time);
 		long todayEnd = TimeHelpers.millisToEndOfDay(time);
@@ -985,7 +1012,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over the results.
 	 */
 	// TODO: Finish and replace the other routines with it.
-	public Cursor daySummaryTemp(long time) {
+	public Cursor daySummary(long time) {
 		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
@@ -1000,12 +1027,16 @@ public class TimeSheetDbAdapter {
 		// String[] columns = { KEY_TASK, KEY_HOURS };
 		// String groupBy = KEY_TASK;
 		// String orderBy = KEY_TASK;
-		String[] columns = { KEY_ROWID, KEY_TASK,
-				"SUM((" + KEY_TOTAL + ")/3600000.0) AS " + KEY_STOTAL };
+		String[] columns = { KEY_ROWID, KEY_TASK, KEY_TOTAL };
 		String groupBy = KEY_TASK;
-		String orderBy = KEY_STOTAL + " DESC";
-		return getSummaryCursor(true, columns, groupBy, orderBy, todayStart,
-				todayEnd);
+		String orderBy = KEY_TOTAL + " DESC";
+		try {
+			return getSummaryCursor(true, columns, groupBy, orderBy,
+					todayStart, todayEnd);
+		} catch (SQLiteException e) {
+			Log.e(TAG, "getSummaryCursor: " + e.toString());
+			return null;
+		}
 	}
 
 	/**
@@ -1058,7 +1089,7 @@ public class TimeSheetDbAdapter {
 	 * 
 	 * @return Cursor over the results.
 	 */
-	public Cursor weekSummary(long time) {
+	public Cursor weekSummaryOld(long time) {
 		if (time < 0)
 			weekSummary();
 
@@ -1086,14 +1117,56 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
+	 * Method that populates a temporary table for a single specified day from
+	 * the entry view.
+	 * 
+	 * @return Cursor over the results.
+	 */
+	// TODO: Finish and replace the other routines with it.
+	public Cursor weekSummary(long time) {
+		if (time <= 0)
+			time = TimeHelpers.millisNow();
+
+		long todayStart = TimeHelpers.millisToStartOfWeek(time);
+		long todayEnd = TimeHelpers.millisToEndOfWeek(time);
+
+		Log.d(TAG, "weekSummary start: " + TimeHelpers.millisToDate(todayStart));
+		Log.d(TAG, "weekSummary end: " + TimeHelpers.millisToDate(todayEnd));
+
+		populateSummary(todayStart, todayEnd);
+
+		// String[] columns = { KEY_TASK, KEY_HOURS };
+		// String groupBy = KEY_TASK;
+		// String orderBy = KEY_TASK;
+		String[] columns = { KEY_ROWID, KEY_TASK, KEY_TOTAL };
+		String groupBy = KEY_TASK;
+		String orderBy = KEY_TOTAL + " DESC";
+		try {
+			return getSummaryCursor(true, columns, groupBy, orderBy,
+					todayStart, todayEnd);
+		} catch (SQLiteException e) {
+			Log.e(TAG, "getSummaryCursor: " + e.toString());
+			return null;
+		}
+	}
+
+	/**
 	 * @param todayStart
 	 * @param todayEnd
 	 */
 	private void populateSummary(long todayStart, long todayEnd) {
-		mDb.execSQL(SUMMARY_TABLE_CREATE);
+		try {
+			Log.d(TAG, "populateSummary: Creating summary table.");
+			mDb.execSQL(SUMMARY_TABLE_CREATE);
+		} catch (SQLException e) {
+			// This will occur every time except the first, so just deal with
+			// it.
+			Log.d(TAG, "populateSummary: SUMMARY_TABLE_CREATE: " + e.toString());
+		}
+		Log.d(TAG, "populateSummary: Cleaning summary table.");
 		mDb.execSQL(SUMMARY_TABLE_CLEAN);
-		final String populateTemp1 = "INSERT INTO " + SUMMARY_TEMP_TABLE + " ("
-				+ KEY_TASK + "," + KEY_TOTAL + ") SELECT "
+		final String populateTemp1 = "INSERT INTO " + SUMMARY_DATABASE_TABLE
+				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
 				+ TASKS_DATABASE_TABLE + "." + KEY_TASK + ", "
 				+ "SUM((CASE WHEN " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
 				+ " = 0 THEN time() ELSE " + CLOCK_DATABASE_TABLE + "."
@@ -1106,26 +1179,43 @@ public class TimeSheetDbAdapter {
 				+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID
 				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_SPLIT
 				+ "=0 GROUP BY " + KEY_TASK;
+		Log.d(TAG, "populateTemp1\n" + populateTemp1);
 		mDb.execSQL(populateTemp1);
 
-		final String populateTemp2 = "INSERT INTO " + SUMMARY_TEMP_TABLE + " ("
-				+ KEY_TASK + "," + KEY_TOTAL + ") SELECT "
-				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_TASK + ", "
-				+ "(sum((CASE WHEN " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
+		final String populateTemp2 = "INSERT INTO " + SUMMARY_DATABASE_TABLE
+				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
+				+ TASKSPLITREPORT_VIEW + ".taskdesc, " + "(sum((CASE WHEN "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
 				+ " = 0 THEN time() ELSE " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEOUT + " END - " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEIN + ")/3600000.0) * (" + TASKSPLIT_DATABASE_TABLE
 				+ "." + KEY_PERCENTAGE + "/100.0)) AS " + KEY_TOTAL + " FROM "
 				+ CLOCK_DATABASE_TABLE + ", " + TASKSPLIT_DATABASE_TABLE + ", "
-				+ TASKS_DATABASE_TABLE + " WHERE " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEOUT + " <= " + todayEnd + " AND "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= " + todayStart
-				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_SPLIT + "=1 AND "
+				+ TASKS_DATABASE_TABLE
+				+ ", "
+				+ TASKSPLITREPORT_VIEW
+				+ " WHERE "
+				+ CLOCK_DATABASE_TABLE
+				+ "."
+				+ KEY_TIMEOUT
+				+ " <= "
+				+ todayEnd
+				+ " AND "
+				+ CLOCK_DATABASE_TABLE
+				+ "."
+				+ KEY_TIMEIN
+				+ " >= "
+				+ todayStart
+				+ " AND " // + TASKS_DATABASE_TABLE + "."
+				// + KEY_SPLIT + "=1 AND "
 				+ CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
-				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_CHARGENO + " GROUP BY "
+				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_CHARGENO + " AND "
+				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_PERCENTAGE + " = "
+				+ TASKSPLITREPORT_VIEW + "." + KEY_PERCENTAGE + " GROUP BY "
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_TASK;
+		Log.d(TAG, "populateTemp2\n" + populateTemp2);
 		mDb.execSQL(populateTemp2);
 	}
 

@@ -17,6 +17,7 @@
         <include layout="@layout/reportlist" />
     </LinearLayout>
 
+    <!-- This is where the footer should really go. -->
     <include layout="@layout/daybuttons" />
 
 </LinearLayout>

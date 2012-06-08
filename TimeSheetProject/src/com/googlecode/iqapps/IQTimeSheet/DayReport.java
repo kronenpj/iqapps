@@ -16,18 +16,17 @@
 
 package com.googlecode.iqapps.IQTimeSheet;
 
-import com.googlecode.iqapps.TimeHelpers;
-
 import android.app.ListActivity;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity to display a summary report of tasks and their cumulative durations
@@ -46,12 +45,13 @@ public class DayReport extends ListActivity {
 	private Button[] child;
 	private float dayHours = -1;
 
-	/** Called when the activity is first created. */
+	/** Called when the activity is resumed or created. */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.d(TAG, "In onCreate.");
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "In onResume.");
 
+		// FIXME: This causes a FC when resuming from the home menu.
 		dayHours = TimeSheetActivity.prefs.getHoursPerDay();
 
 		try {
@@ -59,6 +59,7 @@ public class DayReport extends ListActivity {
 		} catch (RuntimeException e) {
 			Log.e(TAG, e.toString() + " calling showReport");
 		}
+		Log.d(TAG, "Back from showReport.");
 		setTitle("Day Report");
 
 		db = new TimeSheetDbAdapter(this);
@@ -68,6 +69,7 @@ public class DayReport extends ListActivity {
 			Log.e(TAG, "setupDB: " + e.toString());
 			finish();
 		}
+		Log.d(TAG, "Set up DB connection.");
 
 		try {
 			fillData();
@@ -95,6 +97,7 @@ public class DayReport extends ListActivity {
 	 * in it.
 	 */
 	private void setupDB() {
+		Log.d(TAG, "In setupDB.");
 		try {
 			db.open();
 		} catch (SQLException e) {
@@ -126,7 +129,7 @@ public class DayReport extends ListActivity {
 		} catch (NullPointerException e) {
 			// Do nothing, this is expected sometimes.
 		} catch (Exception e) {
-			Log.e(TAG, "fillData: " + e.toString());
+			Log.e(TAG, "timeEntryCursor.close: " + e.toString());
 			return;
 		}
 
@@ -136,6 +139,7 @@ public class DayReport extends ListActivity {
 		try {
 			timeEntryCursor.moveToFirst();
 		} catch (NullPointerException e) {
+			Log.e(TAG, "timeEntryCursor.moveToFirst: " + e.toString());
 			return;
 		} catch (Exception e) {
 			Log.e(TAG, "timeEntryCursor.moveToFirst: " + e.toString());
@@ -161,7 +165,7 @@ public class DayReport extends ListActivity {
 							TimeSheetDbAdapter.KEY_TOTAL }, new int[] {
 							android.R.id.text1, android.R.id.text2 }));
 		} catch (Exception e) {
-			Log.e(TAG, e.toString());
+			Log.e(TAG, "reportList.setAdapter: " + e.toString());
 			finish();
 		}
 	}
@@ -176,7 +180,8 @@ public class DayReport extends ListActivity {
 					+ " while calling setContentView(R.layout.report)");
 		}
 
-		reportList = (ListView) findViewById(R.id.reportlist);
+		// reportList = (ListView) findViewById(R.id.reportlist);
+		reportList = (ListView) findViewById(android.R.id.list);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };

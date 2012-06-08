@@ -164,7 +164,7 @@ public class EditDayEntriesHandler extends ListActivity {
 					+ " while calling setContentView(R.layout.report)");
 		}
 
-		reportList = (ListView) findViewById(R.id.reportlist);
+		reportList = (ListView) findViewById(android.R.id.list);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };

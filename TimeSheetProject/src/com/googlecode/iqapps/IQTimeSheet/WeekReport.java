@@ -21,18 +21,17 @@
  */
 package com.googlecode.iqapps.IQTimeSheet;
 
-import com.googlecode.iqapps.TimeHelpers;
-
 import android.app.ListActivity;
 import android.database.Cursor;
 import android.database.SQLException;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity to produce a report for a selected week.
@@ -52,13 +51,14 @@ public class WeekReport extends ListActivity {
 	private float dayHours = -1;
 
 	/**
-	 * Called when the activity is first created.
+	 * Called when the activity is resumed or created.
 	 */
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		Log.d(TAG, "In onCreate.");
+	public void onResume() {
+		super.onResume();
+		Log.d(TAG, "In onResume.");
 
+		// FIXME: I bet these cause a FC when resuming from the home menu.
 		weekHours = TimeSheetActivity.prefs.getHoursPerWeek();
 		dayHours = TimeSheetActivity.prefs.getHoursPerDay();
 
@@ -201,7 +201,7 @@ public class WeekReport extends ListActivity {
 					+ " while calling setContentView(R.layout.report)");
 		}
 
-		reportList = (ListView) findViewById(R.id.reportlist);
+		reportList = (ListView) findViewById(android.R.id.list);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };
