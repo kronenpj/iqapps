@@ -2,10 +2,9 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
 	<EditTextPreference android:title="@string/taxpercentpref"
-		android:key="tax.percent" android:order="10" android:summary="@string/taxpercentpref"
-		android:defaultValue="7"></EditTextPreference>
+		android:key="tax.percent" android:order="10" android:defaultValue="7" android:summary="@string/taxpercent"></EditTextPreference>
 	<EditTextPreference android:title="@string/tippercentpref"
-		android:key="tip.percent" android:order="20" android:summary="@string/tippercentpref"
-		android:defaultValue="18"></EditTextPreference>
+		android:key="tip.percent" android:order="20" android:defaultValue="18" android:summary="@string/tippercent"></EditTextPreference>
 
+<CheckBoxPreference android:key="tip.on.tax" android:summary="@string/tip_on_tax_summary" android:summaryOn="@string/tip_on_tax_yes" android:summaryOff="@string/tip_on_tax_no" android:order="100" android:title="@string/tip_on_tax_title"></CheckBoxPreference>
 </PreferenceScreen>

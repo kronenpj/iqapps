@@ -46,28 +46,30 @@ public class TipCalcActivity extends Activity {
 	private static final int MENU_SETTINGS = 0x11;
 	private static final int MENU_ABOUT = 0x12;
 
-	public String applicationName;
-	public TextView[] childFloat;
-	public TextView[] childPercent;
-	public TextView billTotal;
-	public TextView coupon;
-	public TextView grandTotal;
-	public TextView tax;
-	public TextView tip;
-	public TextView couponPercent;
-	public TextView taxPercent;
-	public TextView tipPercent;
-	public double billTotalValue;
-	public double couponValue;
-	public double grandTotalValue;
-	public double taxValue;
-	public double tipValue;
-	public double couponPercentValue;
-	public double taxPercentValue;
-	public double tipPercentValue;
+	String applicationName;
+	TextView[] tvaChildFloat;
+	TextView[] tvaChildPercent;
+	TextView tvBillTotal;
+	TextView tvCoupon;
+	TextView tvGrandTotal;
+	TextView tvTax;
+	TextView tvTip;
+	TextView tvCouponPercent;
+	TextView tvTaxPercent;
+	TextView tvTipPercent;
+
+	boolean tipOnTax = false;
+	double billTotalValue;
+	double couponValue;
+	double grandTotalValue;
+	double taxValue;
+	double tipValue;
+	double couponPercentValue;
+	double taxPercentValue;
+	double tipPercentValue;
 
 	private static enum element {
-		BILLTOTAL, TIP, TIPP, TAX, TAXP, GRANDTOTAL, COUPON
+		BILLTOTAL, TIP, TIPP, TAX, TAXP, GRANDTOTAL, COUPON, COUPONP
 	};
 
 	/**
@@ -79,59 +81,75 @@ public class TipCalcActivity extends Activity {
 		setTheme(android.R.style.Theme);
 		setTitle(R.string.app_name);
 		setContentView(R.layout.main);
-		Log.d(TAG, "onCreate.");
+		// Log.d(TAG, "onCreate.");
 
 		prefs = new PreferenceHelper(this);
 
-		taxPercentValue = prefs.getTaxPercentDefault();
-		tipPercentValue = prefs.getTipPercentDefault();
+		taxPercentValue = prefs.getTaxPercentPref();
+		tipPercentValue = prefs.getTipPercentPref();
+		tipOnTax = prefs.getTipOnTaxPref();
 
 		Resources res = getResources();
 		applicationName = res.getString(R.string.app_name);
 
 		Button clearButton = (Button) findViewById(R.id.clear);
 		clearButton.setOnClickListener(mButtonListener);
+		Button resetButton = (Button) findViewById(R.id.reset);
+		resetButton.setOnClickListener(mButtonListener);
 
-		billTotal = (TextView) findViewById(R.id.total);
-		coupon = (TextView) findViewById(R.id.coupon);
-		grandTotal = (TextView) findViewById(R.id.grandtotal);
-		tax = (TextView) findViewById(R.id.tax);
-		tip = (TextView) findViewById(R.id.tip);
+		tvBillTotal = (TextView) findViewById(R.id.total);
+		tvCoupon = (TextView) findViewById(R.id.coupon);
+		tvGrandTotal = (TextView) findViewById(R.id.grandtotal);
+		tvTax = (TextView) findViewById(R.id.tax);
+		tvTip = (TextView) findViewById(R.id.tip);
 
-		childFloat = new TextView[] { billTotal, coupon, grandTotal, tax, tip };
-		for (int count = 0; count < childFloat.length; count++) {
+		tvaChildFloat = new TextView[] { tvBillTotal, tvCoupon, tvGrandTotal,
+				tvTax, tvTip };
+		for (int count = 0; count < tvaChildFloat.length; count++) {
 			try {
 				final int index = count;
-				childFloat[index].setOnFocusChangeListener(mTextViewListener);
+				tvaChildFloat[index]
+						.setOnFocusChangeListener(mTextViewListener);
 			} catch (NullPointerException e) {
 				Toast.makeText(TipCalcActivity.this, "NullPointerException",
 						Toast.LENGTH_SHORT).show();
 			}
 		}
 
-		couponPercent = (TextView) findViewById(R.id.couponplabel);
-		taxPercent = (TextView) findViewById(R.id.taxpercent);
-		tipPercent = (TextView) findViewById(R.id.tipplabel);
+		tvCouponPercent = (TextView) findViewById(R.id.couponpercent);
+		tvTaxPercent = (TextView) findViewById(R.id.taxpercent);
+		tvTipPercent = (TextView) findViewById(R.id.tippercent);
 
-		taxPercent.setOnFocusChangeListener(mTextViewListener);
-
-		childPercent = new TextView[] { couponPercent, taxPercent, tipPercent };
+		tvaChildPercent = new TextView[] { tvCouponPercent, tvTaxPercent,
+				tvTipPercent };
+		for (int count = 0; count < tvaChildPercent.length; count++) {
+			try {
+				final int index = count;
+				tvaChildPercent[index]
+						.setOnFocusChangeListener(mTextViewListener);
+			} catch (NullPointerException e) {
+				Toast.makeText(TipCalcActivity.this, "NullPointerException",
+						Toast.LENGTH_SHORT).show();
+			}
+		}
 
 		// Map out the order of fields traversed when "Next" is pressed.
-		billTotal.setNextFocusDownId(R.id.coupon);
-		billTotal.setNextFocusLeftId(R.id.coupon);
-		coupon.setNextFocusDownId(R.id.tip);
-		coupon.setNextFocusLeftId(R.id.tip);
-		tip.setNextFocusDownId(R.id.tippercent);
-		tip.setNextFocusLeftId(R.id.tippercent);
-		tipPercent.setNextFocusDownId(R.id.grandtotal);
-		tipPercent.setNextFocusLeftId(R.id.grandtotal);
-		grandTotal.setNextFocusDownId(R.id.tax);
-		grandTotal.setNextFocusLeftId(R.id.tax);
-		tax.setNextFocusDownId(R.id.taxpercent);
-		tax.setNextFocusLeftId(R.id.taxpercent);
-		taxPercent.setNextFocusDownId(R.id.total);
-		taxPercent.setNextFocusLeftId(R.id.total);
+		tvBillTotal.setNextFocusDownId(R.id.coupon);
+		tvBillTotal.setNextFocusLeftId(R.id.coupon);
+		tvCoupon.setNextFocusDownId(R.id.tip);
+		tvCoupon.setNextFocusLeftId(R.id.tip);
+		tvTip.setNextFocusDownId(R.id.tax);
+		tvTip.setNextFocusLeftId(R.id.tax);
+		tvTax.setNextFocusDownId(R.id.grandtotal);
+		tvTax.setNextFocusLeftId(R.id.grandtotal);
+		tvGrandTotal.setNextFocusDownId(R.id.couponpercent);
+		tvGrandTotal.setNextFocusLeftId(R.id.couponpercent);
+		tvCouponPercent.setNextFocusDownId(R.id.tippercent);
+		tvCouponPercent.setNextFocusLeftId(R.id.tippercent);
+		tvTipPercent.setNextFocusDownId(R.id.taxpercent);
+		tvTipPercent.setNextFocusLeftId(R.id.taxpercent);
+		tvTaxPercent.setNextFocusDownId(R.id.total);
+		tvTaxPercent.setNextFocusLeftId(R.id.total);
 
 		fillValues();
 	}
@@ -139,33 +157,7 @@ public class TipCalcActivity extends Activity {
 	/** Called when the activity resumed. */
 	@Override
 	public void onResume() {
-		Log.d(TAG, "onResume");
-
-		// InputMethodManager mImm;
-		// boolean result = false;
-		// mImm = (InputMethodManager) this
-		// .getSystemService(Context.INPUT_METHOD_SERVICE);
-		// mImm.getInputMethodList();
-		// mImm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0);
-		// result = mImm.showSoftInput(billTotal.getRootView(),
-		// InputMethodManager.SHOW_FORCED);
-		// result = mImm.showSoftInput(billTotal,
-		// InputMethodManager.SHOW_FORCED);
-		// result = mImm.showSoftInput(billTotal.getRootView(),
-		// InputMethodManager.SHOW_IMPLICIT);
-		// Configuration config = this.getResources().getConfiguration();
-		// if (config.hardKeyboardHidden ==
-		// Configuration.HARDKEYBOARDHIDDEN_YES) {
-		// result = mImm.showSoftInput(billTotal.getRootView(),
-		// InputMethodManager.SHOW_IMPLICIT);
-		// } else {
-		// result = mImm.showSoftInput(billTotal.getRootView(),
-		// InputMethodManager.SHOW_FORCED);
-		// }
-		// if (result)
-		// Log.i(TAG, "showSoftInput returned true.");
-		// else
-		// Log.i(TAG, "showSoftInput returned false.");
+		// Log.d(TAG, "onResume");
 
 		super.onResume();
 	}
@@ -173,7 +165,7 @@ public class TipCalcActivity extends Activity {
 	/** Called when the activity destroyed. */
 	@Override
 	public void onDestroy() {
-		Log.d(TAG, "onDestroy");
+		// Log.d(TAG, "onDestroy");
 
 		super.onDestroy();
 	}
@@ -233,7 +225,6 @@ public class TipCalcActivity extends Activity {
 	public OnClickListener mButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			// Perform action on selected list item.
-
 			// Log.d(TAG, "onClickListener view id: " + v.getId());
 
 			switch (v.getId()) {
@@ -243,11 +234,21 @@ public class TipCalcActivity extends Activity {
 				grandTotalValue = 0.0;
 				taxValue = 0.0;
 				tipValue = 0.0;
-				taxPercentValue = prefs.getTaxPercentDefault();
-				tipPercentValue = prefs.getTipPercentDefault();
-				fillValues();
+				break;
+			case R.id.reset:
+				billTotalValue = 0.0;
+				couponValue = 0.0;
+				grandTotalValue = 0.0;
+				taxValue = 0.0;
+				tipValue = 0.0;
+				taxPercentValue = prefs.getTaxPercentPref();
+				tipPercentValue = prefs.getTipPercentPref();
 				break;
 			}
+			recalculate(element.BILLTOTAL);
+			fillValues();
+			tvBillTotal.requestFocus();
+			tvBillTotal.setText("");
 		}
 	};
 
@@ -259,13 +260,16 @@ public class TipCalcActivity extends Activity {
 		public void onFocusChange(View v, boolean hasFocus) {
 			// Perform action on selected list item.
 
-			Log.d(TAG, "onFocusChangeListener view id: " + v.getId());
+			// Log.d(TAG, "onFocusChangeListener view id: " + v.getId());
 
 			if (hasFocus == true) {
-				if (!((TextView) v).getText().toString().matches("0.00"))
-					((EditText) v).selectAll();
-				else
+				Log.d(TAG, "OnFocusChangeListener: focused: '"
+						+ ((TextView) v).getText().toString() + "'");
+				if (((TextView) v).getText().toString().matches("0.00")
+						|| ((TextView) v).getText().toString().matches("0.0%"))
 					((EditText) v).setText("");
+				else
+					((EditText) v).selectAll();
 				return;
 			}
 
@@ -280,6 +284,16 @@ public class TipCalcActivity extends Activity {
 					couponValue = 0.0;
 				}
 				recalculate(element.COUPON);
+				break;
+			case R.id.couponpercent:
+				textBox = (TextView) findViewById(R.id.couponpercent);
+				try {
+					couponPercentValue = Double.valueOf(textBox.getText()
+							.toString());
+				} catch (NumberFormatException e) {
+					couponPercentValue = 0.0;
+				}
+				recalculate(element.COUPONP);
 				break;
 			case R.id.grandtotal:
 				textBox = (TextView) findViewById(R.id.grandtotal);
@@ -306,7 +320,7 @@ public class TipCalcActivity extends Activity {
 					taxPercentValue = Double.valueOf(textBox.getText()
 							.toString()) / 100.0;
 				} catch (NumberFormatException e) {
-					taxPercentValue = prefs.getTaxPercentDefault();
+					taxPercentValue = prefs.getTaxPercentPref();
 				}
 				recalculate(element.TAXP);
 				break;
@@ -323,11 +337,11 @@ public class TipCalcActivity extends Activity {
 				textBox = (TextView) findViewById(R.id.tippercent);
 				try {
 					tipPercentValue = Double.valueOf(textBox.getText()
-							.toString());
+							.toString()) / 100.0;
 				} catch (NumberFormatException e) {
-					tipPercentValue = prefs.getTipPercentDefault();
+					tipPercentValue = prefs.getTipPercentPref();
 				}
-				recalculate(element.TIP);
+				recalculate(element.TIPP);
 				break;
 			case R.id.total:
 				textBox = (TextView) findViewById(R.id.total);
@@ -345,22 +359,62 @@ public class TipCalcActivity extends Activity {
 	};
 
 	/**
+	 * This method is called when the sending activity has finished, with the
+	 * result it supplied.
+	 * 
+	 * @param requestCode
+	 *            The original request code as given to startActivity().
+	 * @param resultCode
+	 *            From sending activity as per setResult().
+	 * @param data
+	 *            From sending activity as per setResult().
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		// Check to see that what we received is what we wanted to see.
+		// Log.d(TAG, "onActivityResult.");
+		if (requestCode == PREFS_CODE) {
+			// Log.d(TAG, "onActivityResult: resultCode: " + resultCode);
+			// This is a standard resultCode that is sent back if the
+			// activity doesn't supply an explicit result. It will also
+			// be returned if the activity failed to launch.
+			tipOnTax = prefs.getTipOnTaxPref();
+			// Log.d(TAG, "onActivityResult: tipOnTax: "
+			// + (tipOnTax ? "True" : "False"));
+			recalculate(element.TIPP);
+		}
+	}
+
+	/**
 	 * Calculate the grand total or other fields when one is changed.
 	 * 
 	 * @param item
 	 *            The item of the enumeration which changed.
 	 */
 	private void recalculate(element item) {
+		double includeTaxInTip = tipOnTax ? 1.0 : 0.0;
+		// Log.d(TAG, "recaclulate: includeTaxInTip: " + includeTaxInTip);
 		switch (item) {
 		case BILLTOTAL:
-			tipValue = (billTotalValue + couponValue) * tipPercentValue;
 			taxValue = billTotalValue
 					- (billTotalValue / (1 + taxPercentValue));
+			tipValue = (billTotalValue + couponValue + (taxValue * includeTaxInTip))
+					* tipPercentValue;
 			break;
 		case COUPON:
 			if (couponValue > 0) {
 				couponPercentValue = 1 - (billTotalValue / (billTotalValue + couponValue));
-				tipValue = (billTotalValue + couponValue) * tipPercentValue;
+				tipValue = (billTotalValue + couponValue + (taxValue * includeTaxInTip))
+						* tipPercentValue;
+			} else {
+				couponValue = 0.0;
+				couponPercentValue = 0.0;
+			}
+			break;
+		case COUPONP:
+			if (couponPercentValue > 0) {
+				couponValue = billTotalValue
+						- (billTotalValue / (1 + couponPercentValue));
 			} else {
 				couponValue = 0.0;
 				couponPercentValue = 0.0;
@@ -381,7 +435,7 @@ public class TipCalcActivity extends Activity {
 				taxPercentValue = (-taxValue) / (taxValue - billTotalValue);
 			} else {
 				taxValue = 0.0;
-				taxPercentValue = prefs.getTaxPercentDefault();
+				taxPercentValue = prefs.getTaxPercentPref();
 			}
 			break;
 		case TAXP:
@@ -390,23 +444,25 @@ public class TipCalcActivity extends Activity {
 						- (billTotalValue / (1 + taxPercentValue));
 			} else {
 				taxValue = 0.0;
-				taxPercentValue = prefs.getTaxPercentDefault();
+				taxPercentValue = prefs.getTaxPercentPref();
 			}
 			break;
 		case TIP:
 			if (tipValue > 0)
-				tipPercentValue = tipValue / (billTotalValue + couponValue);
+				tipPercentValue = tipValue
+						/ (billTotalValue + couponValue + (taxValue * includeTaxInTip));
 			else {
 				tipValue = 0.0;
-				tipPercentValue = prefs.getTipPercentDefault();
+				tipPercentValue = prefs.getTipPercentPref();
 			}
 			break;
 		case TIPP:
 			if (tipPercentValue > 0)
-				tipValue = tipPercentValue * (billTotalValue + couponValue);
+				tipValue = tipPercentValue
+						* (billTotalValue + couponValue + (taxValue * includeTaxInTip));
 			else {
 				tipValue = 0.0;
-				tipPercentValue = prefs.getTipPercentDefault();
+				tipPercentValue = prefs.getTipPercentPref();
 			}
 			break;
 		}
@@ -415,15 +471,15 @@ public class TipCalcActivity extends Activity {
 	}
 
 	private void fillValues() {
-		billTotal.setText(String.format("%.2f", billTotalValue));
-		coupon.setText(String.format("%.2f", couponValue));
-		grandTotal.setText(String.format("%.2f", grandTotalValue));
-		tip.setText(String.format("%.2f", tipValue));
-		tax.setText(String.format("%.2f", taxValue));
+		tvBillTotal.setText(String.format("%.2f", billTotalValue));
+		tvGrandTotal.setText(String.format("%.2f", grandTotalValue));
+		tvCoupon.setText(String.format("%.2f", couponValue));
+		tvTip.setText(String.format("%.2f", tipValue));
+		tvTax.setText(String.format("%.2f", taxValue));
 
-		couponPercent
-				.setText(String.format("%.1f%%", couponPercentValue * 100));
-		tipPercent.setText(String.format("%.1f%%", tipPercentValue * 100));
-		taxPercent.setText(String.format("%.1f%%", taxPercentValue * 100));
+		tvCouponPercent.setText(String.format("%.1f%%",
+				couponPercentValue * 100));
+		tvTipPercent.setText(String.format("%.1f%%", tipPercentValue * 100));
+		tvTaxPercent.setText(String.format("%.1f%%", taxPercentValue * 100));
 	}
 }

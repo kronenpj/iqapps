@@ -18,7 +18,7 @@
 			android:layout_gravity="center" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="5dip"
 			android:paddingRight="1dip" />
-		<TextView android:text="@string/tippercent" android:id="@+id/tipplabel"
+		<TextView android:text="@string/tax" android:id="@+id/taxlabel"
 			android:layout_gravity="center" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="5dip"
 			android:paddingRight="1dip" />
@@ -32,26 +32,15 @@
 		<EditText android:text="0.00" android:id="@+id/coupon"
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
-			android:inputType="phone" android:width="65dip" />
+			android:inputType="phone" android:width="70dip" />
 		<EditText android:text="0.00" android:id="@+id/tip"
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
-			android:inputType="phone" android:width="65dip" />
-		<EditText android:text="0%" android:id="@+id/tippercent"
+			android:inputType="phone" android:width="70dip" />
+		<EditText android:text="0.00" android:id="@+id/tax"
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
-			android:inputType="phone" android:width="65dip" />
-	</TableRow>
-
-	<TableRow>
-		<TextView android:text="@string/none" android:id="@+id/blank1"
-			android:layout_gravity="center" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:paddingLeft="0dip"
-			android:paddingRight="1dip" />
-		<TextView android:text="0%" android:id="@+id/couponplabel"
-			android:layout_gravity="center" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:paddingLeft="5dip"
-			android:paddingRight="1dip" />
+			android:inputType="phone" android:width="70dip" />
 	</TableRow>
 
 	<TableRow>
@@ -59,7 +48,11 @@
 			android:layout_gravity="center" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="0dip"
 			android:paddingRight="1dip" />
-		<TextView android:text="@string/tax" android:id="@+id/taxlabel"
+		<TextView android:text="@string/couponpercent" android:id="@+id/couponplabel"
+			android:layout_gravity="center" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:paddingLeft="5dip"
+			android:paddingRight="1dip" />
+		<TextView android:text="@string/tippercent" android:id="@+id/tipplabel"
 			android:layout_gravity="center" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:paddingLeft="5dip"
 			android:paddingRight="1dip" />
@@ -74,14 +67,24 @@
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
 			android:inputType="phone" android:width="70dip" />
-		<EditText android:text="0.00" android:id="@+id/tax"
+		<EditText android:text="0.00" android:id="@+id/couponpercent"
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
 			android:inputType="phone" android:width="70dip" />
+		<EditText android:text="0%" android:id="@+id/tippercent"
+			android:layout_gravity="center|right" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:gravity="right"
+			android:inputType="phone" android:width="65dip" />
 		<EditText android:text="0%" android:id="@+id/taxpercent"
 			android:layout_gravity="center|right" android:layout_width="wrap_content"
 			android:layout_height="wrap_content" android:gravity="right"
-			android:inputType="phone" android:width="70dip" />
-		<Button android:text="@string/clear" android:id="@+id/clear" />
+			android:inputType="phone" android:width="65dip" />
+	</TableRow>
+
+	<TableRow>
+		<Button android:layout_span="2" android:text="@string/clear"
+			android:id="@+id/clear" />
+		<Button android:layout_span="2" android:text="@string/reset"
+			android:id="@+id/reset" />
 	</TableRow>
 </TableLayout>

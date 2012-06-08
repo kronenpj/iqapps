@@ -41,26 +41,39 @@ public class PreferenceHelper {
 
 	public static final String KEY_TAX_PERCENT = "tax.percent";
 	public static final String KEY_TIP_PERCENT = "tip.percent";
+	public static final String KEY_TIP_ON_TAX = "tip.on.tax";
 
 	public PreferenceHelper(Context mCtx) {
 		prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
 	}
 
-	public double getTaxPercentDefault() {
+	public double getTaxPercentPref() {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		double taxPercent = Double.valueOf(prefs.getString(KEY_TAX_PERCENT, "7"));
-		Log.d(TAG, "Preference " + KEY_TAX_PERCENT + ": " + taxPercent);
+		double taxPercent = Double.valueOf(prefs
+				.getString(KEY_TAX_PERCENT, "7"));
+		// Log.d(TAG, "Preference " + KEY_TAX_PERCENT + ": " + taxPercent);
 		return taxPercent / 100.0;
 	}
 
-	public double getTipPercentDefault() {
+	public double getTipPercentPref() {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		double tipPercent = Double.valueOf(prefs.getString(KEY_TIP_PERCENT, "18"));
-		Log.d(TAG, "Preference " + KEY_TIP_PERCENT + ": " + tipPercent);
+		double tipPercent = Double.valueOf(prefs.getString(KEY_TIP_PERCENT,
+				"18"));
+		// Log.d(TAG, "Preference " + KEY_TIP_PERCENT + ": " + tipPercent);
 		return tipPercent / 100.0;
+	}
+
+	public boolean getTipOnTaxPref() {
+		// Be careful here - The list used by the preferences activity is based
+		// on String, not any other primitive or class... This threw cast
+		// exceptions early on in development.
+		boolean tipOnTax = Boolean.valueOf(prefs.getBoolean(KEY_TIP_ON_TAX,
+				false));
+		// Log.d(TAG, "Preference " + KEY_TIP_ON_TAX + ": " + tipOnTax);
+		return tipOnTax;
 	}
 }

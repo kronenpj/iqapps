@@ -27,7 +27,6 @@ package com.googlecode.iqapps.IQTipCalc;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.TextView;
 
 /**
@@ -46,14 +45,14 @@ public class AboutDialog extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
-		Log.d(TAG, "In onCreate.");
-		
+		// Log.d(TAG, "In onCreate.");
+
 		setContentView(R.layout.about);
 		TextView version = (TextView) findViewById(R.id.version);
-		TextView aboutText = (TextView) findViewById(R.id.abouttext);
-		
+		// TextView aboutText = (TextView) findViewById(R.id.abouttext);
+
 		version.setText(R.string.msg_version);
-		aboutText.setText(R.string.about_summary);
-		Log.d(TAG, "Falling out of onCreate.");
+		// aboutText.setText(R.string.about_summary);
+		// Log.d(TAG, "Falling out of onCreate.");
 	}
 }
