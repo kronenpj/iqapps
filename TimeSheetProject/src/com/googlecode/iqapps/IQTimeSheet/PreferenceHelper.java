@@ -15,13 +15,14 @@
  */
 
 /**
- * @author      (classes and interfaces only, required)
- * @version     (classes and interfaces only, required. See footnote 1)
- * @param       (methods and constructors only)
- * @return      (methods only)
- * @exception   (@throws is a synonym added in Javadoc 1.2)
- * @see         
- * @deprecated  (see How and When To Deprecate APIs)
+ * Remove the # following @...  Was causing Eclipse to think this class was deprecated.
+ * @#author      (classes and interfaces only, required)
+ * @#version     (classes and interfaces only, required. See footnote 1)
+ * @#param       (methods and constructors only)
+ * @#return      (methods only)
+ * @#exception   (@throws is a synonym added in Javadoc 1.2)
+ * @#see         
+ * @#deprecated  (see How and When To Deprecate APIs)
  */
 package com.googlecode.iqapps.IQTimeSheet;
 
@@ -72,8 +73,9 @@ public class PreferenceHelper {
 		try {
 			alignMinutesAuto = prefs.getBoolean(KEY_ALIGN_MINUTES_AUTO, false);
 		} catch (Exception e) {
-			Log.e(TAG, KEY_ALIGN_MINUTES_AUTO + " threw exception: "
-					+ e.toString());
+			Log.e(TAG,
+					KEY_ALIGN_MINUTES_AUTO + " threw exception: "
+							+ e.toString());
 		}
 		Log.d(TAG, "Preference " + KEY_ALIGN_MINUTES_AUTO + ": "
 				+ alignMinutesAuto);
@@ -85,8 +87,8 @@ public class PreferenceHelper {
 		try {
 			alignTimePicker = prefs.getBoolean(KEY_ALIGN_TIME_PICKER, true);
 		} catch (Exception e) {
-			Log.e(TAG, KEY_ALIGN_TIME_PICKER + " threw exception: "
-					+ e.toString());
+			Log.e(TAG,
+					KEY_ALIGN_TIME_PICKER + " threw exception: " + e.toString());
 		}
 		Log.d(TAG, "Preference " + KEY_ALIGN_TIME_PICKER + ": "
 				+ alignTimePicker);

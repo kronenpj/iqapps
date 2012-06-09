@@ -18,7 +18,6 @@ package com.googlecode.iqapps.IQTimeSheet;
 
 import java.sql.Date;
 
-import android.R.integer;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -252,7 +251,7 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * Close the time sheet database.
+	 * Close the database.
 	 */
 	public void close() {
 		mDbHelper.close();
@@ -1056,7 +1055,7 @@ public class TimeSheetDbAdapter {
 	 */
 	public Cursor weekEntryReport(long time) {
 		if (time < 0)
-			weekEntryReport();
+			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfWeek(time);
 		long todayEnd = TimeHelpers.millisToEndOfWeek(time);
@@ -1146,7 +1145,7 @@ public class TimeSheetDbAdapter {
 			return getSummaryCursor(true, columns, groupBy, orderBy,
 					todayStart, todayEnd);
 		} catch (SQLiteException e) {
-			Log.e(TAG, "getSummaryCursor: " + e.toString());
+			Log.e(TAG, "getSummaryCursor: " + e.getLocalizedMessage());
 			return null;
 		}
 	}
@@ -1160,12 +1159,12 @@ public class TimeSheetDbAdapter {
 			Log.d(TAG, "populateSummary: Creating summary table.");
 			mDb.execSQL(SUMMARY_TABLE_CREATE);
 		} catch (SQLException e) {
-			// This will occur every time except the first, so just deal with
-			// it.
+			// This shouldn't occur, but hope for the best.
 			Log.d(TAG, "populateSummary: SUMMARY_TABLE_CREATE: " + e.toString());
 		}
 		Log.d(TAG, "populateSummary: Cleaning summary table.");
 		mDb.execSQL(SUMMARY_TABLE_CLEAN);
+		// TODO: Figure out autoalign
 		final String populateTemp1 = "INSERT INTO " + SUMMARY_DATABASE_TABLE
 				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
 				+ TASKS_DATABASE_TABLE + "." + KEY_TASK + ", "
@@ -1392,7 +1391,7 @@ public class TimeSheetDbAdapter {
 				response = mCursor.getString(0);
 				mCursor.close();
 			} catch (SQLException e) {
-				Log.i(TAG, "getSplitTaskParent: " + e.toString());
+				Log.i(TAG, "getTaskNameByID: " + e.toString());
 			} catch (CursorIndexOutOfBoundsException e) {
 				Log.i(TAG, "getTaskNameByID: " + e.toString());
 			}
@@ -1614,6 +1613,7 @@ public class TimeSheetDbAdapter {
 					+ " to standard task returned " + i);
 		}
 
+		// Set the flag on the new parent
 		if (currentParent != parentID && parentID > 0) {
 			ContentValues initialValues = new ContentValues(1);
 			initialValues.put(KEY_SPLIT, 2);
@@ -1809,6 +1809,12 @@ public class TimeSheetDbAdapter {
 		return response;
 	}
 
+	/**
+	 * Generic SQL exec wrapper, for use with statements which do not return
+	 * values.
+	 * 
+	 * @param sqlTorun
+	 */
 	void runSQL(String sqlTorun) {
 		mDb.execSQL(sqlTorun);
 	}
