@@ -930,6 +930,7 @@ public class TimeSheetDbAdapter {
 			return null;
 		}
 
+		mCursor.moveToFirst();
 		return mCursor;
 	}
 
@@ -1169,25 +1170,26 @@ public class TimeSheetDbAdapter {
 				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
 				+ TASKS_DATABASE_TABLE + "." + KEY_TASK + ", "
 				+ "SUM((CASE WHEN " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
-				+ " = 0 THEN time() ELSE " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEOUT + " END - " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEIN + ")/3600000.0) AS " + KEY_TOTAL + " FROM "
-				+ CLOCK_DATABASE_TABLE + "," + TASKS_DATABASE_TABLE + " WHERE "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " <= " + todayEnd
-				+ " AND " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= "
-				+ todayStart + " AND " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID
-				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_SPLIT
-				+ "=0 GROUP BY " + KEY_TASK;
+				+ " = 0 THEN " + TimeHelpers.millisNow() + " ELSE "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " END - "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + ")/3600000.0) AS "
+				+ KEY_TOTAL + " FROM " + CLOCK_DATABASE_TABLE + ","
+				+ TASKS_DATABASE_TABLE + " WHERE " + CLOCK_DATABASE_TABLE + "."
+				+ KEY_TIMEOUT + " <= " + todayEnd + " AND "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= " + todayStart
+				+ " AND " + CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
+				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
+				+ TASKS_DATABASE_TABLE + "." + KEY_SPLIT + "=0 GROUP BY "
+				+ KEY_TASK;
 		Log.d(TAG, "populateTemp1\n" + populateTemp1);
 		mDb.execSQL(populateTemp1);
 
 		final String populateTemp2 = "INSERT INTO " + SUMMARY_DATABASE_TABLE
 				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
 				+ TASKSPLITREPORT_VIEW + ".taskdesc, " + "(sum((CASE WHEN "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
-				+ " = 0 THEN time() ELSE " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEOUT + " END - " + CLOCK_DATABASE_TABLE + "."
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " = 0 THEN "
+				+ TimeHelpers.millisNow() + " ELSE " + CLOCK_DATABASE_TABLE
+				+ "." + KEY_TIMEOUT + " END - " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEIN + ")/3600000.0) * (" + TASKSPLIT_DATABASE_TABLE
 				+ "." + KEY_PERCENTAGE + "/100.0)) AS " + KEY_TOTAL + " FROM "
 				+ CLOCK_DATABASE_TABLE + ", " + TASKSPLIT_DATABASE_TABLE + ", "
@@ -1372,7 +1374,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public String getTaskNameByID(long taskID) {
-		Log.d(TAG, "getTaskNameByID: Issuing DB query.");
+		Log.d(TAG, "getTaskNameByID: Issuing DB query for ID: " + taskID);
 		Cursor mCursor = mDb.query(true, TASKS_DATABASE_TABLE,
 				new String[] { KEY_TASK }, KEY_ROWID + " = '" + taskID + "'",
 				null, null, null, null, null);
@@ -1381,9 +1383,21 @@ public class TimeSheetDbAdapter {
 		} else {
 			return null;
 		}
-		String response = mCursor.getString(0);
-		mCursor.close();
-		Log.d(TAG, "getTaskNameByID: " + response);
+
+		String response = new String("");
+		if (mCursor.getCount() < 1) {
+			Log.d(TAG, "getCount result was < 1");
+		} else {
+			try {
+				response = mCursor.getString(0);
+				mCursor.close();
+			} catch (SQLException e) {
+				Log.i(TAG, "getSplitTaskParent: " + e.toString());
+			} catch (CursorIndexOutOfBoundsException e) {
+				Log.i(TAG, "getTaskNameByID: " + e.toString());
+			}
+			Log.d(TAG, "getTaskNameByID: " + response);
+		}
 		return response;
 	}
 
@@ -1409,16 +1423,27 @@ public class TimeSheetDbAdapter {
 	public long getSplitTaskParent(long rowId) {
 		Log.d(TAG, "getSplitTaskParent: Issuing DB query.");
 		long ret;
+		Cursor mCursor = null;
+		String query = new String("SELECT " + KEY_CHARGENO + " FROM "
+				+ TASKSPLIT_DATABASE_TABLE + " WHERE " + KEY_TASK + " = ?");
+		Log.d(TAG, "getSplitTaskParent: query: " + query + ", " + rowId);
 		try {
-			Cursor mCursor = mDb.query(true, TASKSPLIT_DATABASE_TABLE,
-					new String[] { KEY_CHARGENO }, KEY_TASK + "=" + rowId,
-					null, null, null, null, null);
+			// mCursor = mDb.query(true, TASKSPLIT_DATABASE_TABLE,
+			// new String[] { KEY_CHARGENO }, KEY_TASK + "=" + rowId,
+			// null, null, null, null, null);
+			mCursor = mDb.rawQuery(query,
+					new String[] { String.valueOf(rowId) });
+		} catch (SQLException e) {
+			Log.i(TAG, "getSplitTaskParent: " + e.toString());
+			ret = 0;
+		}
+		try {
 			if (mCursor != null) {
 				mCursor.moveToFirst();
 			}
 			ret = mCursor.getLong(0);
 			mCursor.close();
-		} catch (SQLException e) {
+		} catch (CursorIndexOutOfBoundsException e) {
 			Log.i(TAG, "getSplitTaskParent: " + e.toString());
 			ret = 0;
 		}
@@ -1508,11 +1533,11 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * Return the entry that matches the given rowId
+	 * Return the number of children whose parent matches the given rowId
 	 * 
 	 * @param rowId
 	 *            id of task to retrieve
-	 * @return parent's task ID, if found, 0 if not
+	 * @return Number of "children" of this task, 0 if none.
 	 */
 	public long getQuantityOfSplits(long rowId) {
 		Log.d(TAG, "getQuantityOfSplits: Issuing DB query.");
@@ -1530,7 +1555,7 @@ public class TimeSheetDbAdapter {
 			Log.i(TAG, "getQuantityOfSplits: " + e.toString());
 			ret = 0;
 		}
-		Log.d(TAG, "getQuantityOfSplits: " + ret + " / " + getTaskNameByID(ret));
+		Log.d(TAG, "getQuantityOfSplits: " + ret);
 		return ret;
 	}
 
@@ -1566,34 +1591,101 @@ public class TimeSheetDbAdapter {
 	 *            New parent ID
 	 * @param percentage
 	 *            New percentage
+	 * @param split
+	 *            New split flag state
 	 */
-	public void alterSplitTask(long rowID, long parentID, int percentage) {
+	public void alterSplitTask(long rowID, long parentID, int percentage,
+			int split) {
 		Log.d(TAG, "alterSplitTask: Issuing DB query.");
-		ContentValues newData = new ContentValues(2);
 		long currentParent = getSplitTaskParent(rowID);
+		int currentSplit = getSplitTaskFlag(rowID);
+
+		if (split == 0 && currentSplit == 1)
+			parentID = -1;
+
 		// If the number of sub-splits under the parent task is 1 (<2) and we
 		// are changing the parent, set the split flag to 0.
 		if (getQuantityOfSplits(currentParent) < 2 && currentParent != parentID) {
 			ContentValues initialValues = new ContentValues(1);
 			initialValues.put(KEY_SPLIT, 0);
-			mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID + "=?",
-					new String[] { String.valueOf(currentParent) });
+			int i = mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID
+					+ "=?", new String[] { String.valueOf(currentParent) });
+			Log.d(TAG, "Reverting task " + currentParent
+					+ " to standard task returned " + i);
 		}
-		if (currentParent != parentID) {
+
+		if (currentParent != parentID && parentID > 0) {
 			ContentValues initialValues = new ContentValues(1);
 			initialValues.put(KEY_SPLIT, 2);
-			mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID + "=?",
-					new String[] { String.valueOf(parentID) });
+			int i = mDb.update(TASKS_DATABASE_TABLE, initialValues, KEY_ROWID
+					+ "=?", new String[] { String.valueOf(parentID) });
+			Log.d(TAG, "Converting task " + parentID
+					+ " to parent task returned: " + i);
 		}
-		newData.put(KEY_CHARGENO, parentID);
-		newData.put(KEY_PERCENTAGE, percentage);
-		try {
-			// update(String table, ContentValues values, String whereClause,
-			// String[] whereArgs)
-			mDb.update(TASKSPLIT_DATABASE_TABLE, newData, KEY_TASK + "=?",
-					new String[] { String.valueOf(rowID).toString() });
-		} catch (RuntimeException e) {
-			Log.e(TAG, e.getLocalizedMessage());
+
+		// If the new split state is 1, a child, set the appropriate values
+		if (split == 1) {
+			Log.d(TAG, "alterSplitTask: Setting up child");
+			ContentValues newData = new ContentValues(3);
+			newData.put(KEY_CHARGENO, parentID);
+			newData.put(KEY_PERCENTAGE, percentage);
+			try {
+				// update(String table, ContentValues values, String
+				// whereClause,
+				// String[] whereArgs)
+				int i = mDb.update(TASKSPLIT_DATABASE_TABLE, newData, KEY_TASK
+						+ "=?",
+						new String[] { String.valueOf(rowID).toString() });
+				Log.d(TAG, "Setting child task " + rowID
+						+ " details returned: " + i);
+				if (i == 0) {
+					newData.put(KEY_TASK, rowID);
+					long j = mDb
+							.insert(TASKSPLIT_DATABASE_TABLE, null, newData);
+					Log.d(TAG, "Inserting child task " + rowID
+							+ " details returned: " + j);
+				}
+			} catch (RuntimeException e) {
+				Log.e(TAG, e.getLocalizedMessage());
+			}
+
+			newData = new ContentValues(1);
+			newData.put(KEY_SPLIT, 1);
+			try {
+				int i = mDb.update(TASKS_DATABASE_TABLE, newData, KEY_ROWID
+						+ "=?", new String[] { String.valueOf(rowID) });
+				Log.d(TAG, "Converting task " + rowID
+						+ " to child task returned: " + i);
+			} catch (RuntimeException e) {
+				Log.e(TAG, e.getLocalizedMessage());
+			}
+		}
+
+		// Delete the record in tasksplit if the new split state is 0
+		if (currentSplit == 1 && split == 0) {
+			Log.d(TAG, "alterSplitTask: Tearing down child");
+			try {
+				// update(String table, ContentValues values, String
+				// whereClause,
+				// String[] whereArgs)
+				int i = mDb.delete(TASKSPLIT_DATABASE_TABLE, KEY_TASK + "=?",
+						new String[] { String.valueOf(rowID).toString() });
+				Log.d(TAG, "Setting child task " + rowID
+						+ " details returned: " + i);
+			} catch (RuntimeException e) {
+				Log.e(TAG, e.getLocalizedMessage());
+			}
+
+			ContentValues newData = new ContentValues(1);
+			newData.put(KEY_SPLIT, 0);
+			try {
+				int i = mDb.update(TASKS_DATABASE_TABLE, newData, KEY_ROWID
+						+ "=?", new String[] { String.valueOf(rowID) });
+				Log.d(TAG, "Converting child task " + rowID
+						+ " to standard task returned: " + i);
+			} catch (RuntimeException e) {
+				Log.e(TAG, e.getLocalizedMessage());
+			}
 		}
 	}
 

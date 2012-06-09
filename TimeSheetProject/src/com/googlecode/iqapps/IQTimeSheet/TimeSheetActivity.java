@@ -724,10 +724,12 @@ public class TimeSheetActivity extends ListActivity {
 					// database fields.
 					if (data.hasExtra("parent")) {
 						long taskID = db.getTaskIDByName(oldData);
+						int oldSplit = db.getSplitTaskFlag(oldData);
 						long parentID = db.getTaskIDByName(data
 								.getStringExtra("parent"));
 						db.alterSplitTask(taskID, parentID,
-								data.getIntExtra("percentage", 100));
+								data.getIntExtra("percentage", 100),
+								data.getIntExtra("split", 0));
 					}
 
 				}
