@@ -716,10 +716,6 @@ public class TimeSheetActivity extends ListActivity {
 						oldData = extras.getString("oldTaskName");
 					}
 
-					if (oldData != null && result != null) {
-						db.renameTask(oldData, result);
-					}
-
 					// TODO: Determine what needs to be done to change these
 					// database fields.
 					if (data.hasExtra("parent")) {
@@ -730,6 +726,10 @@ public class TimeSheetActivity extends ListActivity {
 						db.alterSplitTask(taskID, parentID,
 								data.getIntExtra("percentage", 100),
 								data.getIntExtra("split", 0));
+					}
+
+					if (oldData != null && result != null) {
+						db.renameTask(oldData, result);
 					}
 
 				}

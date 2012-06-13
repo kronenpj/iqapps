@@ -59,6 +59,7 @@ public class TimeSheetDbAdapter {
 	public static final String KEY_PERCENTAGE = "percentage";
 	public static final String KEY_SPLIT = "split";
 	public static final String KEY_HOURS = "hours";
+	public static final String KEY_PARENTTASK = "parenttask";
 	public static final String DB_FALSE = "0";
 	public static final String DB_TRUE = "1";
 
@@ -1213,6 +1214,8 @@ public class TimeSheetDbAdapter {
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_CHARGENO + " AND "
+				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
+				+ TASKSPLITREPORT_VIEW + "." + KEY_PARENTTASK + " AND "
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_PERCENTAGE + " = "
 				+ TASKSPLITREPORT_VIEW + "." + KEY_PERCENTAGE + " GROUP BY "
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_TASK;
