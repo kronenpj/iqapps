@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="custom_rules" default="help">
+
+    <target name="-pre-build" depends="-update-version">
+    </target>
+
+    <target name="-update-version" description="Updates the Version.java file with current git revision">
+      <echo>Updating resources with GIT revision and build date...</echo>
+      <property name="revision" value="HEAD" />
+      <tstamp>
+        <format property="build.date" pattern="yyyy.MM.dd" />
+      </tstamp>
+
+      <!-- Get the version name from the android manifest, will end up in property ${manifest.android:versionName} -->
+      <xpath input="AndroidManifest.xml" expression="/manifest/@android:versionName" output="manifest.version.name" />
+
+      <!-- find out git.revision of HEAD, need git.exe installed on local machine will end up in property ${Revision} -->
+      <exec executable="git" output="gitlog.out">
+        <arg line="show --format='Revision: %h'" />
+      </exec>
+
+      <loadproperties srcFile="gitlog.out">
+        <filterchain>
+          <linecontains>
+            <contains value="Revision" />
+          </linecontains>
+        </filterchain>
+      </loadproperties>
+
+      <delete file="gitlog.out" />
+
+      <replaceregexp file="${resource.absolute.dir}/values/notrans.xml" encoding="utf8" match='(\x3Cstring name="msg_version">)[^\x3C]*(\x3C/string>)' replace='\1${ant.project.name} ${manifest.version.name} (${Revision} ${build.date})\2' />
+
+      <echo>Updated "msg_version" to: ${ant.project.name} ${manifest.version.name} (${Revision} ${build.date})</echo>
+    </target>
+</project>
