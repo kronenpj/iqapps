@@ -1176,6 +1176,7 @@ public class TimeSheetDbAdapter {
 				+ KEY_TOTAL + " FROM " + CLOCK_DATABASE_TABLE + ","
 				+ TASKS_DATABASE_TABLE + " WHERE " + CLOCK_DATABASE_TABLE + "."
 				+ KEY_TIMEOUT + " <= " + todayEnd + " AND "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " > 0 " + " AND "
 				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= " + todayStart
 				+ " AND " + CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
@@ -1193,30 +1194,17 @@ public class TimeSheetDbAdapter {
 				+ KEY_TIMEIN + ")/3600000.0) * (" + TASKSPLIT_DATABASE_TABLE
 				+ "." + KEY_PERCENTAGE + "/100.0)) AS " + KEY_TOTAL + " FROM "
 				+ CLOCK_DATABASE_TABLE + ", " + TASKSPLIT_DATABASE_TABLE + ", "
-				+ TASKS_DATABASE_TABLE
-				+ ", "
-				+ TASKSPLITREPORT_VIEW
-				+ " WHERE "
-				+ CLOCK_DATABASE_TABLE
-				+ "."
-				+ KEY_TIMEOUT
-				+ " <= "
-				+ todayEnd
-				+ " AND "
-				+ CLOCK_DATABASE_TABLE
-				+ "."
-				+ KEY_TIMEIN
-				+ " >= "
-				+ todayStart
-				+ " AND " // + TASKS_DATABASE_TABLE + "."
-				// + KEY_SPLIT + "=1 AND "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
-				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
-				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
+				+ TASKS_DATABASE_TABLE + ", " + TASKSPLITREPORT_VIEW
+				+ " WHERE " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " <= "
+				+ todayEnd + " AND " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
+				+ " > 0 " + " AND " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN
+				+ " >= " + todayStart + " AND " + CLOCK_DATABASE_TABLE + "."
+				+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID
+				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_CHARGENO + " AND "
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
 				+ TASKSPLITREPORT_VIEW + "." + KEY_PARENTTASK + " AND "
-				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_PERCENTAGE + " = "
+				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_PERCENTAGE + "="
 				+ TASKSPLITREPORT_VIEW + "." + KEY_PERCENTAGE + " GROUP BY "
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_TASK;
 		Log.d(TAG, "populateTemp2\n" + populateTemp2);
