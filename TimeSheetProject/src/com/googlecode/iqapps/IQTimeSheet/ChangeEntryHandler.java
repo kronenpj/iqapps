@@ -72,7 +72,7 @@ public class ChangeEntryHandler extends Activity {
 		Button changeButton = (Button) findViewById(R.id.changealign);
 		changeButton.setText("Align (" + alignMinutes + " min)");
 		if (alignMinutesAuto)
-			changeButton.setClickable(false);
+			changeButton.setVisibility(View.INVISIBLE);
 
 		db = new TimeSheetDbAdapter(this);
 		setupDB();

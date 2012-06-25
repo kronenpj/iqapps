@@ -17,7 +17,6 @@
 package com.googlecode.iqapps.IQTimeSheet;
 
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.content.DialogInterface;
@@ -28,16 +27,16 @@ import android.database.SQLException;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.AdapterView.OnItemClickListener;
 
 import com.googlecode.iqapps.TimeHelpers;
 
@@ -51,6 +50,7 @@ public class TimeSheetActivity extends ListActivity {
 	static PreferenceHelper prefs;
 
 	TimeSheetDbAdapter db;
+	Menu optionsMenu;
 	private ListView tasksList;
 	// private TimeListWrapper timeWrapper;
 	// private TimeListAdapter timeAdapter;
@@ -478,8 +478,8 @@ public class TimeSheetActivity extends ListActivity {
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0, ActivityCodes.EDIT_ID.ordinal(), 0, "Edit Task");
-		menu.add(0, ActivityCodes.RETIRE_ID.ordinal(), 0, "Retire Task");
+		menu.add(0, ActivityCodes.EDIT_ID.ordinal(), 0, R.string.taskedit);
+		menu.add(0, ActivityCodes.RETIRE_ID.ordinal(), 0, R.string.taskretire);
 	}
 
 	/*
@@ -548,6 +548,8 @@ public class TimeSheetActivity extends ListActivity {
 			item.setIcon(R.drawable.ic_menu_info_details);
 		}
 		item = menu.add(0, MenuItems.ABOUT.ordinal(), 9, R.string.menu_about);
+		// Hanging on to this so it can be used for testing.
+		optionsMenu = menu;
 		item.setIcon(R.drawable.ic_menu_info_details);
 		return true;
 	}
@@ -736,5 +738,14 @@ public class TimeSheetActivity extends ListActivity {
 				fillData();
 			}
 		}
+	}
+
+	/**
+	 * Return the menu object for testing.
+	 * 
+	 * @return optionMenu
+	 */
+	public Menu getOptionsMenu() {
+		return optionsMenu;
 	}
 }

@@ -3,7 +3,8 @@
 
     <string name="app_name">IQTimeSheet</string>
     <string name="icon_add_task">ic_task_add.png</string>
-    <string name="taskedit">Edit Task Name</string>
+    <string name="taskedit">Edit Task</string>
+    <string name="taskretire">Retire Task</string>
     <string name="menu_new_task">New Task</string>
     <string name="menu_revive_task">Revive Task</string>
     <string name="menu_edit_day_entries">Edit Entries</string>

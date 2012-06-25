@@ -1851,7 +1851,7 @@ public class TimeSheetDbAdapter {
 	 * 
 	 * @param sqlTorun
 	 */
-	void runSQL(String sqlTorun) {
+	public void runSQL(String sqlTorun) {
 		mDb.execSQL(sqlTorun);
 	}
 }
