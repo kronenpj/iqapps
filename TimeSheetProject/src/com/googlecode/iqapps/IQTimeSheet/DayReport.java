@@ -133,7 +133,14 @@ public class DayReport extends ListActivity {
 			return;
 		}
 
-		timeEntryCursor = db.daySummary(day);
+		// If the day being reported is the current week, most probably where
+		// the current open task exists, then include it, otherwise omit.
+		if (day >= TimeHelpers.millisToStartOfDay(TimeHelpers.millisNow())
+				&& day <= TimeHelpers.millisToEndOfDay(TimeHelpers.millisNow())) {
+			timeEntryCursor = db.daySummary(day, false);
+		} else {
+			timeEntryCursor = db.daySummary(day, true);
+		}
 		// startManagingCursor(timeEntryCursor);
 
 		try {

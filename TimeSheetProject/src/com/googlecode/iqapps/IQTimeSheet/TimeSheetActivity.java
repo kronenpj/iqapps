@@ -270,7 +270,7 @@ public class TimeSheetActivity extends ListActivity {
 		Log.d(TAG, "updateTitleBar");
 		float hoursPerDay = prefs.getHoursPerDay();
 		// Display the time accumulated for today with time remaining.
-		reportCursor = db.daySummary();
+		reportCursor = db.daySummary(false);
 		if (reportCursor == null) {
 			setTitle(applicationName + " "
 					+ String.format("(%.2fh / %.2fh)", 0.0, hoursPerDay));

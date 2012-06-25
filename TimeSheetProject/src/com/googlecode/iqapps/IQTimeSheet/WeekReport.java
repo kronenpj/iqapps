@@ -35,7 +35,7 @@ import com.googlecode.iqapps.TimeHelpers;
 
 /**
  * Activity to produce a report for a selected week.
- *
+ * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class WeekReport extends ListActivity {
@@ -123,6 +123,9 @@ public class WeekReport extends ListActivity {
 
 		// Cheat a little on the date. This was originally referencing timeIn
 		// from the cursor below.
+		// TODO: Make the option to report from week-end or week-start an
+		// option. This may include changing the usage of 'date' further down so
+		// that it's interpreted as a beginning rather than an end date.
 		String date = TimeHelpers.millisToDate(TimeHelpers
 				.millisToEndOfWeek(day));
 		setTitle("Week Report - W/E: " + date);
@@ -148,7 +151,15 @@ public class WeekReport extends ListActivity {
 			return;
 		}
 
-		timeEntryCursor = db.weekSummary(day);
+		// If the week being reported is the current week, most probably where
+		// the current open task exists, then include it, otherwise omit.
+		if (day >= TimeHelpers.millisToStartOfWeek(TimeHelpers.millisNow())
+				&& day <= TimeHelpers
+						.millisToEndOfWeek(TimeHelpers.millisNow())) {
+			timeEntryCursor = db.daySummary(day, false);
+		} else {
+			timeEntryCursor = db.daySummary(day, true);
+		}
 		// startManagingCursor(timeEntryCursor);
 
 		try {

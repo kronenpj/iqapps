@@ -949,8 +949,8 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public Cursor dayEntryReport(long time) {
-		if (time < 0)
-			dayEntryReport();
+		if (time <= 0)
+			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfDay(time);
 		long todayEnd = TimeHelpers.millisToEndOfDay(time);
@@ -966,15 +966,6 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * Method that retrieves the entries for today from the entry view.
-	 * 
-	 * @return Cursor over the results.
-	 */
-	public Cursor daySummary() {
-		return daySummary(TimeHelpers.millisNow());
-	}
-
-	/**
 	 * Method that retrieves the entries for a single specified day from the
 	 * entry view.
 	 * 
@@ -984,7 +975,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over the results.
 	 */
 	public Cursor daySummaryOld(long time) {
-		if (time < 0)
+		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfDay(time);
@@ -1007,13 +998,47 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
+	 * Method that retrieves the entries for today from the entry view.
+	 * 
+	 * @return Cursor over the results.
+	 */
+	public Cursor daySummary() {
+		return daySummary(TimeHelpers.millisNow(), true);
+	}
+
+	/**
+	 * Method that retrieves the entries for today from the entry view.
+	 * 
+	 * @param omitOpen
+	 *            Omit an open task in the result
+	 * @return Cursor over the results.
+	 */
+	public Cursor daySummary(boolean omitOpen) {
+		return daySummary(TimeHelpers.millisNow(), omitOpen);
+	}
+
+	/**
+	 * Method that retrieves the entries for today from the entry view.
+	 * 
+	 * @return Cursor over the results.
+	 */
+	public Cursor daySummary(long time) {
+		return daySummary(time, true);
+	}
+
+	/**
 	 * Method that populates a temporary table for a single specified day from
 	 * the entry view.
+	 * 
+	 * @param time
+	 *            The time around which to report
+	 * @param omitOpen
+	 *            Include an open task in the result
 	 * 
 	 * @return Cursor over the results.
 	 */
 	// TODO: Finish and replace the other routines with it.
-	public Cursor daySummary(long time) {
+	public Cursor daySummary(long time, boolean omitOpen) {
 		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
@@ -1023,7 +1048,7 @@ public class TimeSheetDbAdapter {
 		Log.d(TAG, "daySummary start: " + TimeHelpers.millisToDate(todayStart));
 		Log.d(TAG, "daySummary end: " + TimeHelpers.millisToDate(todayEnd));
 
-		populateSummary(todayStart, todayEnd);
+		populateSummary(todayStart, todayEnd, omitOpen);
 
 		// String[] columns = { KEY_TASK, KEY_HOURS };
 		// String groupBy = KEY_TASK;
@@ -1050,12 +1075,12 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * Retrieve list of entries for the day surrounding the supplied time.
+	 * Retrieve list of entries for the week surrounding the supplied time.
 	 * 
-	 * @return rowId or -1 if failed
+	 * @return Cursor over the entries
 	 */
 	public Cursor weekEntryReport(long time) {
-		if (time < 0)
+		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfWeek(time);
@@ -1091,8 +1116,8 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over the results.
 	 */
 	public Cursor weekSummaryOld(long time) {
-		if (time < 0)
-			weekSummary();
+		if (time <= 0)
+			time = TimeHelpers.millisNow();
 
 		long todayStart = TimeHelpers.millisToStartOfWeek(time);
 		long todayEnd = TimeHelpers.millisToEndOfWeek(time);
@@ -1128,13 +1153,13 @@ public class TimeSheetDbAdapter {
 		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
-		long todayStart = TimeHelpers.millisToStartOfWeek(time);
-		long todayEnd = TimeHelpers.millisToEndOfWeek(time);
+		long weekStart = TimeHelpers.millisToStartOfWeek(time);
+		long weekEnd = TimeHelpers.millisToEndOfWeek(time);
 
-		Log.d(TAG, "weekSummary start: " + TimeHelpers.millisToDate(todayStart));
-		Log.d(TAG, "weekSummary end: " + TimeHelpers.millisToDate(todayEnd));
+		Log.d(TAG, "weekSummary start: " + TimeHelpers.millisToDate(weekStart));
+		Log.d(TAG, "weekSummary end: " + TimeHelpers.millisToDate(weekEnd));
 
-		populateSummary(todayStart, todayEnd);
+		populateSummary(weekStart, weekEnd);
 
 		// String[] columns = { KEY_TASK, KEY_HOURS };
 		// String groupBy = KEY_TASK;
@@ -1143,8 +1168,8 @@ public class TimeSheetDbAdapter {
 		String groupBy = KEY_TASK;
 		String orderBy = KEY_TOTAL + " DESC";
 		try {
-			return getSummaryCursor(true, columns, groupBy, orderBy,
-					todayStart, todayEnd);
+			return getSummaryCursor(true, columns, groupBy, orderBy, weekStart,
+					weekEnd);
 		} catch (SQLiteException e) {
 			Log.e(TAG, "getSummaryCursor: " + e.getLocalizedMessage());
 			return null;
@@ -1152,10 +1177,25 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * @param todayStart
-	 * @param todayEnd
+	 * @param summaryStart
+	 *            The start time for the summary
+	 * @param summaryEnd
+	 *            The end time for the summary
 	 */
-	private void populateSummary(long todayStart, long todayEnd) {
+	private void populateSummary(long summaryStart, long summaryEnd) {
+		populateSummary(summaryStart, summaryEnd, true);
+	}
+
+	/**
+	 * @param summaryStart
+	 *            The start time for the summary
+	 * @param summaryEnd
+	 *            The end time for the summary
+	 * @param omitOpen
+	 *            Whether the summary should omit an open task
+	 */
+	private void populateSummary(long summaryStart, long summaryEnd,
+			boolean omitOpen) {
 		try {
 			Log.d(TAG, "populateSummary: Creating summary table.");
 			mDb.execSQL(SUMMARY_TABLE_CREATE);
@@ -1165,6 +1205,12 @@ public class TimeSheetDbAdapter {
 		}
 		Log.d(TAG, "populateSummary: Cleaning summary table.");
 		mDb.execSQL(SUMMARY_TABLE_CLEAN);
+
+		String omitOpenQuery = new String("");
+		if (omitOpen) {
+			omitOpenQuery = new String(CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
+					+ " > 0 " + " AND ");
+		}
 		// TODO: Figure out autoalign
 		final String populateTemp1 = "INSERT INTO " + SUMMARY_DATABASE_TABLE
 				+ " (" + KEY_TASK + "," + KEY_TOTAL + ") SELECT "
@@ -1175,13 +1221,12 @@ public class TimeSheetDbAdapter {
 				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + ")/3600000.0) AS "
 				+ KEY_TOTAL + " FROM " + CLOCK_DATABASE_TABLE + ","
 				+ TASKS_DATABASE_TABLE + " WHERE " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_TIMEOUT + " <= " + todayEnd + " AND "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " > 0 " + " AND "
-				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= " + todayStart
-				+ " AND " + CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
-				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
-				+ TASKS_DATABASE_TABLE + "." + KEY_SPLIT + "=0 GROUP BY "
-				+ KEY_TASK;
+				+ KEY_TIMEOUT + " <= " + summaryEnd + " AND " + omitOpenQuery
+				+ CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN + " >= "
+				+ summaryStart + " AND " + CLOCK_DATABASE_TABLE + "."
+				+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID
+				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_SPLIT
+				+ "=0 GROUP BY " + KEY_TASK;
 		Log.d(TAG, "populateTemp1\n" + populateTemp1);
 		mDb.execSQL(populateTemp1);
 
@@ -1196,11 +1241,11 @@ public class TimeSheetDbAdapter {
 				+ CLOCK_DATABASE_TABLE + ", " + TASKSPLIT_DATABASE_TABLE + ", "
 				+ TASKS_DATABASE_TABLE + ", " + TASKSPLITREPORT_VIEW
 				+ " WHERE " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT + " <= "
-				+ todayEnd + " AND " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEOUT
-				+ " > 0 " + " AND " + CLOCK_DATABASE_TABLE + "." + KEY_TIMEIN
-				+ " >= " + todayStart + " AND " + CLOCK_DATABASE_TABLE + "."
-				+ KEY_CHARGENO + "=" + TASKS_DATABASE_TABLE + "." + KEY_ROWID
-				+ " AND " + TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
+				+ summaryEnd + " AND " + omitOpenQuery + CLOCK_DATABASE_TABLE
+				+ "." + KEY_TIMEIN + " >= " + summaryStart + " AND "
+				+ CLOCK_DATABASE_TABLE + "." + KEY_CHARGENO + "="
+				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + " AND "
+				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
 				+ TASKSPLIT_DATABASE_TABLE + "." + KEY_CHARGENO + " AND "
 				+ TASKS_DATABASE_TABLE + "." + KEY_ROWID + "="
 				+ TASKSPLITREPORT_VIEW + "." + KEY_PARENTTASK + " AND "
