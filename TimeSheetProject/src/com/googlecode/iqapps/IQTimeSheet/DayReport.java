@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.googlecode.iqapps.IQTimeSheet;
 
 import android.app.ListActivity;
@@ -38,14 +37,16 @@ public class DayReport extends ListActivity {
 	private static final String TAG = "DayReport";
 	private final int FOOTER_ID = -1;
 	private ListView reportList;
-	private TextView footerView;
 	private TimeSheetDbAdapter db;
 	private Cursor timeEntryCursor;
+	private TextView footerView = null;
 	private long day = TimeHelpers.millisNow();
 	private Button[] child;
 	private float dayHours = -1;
 
-	/** Called when the activity is resumed or created. */
+	/**
+	 * Called when the activity is resumed or created.
+	 */
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -71,6 +72,8 @@ public class DayReport extends ListActivity {
 		}
 		Log.d(TAG, "Set up DB connection.");
 
+		footerView = new TextView(this.getBaseContext());
+
 		try {
 			fillData();
 		} catch (Exception e) {
@@ -80,7 +83,9 @@ public class DayReport extends ListActivity {
 		Log.d(TAG, "Back from fillData.");
 	}
 
-	/** Called when the activity destroyed. */
+	/**
+	 * Called when the activity destroyed.
+	 */
 	@Override
 	public void onDestroy() {
 		try {

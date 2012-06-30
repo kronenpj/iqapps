@@ -34,7 +34,8 @@ import android.widget.TextView;
 import com.googlecode.iqapps.TimeHelpers;
 
 /**
- * Activity to produce a report for a selected week.
+ * Activity to display a summary report of tasks and their cumulative durations
+ * for a selected week.
  * 
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
@@ -67,6 +68,7 @@ public class WeekReport extends ListActivity {
 		} catch (RuntimeException e) {
 			Log.e(TAG, e.toString() + " calling showReport");
 		}
+		Log.d(TAG, "Back from showReport.");
 		setTitle("Week Report");
 
 		db = new TimeSheetDbAdapter(this);
@@ -147,18 +149,17 @@ public class WeekReport extends ListActivity {
 		} catch (NullPointerException e) {
 			// Do nothing, this is expected sometimes.
 		} catch (Exception e) {
-			Log.e(TAG, "fillData: " + e.toString());
+			Log.e(TAG, "timeEntryCursor.close: " + e.toString());
 			return;
 		}
 
 		// If the week being reported is the current week, most probably where
 		// the current open task exists, then include it, otherwise omit.
 		if (day >= TimeHelpers.millisToStartOfWeek(TimeHelpers.millisNow())
-				&& day <= TimeHelpers
-						.millisToEndOfWeek(TimeHelpers.millisNow())) {
-			timeEntryCursor = db.daySummary(day, false);
+				&& day <= TimeHelpers.millisToEndOfWeek(TimeHelpers.millisNow())) {
+			timeEntryCursor = db.weekSummary(day, false);
 		} else {
-			timeEntryCursor = db.daySummary(day, true);
+			timeEntryCursor = db.weekSummary(day, true);
 		}
 		// startManagingCursor(timeEntryCursor);
 
@@ -212,6 +213,7 @@ public class WeekReport extends ListActivity {
 					+ " while calling setContentView(R.layout.report)");
 		}
 
+		// reportList = (ListView) findViewById(R.id.reportlist);
 		reportList = (ListView) findViewById(android.R.id.list);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
