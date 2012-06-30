@@ -1101,15 +1101,6 @@ public class TimeSheetDbAdapter {
 	}
 
 	/**
-	 * Method that retrieves the entries for today from the entry view.
-	 * 
-	 * @return Cursor over the results.
-	 */
-	public Cursor weekSummary() {
-		return weekSummary(TimeHelpers.millisNow());
-	}
-
-	/**
 	 * Method that retrieves the entries for a single specified day from the
 	 * entry view.
 	 * 
@@ -1149,7 +1140,7 @@ public class TimeSheetDbAdapter {
 	 * @return Cursor over the results.
 	 */
 	// TODO: Finish and replace the other routines with it.
-	public Cursor weekSummary(long time) {
+	public Cursor weekSummary(long time, boolean omitOpen) {
 		if (time <= 0)
 			time = TimeHelpers.millisNow();
 
@@ -1159,7 +1150,7 @@ public class TimeSheetDbAdapter {
 		Log.d(TAG, "weekSummary start: " + TimeHelpers.millisToDate(weekStart));
 		Log.d(TAG, "weekSummary end: " + TimeHelpers.millisToDate(weekEnd));
 
-		populateSummary(weekStart, weekEnd);
+		populateSummary(weekStart, weekEnd, omitOpen);
 
 		// String[] columns = { KEY_TASK, KEY_HOURS };
 		// String groupBy = KEY_TASK;
