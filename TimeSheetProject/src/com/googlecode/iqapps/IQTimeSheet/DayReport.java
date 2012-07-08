@@ -164,7 +164,7 @@ public class DayReport extends ListActivity {
 
 		try {
 			reportList.setAdapter(new ReportCursorAdapter(this,
-					android.R.layout.simple_list_item_2, timeEntryCursor,
+					R.layout.mysimple_list_item_2, timeEntryCursor,
 					new String[] { TimeSheetDbAdapter.KEY_TASK,
 							TimeSheetDbAdapter.KEY_TOTAL }, new int[] {
 							android.R.id.text1, android.R.id.text2 }));
@@ -187,6 +187,9 @@ public class DayReport extends ListActivity {
 		// reportList = (ListView) findViewById(R.id.reportlist);
 		reportList = (ListView) findViewById(android.R.id.list);
 		footerView = (TextView) findViewById(R.id.reportfooter);
+		footerView.setTextSize((float) TimeSheetActivity.prefs
+				.getTotalsFontSize());
+
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };

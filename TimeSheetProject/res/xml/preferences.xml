@@ -22,9 +22,8 @@
 	<EditTextPreference android:order="40"
 		android:summary="Hours to work per week" android:key="hours.week"
 		android:defaultValue="40" android:title="Hours per week"></EditTextPreference>
-	<CheckBoxPreference android:key="db.on.sdcard"
-		android:order="100" android:enabled="true" android:defaultValue="true"
-		android:title="Backups of DB on /sdcard"></CheckBoxPreference>
+	
+	<EditTextPreference android:title="Totals Font Size" android:key="total.fontSize" android:defaultValue="14.0" android:order="50"/><CheckBoxPreference android:key="db.on.sdcard" android:order="100" android:enabled="true" android:defaultValue="true" android:title="Backups of DB on /sdcard"></CheckBoxPreference>
 
 
 

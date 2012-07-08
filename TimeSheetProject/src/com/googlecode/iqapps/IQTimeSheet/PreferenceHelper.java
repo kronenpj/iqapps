@@ -45,6 +45,7 @@ public class PreferenceHelper {
 	public static final String KEY_ALIGN_TIME_PICKER = "align.time.picker";
 	public static final String KEY_HOURS_DAY = "hours.day";
 	public static final String KEY_HOURS_WEEK = "hours.week";
+	public static final String KEY_TOTAL_FONTSIZE = "total.fontSize";
 	public static final String KEY_SDCARD_BACKUP = "db.on.sdcard";
 
 	public PreferenceHelper(Context mCtx) {
@@ -125,6 +126,23 @@ public class PreferenceHelper {
 		}
 		Log.d(TAG, "Preference " + KEY_HOURS_WEEK + ": " + hoursWeek);
 		return hoursWeek;
+	}
+
+	public float getTotalsFontSize() {
+		// Be careful here - The list used by the preferences activity is based
+		// on String, not any other primitive or class... This threw cast
+		// exceptions early on in development.
+		float totalsFontSize = (float) 14.0;
+		try {
+			// Throws ClassCastException
+			// hoursWeek = prefs.getFloat(KEY_HOURS_WEEK, (float) 40.0);
+			totalsFontSize = Float.valueOf(prefs.getString(KEY_TOTAL_FONTSIZE,
+					"14.0"));
+		} catch (Exception e) {
+			Log.e(TAG, KEY_TOTAL_FONTSIZE + " threw exception: " + e.toString());
+		}
+		Log.d(TAG, "Preference " + KEY_TOTAL_FONTSIZE + ": " + totalsFontSize);
+		return totalsFontSize;
 	}
 
 	public boolean getSDCardBackup() {
