@@ -20,11 +20,13 @@ import android.content.Context;
 import android.database.SQLException;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.Smoke;
+import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
+import android.view.View;
 import android.widget.ListView;
 
 import com.googlecode.iqapps.Helpers;
-import com.googlecode.iqapps.IQTimeSheet.MenuItems;
+import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
 import com.jayway.android.robotium.solo.Solo;
@@ -184,71 +186,79 @@ public class TimeSheetActivityTest extends
 		assertTrue(solo.searchText(Helpers.text2));
 	}
 
-	// public void test040shouldChangeSelectionWithTheArrowKeys() {
-	// sendKeys("DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_UP");
-	// View focused = ((ListView) mActivity
-	// .findViewById(R.layout.tasklist)).getFocusedChild();
-	// if (focused == null) {
-	// assertFalse(true);
-	// } else {
-	// int itemid = focused.getId();
-	// String focusedText = mActivity.getText(itemid).toString();
-	// // int selectedItemPosition = intAt("selectedItemPosition");
-	// assertEquals(Helpers.text1, focusedText);
-	// }
-	// }
+	@Suppress
+	public void test040shouldChangeSelectionWithTheArrowKeys() {
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_UP);
+		// sendKeys("DPAD_DOWN DPAD_DOWN DPAD_DOWN DPAD_UP");
+		View focused = ((ListView) mActivity
+				.findViewById(com.googlecode.iqapps.IQTimeSheet.R.layout.tasklist))
+				.getFocusedChild();
+		if (focused == null) {
+			assertFalse(true);
+		} else {
+			int itemid = focused.getId();
+			String focusedText = mActivity.getText(itemid).toString();
+			// int selectedItemPosition = intAt("selectedItemPosition");
+			assertEquals(Helpers.text1, focusedText);
+		}
+	}
 
-	// public void test050shouldSelectByTouchingAnEntry() {
-	// mActivity.db.runSQL("DELETE FROM timesheet;");
-	// solo.clickOnText(Helpers.text3);
-	// // press(DOWN, PositronAPI.Key.ENTER);
-	// Helpers.sleep(50);
-	// // Needed to make the test consistent.
-	// // press(UP);
-	// // touch("listView.1");
-	// solo.clickOnText(Helpers.text3);
-	// // press(PositronAPI.Key.ENTER);
-	// long ago = TimeHelpers.millisNow() - (3600 * 1000);
-	// // sql(Helpers.DATABASE_NAME, "UPDATE timesheet SET timein=" + ago +
-	// // ";");
-	// mActivity.db.runSQL("UPDATE timesheet SET timein=" + ago + ";");
-	// log.info(TAG + ": Post-database update.");
-	// // press(PositronAPI.Key.MENU);
-	// // press(DOWN, DOWN);
-	// sendKeys("DPAD_MENU");
-	// sendKeys("DPAD_DOWN DPAD_DOWN DPAD_CENTER");
-	// // click();
-	// // assertTrue(waitFor("class.simpleName", "DayReport", 500));
-	// while(!solo.searchText("Day Report")) {
-	// log.info(TAG + ": Wait for DayReport.");
-	// solo.sleep(100);
-	// }
-	// log.info(TAG + ": Post wait for DayReport.");
-	// // assertEquals(Helpers.text1, stringAt("#reportlist.0.0.text"));
-	// assertTrue(solo.searchText(Helpers.text1));
-	// // assertEquals("1.00 hours", stringAt("#reportlist.0.1.text"));
-	// assertTrue(solo.searchText("1.00 hours"));
-	// // assertEquals("Hours worked this day: 1.00",
-	// // stringAt("#reportlist.1.text"));
-	// assertTrue(solo.searchText("Hours worked this day: 1.00"));
-	// // press(PositronAPI.Key.BACK);
-	// sendKeys("DPAD_BACK");
-	// // press(PositronAPI.Key.MENU);
-	// sendKeys("DPAD_MENU");
-	// // press(DOWN, PositronAPI.Key.RIGHT);
-	// sendKeys("DPAD_RIGHT DPAD_CENTER");
-	// // click();
-	// // assertTrue(waitFor("class.simpleName", "WeekReport", 500));
-	// assertTrue(solo.searchText("Week Report"));
-	// // assertEquals(Helpers.text1, stringAt("#reportlist.0.0.text"));
-	// assertTrue(solo.searchText(Helpers.text1));
-	// // assertEquals("1.00 hours", stringAt("#reportlist.0.1.text"));
-	// assertTrue(solo.searchText("1.00 hours"));
-	// // assertEquals("Hours worked this week: 1.00",
-	// // stringAt("#reportlist.1.text"));
-	// assertTrue(solo.searchText("Hours worked this week: 1.00"));
-	// }
+	@Suppress
+	public void test050shouldSelectByTouchingAnEntry() {
+		db.runSQL("DELETE FROM timesheet;");
+		solo.clickOnText(Helpers.text3);
+		// press(DOWN, PositronAPI.Key.ENTER);
+		Helpers.sleep(50);
+		// Needed to make the test consistent.
+		// press(UP);
+		// touch("listView.1");
+		solo.clickOnText(Helpers.text3);
+		// press(PositronAPI.Key.ENTER);
+		long ago = TimeHelpers.millisNow() - (3600 * 1000);
+		// sql(Helpers.DATABASE_NAME, "UPDATE timesheet SET timein=" + ago +
+		// ";");
+		db.runSQL("UPDATE timesheet SET timein=" + ago + ";");
+		// log.info(TAG + ": Post-database update.");
+		// press(PositronAPI.Key.MENU);
+		// press(DOWN, DOWN);
+		sendKeys("DPAD_MENU");
+		sendKeys("DPAD_DOWN DPAD_DOWN DPAD_CENTER");
+		// click();
+		// assertTrue(waitFor("class.simpleName", "DayReport", 500));
+		while (!solo.searchText("Day Report")) {
+			// log.info(TAG + ": Wait for DayReport.");
+			solo.sleep(100);
+		}
+		// log.info(TAG + ": Post wait for DayReport.");
+		// assertEquals(Helpers.text1, stringAt("#reportlist.0.0.text"));
+		assertTrue(solo.searchText(Helpers.text1));
+		// assertEquals("1.00 hours", stringAt("#reportlist.0.1.text"));
+		assertTrue(solo.searchText("1.00 hours"));
+		// assertEquals("Hours worked this day: 1.00",
+		// stringAt("#reportlist.1.text"));
+		assertTrue(solo.searchText("Hours worked this day: 1.00"));
+		// press(PositronAPI.Key.BACK);
+		sendKeys("DPAD_BACK");
+		// press(PositronAPI.Key.MENU);
+		sendKeys("DPAD_MENU");
+		// press(DOWN, PositronAPI.Key.RIGHT);
+		sendKeys("DPAD_RIGHT DPAD_CENTER");
+		// click();
+		// assertTrue(waitFor("class.simpleName", "WeekReport", 500));
+		assertTrue(solo.searchText("Week Report"));
+		// assertEquals(Helpers.text1, stringAt("#reportlist.0.0.text"));
+		assertTrue(solo.searchText(Helpers.text1));
+		// assertEquals("1.00 hours", stringAt("#reportlist.0.1.text"));
+		assertTrue(solo.searchText("1.00 hours"));
+		// assertEquals("Hours worked this week: 1.00",
+		// stringAt("#reportlist.1.text"));
+		assertTrue(solo.searchText("Hours worked this week: 1.00"));
+	}
 
+	// @Suppress
 	// public void test060checkRenameTask() {
 	// contextMenu(0);
 	// click();

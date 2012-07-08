@@ -16,8 +16,6 @@
 
 package com.googlecode.iqapps.IQTimeSheet.test;
 
-import org.apache.commons.logging.Log;
-
 import android.test.ActivityInstrumentationTestCase2;
 
 import com.googlecode.iqapps.TimeHelpers;
@@ -31,10 +29,10 @@ import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 public class TimeHelpersTestOrig extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(TimeHelpersTest.class);
-	private static final String TAG = "TimeHelpersTest";
+	private static final String TAG = "TimeHelpersTestOrig";
 
-	public TimeHelpersTestOrig(Class<TimeSheetActivity> activityClass) {
-		super(activityClass);
+	public TimeHelpersTestOrig() {
+		super(TimeSheetActivity.class);
 		// TODO Auto-generated constructor stub
 	}
 
@@ -62,7 +60,7 @@ public class TimeHelpersTestOrig extends
 	 */
 	public void testMillisToStartOfDay() {
 		long result = TimeHelpers.millisToStartOfDay(1262626212345l);
-		assertEquals(1262581200000l, result);
+		assertEquals(1262563200000l, result);
 	}
 
 	/**
@@ -71,7 +69,7 @@ public class TimeHelpersTestOrig extends
 	 */
 	public void testMillisToEndOfDay() {
 		long result = TimeHelpers.millisToEndOfDay(1262626212345l);
-		assertEquals(1262667599999l, result);
+		assertEquals(1262649600000l, result);
 	}
 
 	/**
@@ -80,8 +78,8 @@ public class TimeHelpersTestOrig extends
 	 */
 	public void testMillisToStartOfWeek() {
 		long result = TimeHelpers.millisToStartOfWeek(1262626212345l);
-		assertEquals(1262581200000l, result);
-		assertEquals("Jan 4, 2010", TimeHelpers.millisToDate(result));
+		assertEquals(1262563200000l, result);
+		assertEquals("Mon, Jan 4, 2010", TimeHelpers.millisToDate(result));
 	}
 
 	/**
@@ -90,8 +88,8 @@ public class TimeHelpersTestOrig extends
 	 */
 	public void testMillisToEndOfWeek() {
 		long result = TimeHelpers.millisToEndOfWeek(1262626212345l);
-		assertEquals(1263185999999l, result);
-		assertEquals("Jan 10, 2010", TimeHelpers.millisToDate(result));
+		assertEquals(1263167999999l, result);
+		assertEquals("Sun, Jan 10, 2010", TimeHelpers.millisToDate(result));
 	}
 
 	/**
@@ -131,11 +129,11 @@ public class TimeHelpersTestOrig extends
 		// Be careful here. The method adjusts for offset from UTC, or the local
 		// time zone.
 		int result = TimeHelpers.millisToHour(1262626212345l);
-		assertEquals(12, result);
+		assertEquals(17, result);
 		result = TimeHelpers.millisToHour(1262667600001l);
-		assertEquals(0, result);
+		assertEquals(5, result);
 		result = TimeHelpers.millisToHour(1262667540000l);
-		assertEquals(23, result);
+		assertEquals(4, result);
 	}
 
 	/**
@@ -161,11 +159,11 @@ public class TimeHelpersTestOrig extends
 		// Be careful here. The method adjusts for offset from UTC, or the local
 		// time zone.
 		long result = TimeHelpers.millisSetTime(1262626212345l, 12, 0);
-		assertEquals(1262624400000l, result);
+		assertEquals(1262606400000l, result);
 		result = TimeHelpers.millisSetTime(1262626212345l, 0, 0);
-		assertEquals(1262581200000l, result);
+		assertEquals(1262563200000l, result);
 		result = TimeHelpers.millisSetTime(1262626212345l, 23, 59);
-		assertEquals(1262667540000l, result);
+		assertEquals(1262649540000l, result);
 	}
 
 	/**
@@ -177,11 +175,11 @@ public class TimeHelpersTestOrig extends
 		// time zone.
 		long result;
 		result = TimeHelpers.millisSetDate(2010, 1, 1);
-		assertEquals(1262322000000l, result);
+		assertEquals(1262304000000l, result);
 		result = TimeHelpers.millisSetDate(2010, 7, 1);
-		assertEquals(1277956800000l, result);
+		assertEquals(1277942400000l, result);
 		result = TimeHelpers.millisSetDate(2009, 12, 31);
-		assertEquals(1262235600000l, result);
+		assertEquals(1262217600000l, result);
 	}
 
 	/**
@@ -192,11 +190,11 @@ public class TimeHelpersTestOrig extends
 		// Be careful here. The method adjusts for offset from UTC, or the local
 		// time zone.
 		String result = TimeHelpers.millisToDate(1262235600000l);
-		assertEquals("Dec 31, 2009", result);
+		assertEquals("Thu, Dec 31, 2009", result);
 		result = TimeHelpers.millisToDate(1262626212345l);
-		assertEquals("Jan 4, 2010", result);
+		assertEquals("Mon, Jan 4, 2010", result);
 		result = TimeHelpers.millisToDate(1262667600000l);
-		assertEquals("Jan 5, 2010", result);
+		assertEquals("Tue, Jan 5, 2010", result);
 	}
 
 	/**

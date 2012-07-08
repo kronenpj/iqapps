@@ -19,6 +19,7 @@ import android.app.Instrumentation;
 import android.content.Context;
 import android.database.SQLException;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
@@ -29,6 +30,7 @@ import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
 import com.jayway.android.robotium.solo.Solo;
 
+@Suppress
 public class TimeAlignTests extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(TimeAlignTests.class);
@@ -427,6 +429,7 @@ public class TimeAlignTests extends
 		checkDayReport("2.60");
 	}
 
+	@Suppress
 	public void testDailyReport() {
 		long now = TimeHelpers.millisNow();
 
