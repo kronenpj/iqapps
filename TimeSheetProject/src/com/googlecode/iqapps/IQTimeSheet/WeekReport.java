@@ -79,8 +79,6 @@ public class WeekReport extends ListActivity {
 			finish();
 		}
 
-		footerView = new TextView(this.getBaseContext());
-
 		try {
 			fillData();
 		} catch (Exception e) {
@@ -132,12 +130,6 @@ public class WeekReport extends ListActivity {
 				.millisToEndOfWeek(day));
 		setTitle("Week Report - W/E: " + date);
 
-		if (reportList.getFooterViewsCount() == 0) {
-			footerView = new TextView(this);
-			footerView.setId(FOOTER_ID);
-			reportList.addFooterView(footerView);
-		}
-
 		footerView
 				.setText("Hours worked this week: 0\nHours remaining this week: "
 						+ String.format("%.2f", weekHours)
@@ -156,7 +148,8 @@ public class WeekReport extends ListActivity {
 		// If the week being reported is the current week, most probably where
 		// the current open task exists, then include it, otherwise omit.
 		if (day >= TimeHelpers.millisToStartOfWeek(TimeHelpers.millisNow())
-				&& day <= TimeHelpers.millisToEndOfWeek(TimeHelpers.millisNow())) {
+				&& day <= TimeHelpers
+						.millisToEndOfWeek(TimeHelpers.millisNow())) {
 			timeEntryCursor = db.weekSummary(day, false);
 		} else {
 			timeEntryCursor = db.weekSummary(day, true);
@@ -215,6 +208,7 @@ public class WeekReport extends ListActivity {
 
 		// reportList = (ListView) findViewById(R.id.reportlist);
 		reportList = (ListView) findViewById(android.R.id.list);
+		footerView = (TextView) findViewById(R.id.reportfooter);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };

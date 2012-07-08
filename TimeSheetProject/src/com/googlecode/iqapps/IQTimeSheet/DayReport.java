@@ -72,8 +72,6 @@ public class DayReport extends ListActivity {
 		}
 		Log.d(TAG, "Set up DB connection.");
 
-		footerView = new TextView(this.getBaseContext());
-
 		try {
 			fillData();
 		} catch (Exception e) {
@@ -118,12 +116,6 @@ public class DayReport extends ListActivity {
 		// from the cursor below.
 		String date = TimeHelpers.millisToDate(day);
 		setTitle("Day Report - " + date);
-
-		if (reportList.getFooterViewsCount() == 0) {
-			footerView = new TextView(this);
-			footerView.setId(FOOTER_ID);
-			reportList.addFooterView(footerView);
-		}
 
 		footerView
 				.setText("Hours worked this day: 0\nHours remaining this day: "
@@ -194,6 +186,7 @@ public class DayReport extends ListActivity {
 
 		// reportList = (ListView) findViewById(R.id.reportlist);
 		reportList = (ListView) findViewById(android.R.id.list);
+		footerView = (TextView) findViewById(R.id.reportfooter);
 		child = new Button[] { (Button) findViewById(R.id.previous),
 				(Button) findViewById(R.id.today),
 				(Button) findViewById(R.id.next) };

@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout="@layout/daybuttons" android:id="@+id/daytable"
 	android:layout_gravity="bottom" android:layout_width="fill_parent"
-	android:layout_height="100dip" android:layout_weight="1">
+	android:layout_height="110dip" android:layout_weight="1">
 		<Button android:id="@+id/previous" android:text="@string/day_prev_action"
 			android:layout_gravity="left|bottom" android:layout_width="0dip"
 			android:layout_height="wrap_content" android:layout_weight="1" />
