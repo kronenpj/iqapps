@@ -778,7 +778,7 @@ public class TimeSheetDbAdapter {
 
 		if (mCursor.isAfterLast()) {
 			Toast.makeText(mCtx, "No entries in the database for today.",
-					Toast.LENGTH_SHORT);
+					Toast.LENGTH_SHORT).show();
 			return null;
 		}
 
@@ -844,9 +844,9 @@ public class TimeSheetDbAdapter {
 
 		if (mCursor.isAfterLast()) {
 			Log.d(TAG, "entryReport mCursor for range is empty.");
-			Toast.makeText(mCtx,
-					"No entries in the database for supplied range.",
-					Toast.LENGTH_SHORT);
+			// Toast.makeText(mCtx,
+			// "No entries in the database for supplied range.",
+			// Toast.LENGTH_SHORT).show();
 			return null;
 		}
 
@@ -924,9 +924,9 @@ public class TimeSheetDbAdapter {
 
 		if (mCursor.isAfterLast()) {
 			Log.d(TAG, "entryReport mCursor for range is empty.");
-			Toast.makeText(mCtx,
-					"No entries in the database for supplied range.",
-					Toast.LENGTH_SHORT);
+			// Toast.makeText(mCtx,
+			// "No entries in the database for supplied range.",
+			// Toast.LENGTH_SHORT).show();
 			return null;
 		}
 
