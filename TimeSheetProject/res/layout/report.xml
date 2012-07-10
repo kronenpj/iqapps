@@ -17,7 +17,12 @@
         <include layout="@layout/reportlist" />
     </LinearLayout>
 
-    <include layout="@layout/reportfooter" />
-    <include layout="@layout/daybuttons" />
+    <include
+        android:layout_weight="2"
+        layout="@layout/reportfooter" />
+
+    <include
+        android:layout_weight="2"
+        layout="@layout/daybuttons" />
 
 </LinearLayout>

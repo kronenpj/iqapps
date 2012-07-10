@@ -27,7 +27,6 @@ package com.googlecode.iqapps.IQTimeSheet;
 
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
@@ -38,8 +37,8 @@ import android.preference.PreferenceManager;
 public class MyPreferenceActivity extends PreferenceActivity {
 
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	protected void onResume() {
+		super.onResume();
 
 		try {
 			addPreferencesFromResource(R.xml.preferences);

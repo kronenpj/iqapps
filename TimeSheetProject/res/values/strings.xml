@@ -23,13 +23,24 @@
     <string name="accept">Accept</string>
     <string name="delete">Delete</string>
     <string name="sixminalign">Align (1 min)</string>
-    <string name="changeadjacent">Accept &amp; Change Adjacent</string>
-    <string name="auto_align_summary">Align to an X minute-increment when clocking in/out
-		or changing times.</string>
     <string name="about_summary">IQTimeSheet is my first Android application. It is based on a few
 		other similar applications both in function and style. Hopefully
 		you\'ll find it useful. The source code is available on <a href="http://iqapps.googlecode.com/">http://iqapps.googlecode.com/</a> and is released under the Apache license.</string>
-    <string name="timepicker_align_summary">Whether adjusting minutes in the time picker dialog should behave as usual, or step by align minutes steps at a time.</string>
+    <string name="changeadjacent">Accept &amp; Change Adjacent</string>
+    <string name="auto_align_summary_on">Automatically align to an X minute-increment when clocking in/out
+		or changing times.</string>
+    <string name="auto_align_summary_off">Manually choose to align to an X minute-increment when editing entries.</string>
+    <string name="timepicker_align_summary_on">Time picker dialog will step by align minutes steps at a time.</string>
+    <string name="timepicker_align_summary_off">Time picker dialog will behave as usual, stepping by 1 minute at a time.</string>
     <string name="split_task_desc">This is part of a split task</string>
-
+    <string name="totals_fontsize_summary">Font size for the totals footer on reports.  14 is the Android default.</string>
+    <string name="align_minutes_title">Snap to X minute increments</string>
+    <string name="align_minutes_summary">Choose an interval to align minutes</string>
+	<string name="hours_day_title">Hours per day</string>
+	<string name="hours_day_summary">Hours normally worked per day</string>    
+	<string name="hours_week_title">Hours per week</string>
+	<string name="hours_week_summary">Hours normally worked per week</string>    
+	<string name="backup_sd_title">Enable backups?</string>
+	<string name="backup_sd_summary_on">Backups of time database will be made on SD card</string>    
+	<string name="backup_sd_summary_off">Backups of time database are disabled</string>    
 </resources>
