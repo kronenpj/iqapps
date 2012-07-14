@@ -1,4 +1,4 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;

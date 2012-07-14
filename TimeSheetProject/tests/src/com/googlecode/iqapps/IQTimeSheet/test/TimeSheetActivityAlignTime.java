@@ -14,6 +14,7 @@ import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
+import com.googlecode.iqapps.testtools.Helpers;
 import com.jayway.android.robotium.solo.Solo;
 
 @Suppress
@@ -21,10 +22,9 @@ public class TimeSheetActivityAlignTime extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	private static final int SLEEPTIME = 50;
 
-	private Solo solo;
-
 	final String renamedTaskText = "Renamed Task";
 
+	private Solo solo;
 	private TimeSheetActivity mActivity;
 	private ListView mView;
 	private Context mCtx;
@@ -62,11 +62,7 @@ public class TimeSheetActivityAlignTime extends
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.BACKUP.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
+		Helpers.backup(solo, mInstr, mActivity);
 	}
 
 	/**
@@ -143,16 +139,7 @@ public class TimeSheetActivityAlignTime extends
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.RESTORE.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
-
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-		solo.sleep(SLEEPTIME);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
-		solo.sleep(SLEEPTIME);
+		Helpers.restore(solo, mInstr, mActivity);
 	}
 
 	@Override

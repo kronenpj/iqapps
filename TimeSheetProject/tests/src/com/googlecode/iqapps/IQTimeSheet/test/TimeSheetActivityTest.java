@@ -25,12 +25,14 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ListView;
 
-import com.googlecode.iqapps.Helpers;
 import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
+import com.googlecode.iqapps.testtools.Helpers;
+import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
+@Suppress
 public class TimeSheetActivityTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(TimeSheetActivityTest.class);
@@ -76,6 +78,7 @@ public class TimeSheetActivityTest extends
 		assertNotNull(mActivity);
 
 		Helpers.restore(solo, mInstr, mActivity);
+		// mPositron.restore();
 	}
 
 	@Override

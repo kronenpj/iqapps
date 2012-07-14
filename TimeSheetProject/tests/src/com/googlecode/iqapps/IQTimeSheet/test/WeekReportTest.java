@@ -38,20 +38,20 @@ import android.test.suitebuilder.annotation.Suppress;
 import android.util.Log;
 import android.view.KeyEvent;
 
-import com.googlecode.iqapps.Helpers;
-import com.googlecode.iqapps.Positron;
 import com.googlecode.iqapps.TimeHelpers;
-import com.googlecode.iqapps.ViewShorthand;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
+import com.googlecode.iqapps.testtools.Helpers;
+import com.googlecode.iqapps.testtools.Positron;
+import com.googlecode.iqapps.testtools.ViewShorthand;
 import com.jayway.android.robotium.solo.Solo;
 
 /**
  * @author kronenpj
  * 
  */
-@Suppress
+//@Suppress
 public class WeekReportTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(WeekReportTest.class);
@@ -67,8 +67,8 @@ public class WeekReportTest extends
 	private Solo solo;
 	private Context mCtx;
 	private Instrumentation mInstr;
+	private Positron mPositron;
 	private TimeSheetDbAdapter db;
-	private Positron positron;
 	private LinkedList<Activity> activities;
 	private ViewShorthand viewShorthand;
 
@@ -83,9 +83,9 @@ public class WeekReportTest extends
 		mInstr = getInstrumentation();
 		mCtx = mInstr.getTargetContext();
 		solo = new Solo(mInstr, mActivity);
-		positron = new Positron();
+		mPositron = new Positron(mInstr);
 		activities = new LinkedList<Activity>();
-		viewShorthand = new ViewShorthand(positron);
+		viewShorthand = new ViewShorthand(mPositron);
 
 		// Open the database
 		db = new TimeSheetDbAdapter(mActivity);
@@ -160,18 +160,25 @@ public class WeekReportTest extends
 	}
 
 	/**
+	 * Restore the database after we're done messing with it.
+	 */
+	public void test000RestoreDB() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		Helpers.restore(solo, mInstr, mActivity);
+	}
+
+	/**
 	 * Take a backup of the database so that we can restore the current state
 	 * later..
 	 */
+	@Suppress
 	public void test001BackupDB() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.BACKUP.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
+		Helpers.backup(solo, mInstr, mActivity);
 	}
 
 	/**
@@ -196,20 +203,12 @@ public class WeekReportTest extends
 	/**
 	 * Restore the database after we're done messing with it.
 	 */
+	@Suppress
 	public void testzzzRestoreDB() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.RESTORE.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
-
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-		solo.sleep(SLEEPTIME);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
-		solo.sleep(SLEEPTIME);
+		Helpers.restore(solo, mInstr, mActivity);
 	}
 
 	public void testweeklyReportTest1() {

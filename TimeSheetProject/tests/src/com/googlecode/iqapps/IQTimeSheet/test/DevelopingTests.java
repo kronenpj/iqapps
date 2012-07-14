@@ -17,13 +17,15 @@ package com.googlecode.iqapps.IQTimeSheet.test;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 
-import com.googlecode.iqapps.Positron;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
+import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
+@Suppress
 public class DevelopingTests extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(DevelopingTests.class);
@@ -37,7 +39,6 @@ public class DevelopingTests extends
 
 	public DevelopingTests(Class<TimeSheetActivity> activityClass) {
 		super(activityClass);
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override

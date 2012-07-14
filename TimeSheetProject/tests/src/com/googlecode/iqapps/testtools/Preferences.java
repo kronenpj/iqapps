@@ -1,7 +1,7 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
-import static com.googlecode.iqapps.IOUtils.cp;
-import static com.googlecode.iqapps.IOUtils.mv;
+import static com.googlecode.iqapps.testtools.IOUtils.cp;
+import static com.googlecode.iqapps.testtools.IOUtils.mv;
 
 import java.io.File;
 
@@ -17,7 +17,7 @@ public class Preferences {
 		this.instrumentation = instrumentation;
 	}
 
-	/** Backup all databases in the target context. */
+	/** Backup all preferences files in the target context. */
 	public void backup() {
 		String pathToPrefs = instrumentation.getTargetContext().getFilesDir()
 				.getAbsolutePath().replace("/files", "")
@@ -31,7 +31,7 @@ public class Preferences {
 		}
 	}
 
-	/** Restore all databases that have backups in the target context. */
+	/** Restore all preferences files that have backups in the target context. */
 	public void restore() {
 		String pathToPrefs = instrumentation.getTargetContext().getFilesDir()
 				.getAbsolutePath().replace("/files", "")
@@ -45,12 +45,13 @@ public class Preferences {
 	}
 
 	/**
-	 * Back up the given database by copying its defining file out of the way.
+	 * Back up the given preferences file by copying its defining file out of
+	 * the way.
 	 * 
 	 * This blows away any previous backup.
 	 * 
 	 * @param preferences
-	 *            The database to back up.
+	 *            The preferences file to back up.
 	 */
 	public void backup(String preferences) {
 		Log.i(TAG, "Backing up " + preferences);
@@ -58,10 +59,11 @@ public class Preferences {
 	}
 
 	/**
-	 * Restore the given database by copying the backup file back in place.
+	 * Restore the given preferences file by copying the backup file back in
+	 * place.
 	 * 
 	 * @param preferences
-	 *            The database to restore.
+	 *            The preferences file to restore.
 	 */
 	public void restore(String preferences) {
 		Log.i(TAG, "Restoring " + preferences);

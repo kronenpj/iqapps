@@ -17,6 +17,7 @@ package com.googlecode.iqapps.IQTimeSheet.test;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
@@ -30,6 +31,7 @@ import com.jayway.android.robotium.solo.Solo;
  * 
  * @author kronenpj
  */
+//@Suppress //#$##
 public class AAA_CreateDBPrefs extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private static final String TAG = "AAA_CreateDBPrefs";

@@ -13,7 +13,7 @@
 // * See the License for the specific language governing permissions and
 // * limitations under the License.
 // */
-//package com.googlecode.iqapps.IQTimeSheet;
+//package com.googlecode.iqapps.IQTimeSheet.test;
 //
 //import android.test.ActivityInstrumentationTestCase2;
 //

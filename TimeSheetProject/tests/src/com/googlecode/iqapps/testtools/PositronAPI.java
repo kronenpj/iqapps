@@ -1,4 +1,4 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 /**
  * A portable interface defining positron's features.

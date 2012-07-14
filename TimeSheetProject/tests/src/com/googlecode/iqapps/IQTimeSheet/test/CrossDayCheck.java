@@ -31,12 +31,12 @@ import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 
-import com.googlecode.iqapps.Helpers;
-import com.googlecode.iqapps.Positron;
 import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
+import com.googlecode.iqapps.testtools.Helpers;
+import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
 /**
@@ -57,8 +57,8 @@ public class CrossDayCheck extends
 	private TimeSheetActivity mActivity;
 	private Instrumentation mInstr;
 	private Solo solo;
-	private TimeSheetDbAdapter db;
 	private Positron mPositron;
+	private TimeSheetDbAdapter db;
 
 	public CrossDayCheck() {
 		super(TimeSheetActivity.class);
@@ -71,13 +71,8 @@ public class CrossDayCheck extends
 		solo = new Solo(mInstr, getActivity());
 		mPositron = new Positron(mInstr);
 
-		// Helpers.backup(solo, mInstr, mActivity);
+		Helpers.backup(solo, mInstr, mActivity);
 		// mPositron.backup();
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.BACKUP.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
 		// mPositron.prefBackup();
 
 		// Reset the database
@@ -111,21 +106,12 @@ public class CrossDayCheck extends
 	}
 
 	public void tearDown() {
-		// mPositron.prefRestore();
-		// mPositron.restore();
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.RESTORE.ordinal()).getItemId();
-		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
-
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-		solo.sleep(SLEEPTIME);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
-		solo.sleep(SLEEPTIME);
+		// mPositron.prefRestore();
+		Helpers.restore(solo, mInstr, mActivity);
+		// mPositron.restore();
 
 		solo.finishOpenedActivities();
 	}

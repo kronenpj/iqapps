@@ -22,7 +22,7 @@
  * @exception   (@throws is a synonym added in Javadoc 1.2)
  * @see         
  */
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 import junit.framework.Assert;
 import android.app.Instrumentation;
@@ -74,6 +74,9 @@ public class Helpers {
 		Assert.assertNotNull(mInstr);
 		Assert.assertNotNull(mActivity);
 
+		while (!solo.getCurrentActivity().isTaskRoot()) {
+			solo.goBack();
+		}
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
 		int menuItemID = mActivity.getOptionsMenu()
 				.getItem(MenuItems.BACKUP.ordinal()).getItemId();

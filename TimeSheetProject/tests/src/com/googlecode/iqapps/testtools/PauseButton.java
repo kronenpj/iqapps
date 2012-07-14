@@ -1,4 +1,4 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;

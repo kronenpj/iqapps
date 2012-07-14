@@ -23,11 +23,12 @@ import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 import android.widget.ListView;
 
-import com.googlecode.iqapps.Helpers;
 import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
+import com.googlecode.iqapps.testtools.Helpers;
+import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
 @Suppress
@@ -38,12 +39,11 @@ public class TimeAlignTests extends
 	private static int SLEEPTIME = 99; // Milliseconds
 
 	private Solo solo;
-
 	private TimeSheetActivity mActivity;
 	private ListView mView;
 	private Context mCtx;
 	private Instrumentation mInstr;
-	// private Positron mPositron;
+	private Positron mPositron;
 	private TimeSheetDbAdapter db;
 
 	public TimeAlignTests() {
@@ -56,7 +56,7 @@ public class TimeAlignTests extends
 		mInstr = getInstrumentation();
 		mCtx = mInstr.getTargetContext();
 		solo = new Solo(mInstr, getActivity());
-		// mPositron = new Positron(mInstr);
+		mPositron = new Positron(mInstr);
 
 		Helpers.backup(solo, mInstr, mActivity);
 		// mPositron.backup();

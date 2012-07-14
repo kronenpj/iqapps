@@ -1,7 +1,7 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
-import static com.googlecode.iqapps.IOUtils.peek;
-import static com.googlecode.iqapps.IOUtils.read;
+import static com.googlecode.iqapps.testtools.IOUtils.peek;
+import static com.googlecode.iqapps.testtools.IOUtils.read;
 import static java.lang.Character.isWhitespace;
 
 import java.io.BufferedReader;

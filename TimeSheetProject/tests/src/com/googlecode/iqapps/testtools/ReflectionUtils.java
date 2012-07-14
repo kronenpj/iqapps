@@ -1,4 +1,4 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 import static java.lang.reflect.Modifier.isStatic;
 

@@ -1,9 +1,9 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
-import static com.googlecode.iqapps.IOUtils.close;
-import static com.googlecode.iqapps.IOUtils.cp;
-import static com.googlecode.iqapps.IOUtils.mv;
-import static com.googlecode.iqapps.ReflectionUtils.rRawName;
+import static com.googlecode.iqapps.testtools.IOUtils.close;
+import static com.googlecode.iqapps.testtools.IOUtils.cp;
+import static com.googlecode.iqapps.testtools.IOUtils.mv;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.rRawName;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;

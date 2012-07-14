@@ -1,9 +1,9 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
 import static android.os.SystemClock.uptimeMillis;
 import static android.view.KeyEvent.KEYCODE_DPAD_CENTER;
-import static com.googlecode.iqapps.ReflectionUtils.staticInt;
-import static com.googlecode.iqapps.ReflectionUtils.staticIntFields;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.staticInt;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.staticIntFields;
 import static java.lang.Integer.parseInt;
 import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;

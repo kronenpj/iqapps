@@ -1,9 +1,9 @@
-package com.googlecode.iqapps;
+package com.googlecode.iqapps.testtools;
 
-import static com.googlecode.iqapps.ReflectionUtils.findGetter;
-import static com.googlecode.iqapps.ReflectionUtils.invoke;
-import static com.googlecode.iqapps.ReflectionUtils.getMethod;
-import static com.googlecode.iqapps.ReflectionUtils.rId;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.findGetter;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.getMethod;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.invoke;
+import static com.googlecode.iqapps.testtools.ReflectionUtils.rId;
 import static java.lang.Integer.parseInt;
 
 import java.lang.reflect.Array;

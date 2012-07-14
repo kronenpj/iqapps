@@ -11,11 +11,17 @@ import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.testtools.Helpers;
+import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
-//@Suppress // #$##
-public class TimeSheetActivityBasic extends
+@Suppress
+// #$##
+public class EditTaskHandlerTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
+	private static final String EXAMPLE_TASK_ENTRY = "Example task entry";
+	private static final String CHILD_TASK_1_65 = "Child Task 1 - 65%";
+	private static final String CHILD_TASK_2_35 = "Child Task 2 - 35%";
+
 	private static final int SLEEPTIME = 50;
 
 	final String renamedTaskText = "Renamed Task";
@@ -26,8 +32,9 @@ public class TimeSheetActivityBasic extends
 	private Context mCtx;
 	private Instrumentation mInstr;
 
-	public TimeSheetActivityBasic() {
-		// super("com.googlecode.iqapps.IQTimeSheet", TimeSheetActivity.class);
+	// private Positron mPositron;
+
+	public EditTaskHandlerTest() {
 		super(TimeSheetActivity.class);
 	}
 
@@ -37,6 +44,7 @@ public class TimeSheetActivityBasic extends
 		mInstr = getInstrumentation();
 		mCtx = mInstr.getTargetContext();
 		solo = new Solo(mInstr, getActivity());
+		// mPositron = new Positron(mInstr);
 	}
 
 	/**
@@ -58,12 +66,13 @@ public class TimeSheetActivityBasic extends
 		assertNotNull(mActivity);
 
 		Helpers.backup(solo, mInstr, mActivity);
+		// mPositron.backup();
 	}
 
 	/**
 	 * Make sure the application is ready for us to test it.
 	 */
-	public void test20EraseDB() {
+	public void test02EraseDB() {
 		// TODO: This should be more kind to existing data. Perhaps backing it
 		// up and replacing it once we're done testing...
 
@@ -75,53 +84,32 @@ public class TimeSheetActivityBasic extends
 		}
 	}
 
-	public void test21ForEmptyDatabase() {
+	public void test03ForEmptyDatabase() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		assertTrue(solo.searchText("Example task entry"));
+		assertTrue(solo.searchText(EXAMPLE_TASK_ENTRY));
 	}
 
-	public void test22RenameTask() {
-		mActivity = getActivity();
-		assertNotNull(mActivity);
-
-		// ListView mList = (ListView) solo.getView(android.R.id.list);
-		solo.clickLongInList(0, 0);
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
-		solo.sleep(SLEEPTIME);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
-		solo.sleep(SLEEPTIME);
-
-		// Enter renamedTaskText in first editfield
-		// solo.clickOnEditText(0);
-		solo.clearEditText(0);
-		solo.enterText(0, renamedTaskText);
-		solo.sleep(SLEEPTIME);
-
-		// Click on Accept button
-		final String acceptButton = mActivity
-				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.accept);
-		solo.clickOnButton(acceptButton);
-
-		// Verify that renamedTaskText is correctly displayed
-		assertTrue(solo.searchText(renamedTaskText));
+	public void test10CreateSplitTasks() {
+		createSplitTask(CHILD_TASK_1_65, EXAMPLE_TASK_ENTRY, 65);
+		createSplitTask(CHILD_TASK_2_35, EXAMPLE_TASK_ENTRY, 35);
 	}
 
-	public void test23StartStopTask() {
+	public void test11StartStopTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
 		// Press the task to start recording time.
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.searchText(EXAMPLE_TASK_ENTRY);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
 		solo.sleep(SLEEPTIME);
 
 		// Press the task to stop recording time.
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
 	}
 
-	public void test24EditTask() {
+	public void test12EditTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -144,6 +132,8 @@ public class TimeSheetActivityBasic extends
 		solo.sleep(SLEEPTIME);
 
 		// Find the start time button and select it.
+		// The method of using the arrow keys is used because the buttons have
+		// dynamic labels.
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
 		solo.sleep(SLEEPTIME);
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
@@ -157,6 +147,8 @@ public class TimeSheetActivityBasic extends
 		solo.sleep(SLEEPTIME);
 
 		// Change the time to one hour prior.
+		// The method of using the arrow keys is used because the button labels
+		// aren't unique (+ / -).
 		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
 		solo.sleep(SLEEPTIME);
 		solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
@@ -182,17 +174,25 @@ public class TimeSheetActivityBasic extends
 		solo.sleep(SLEEPTIME);
 	}
 
-	public void test25Report() {
+	public void test13Report() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		// Bring up the edit day activity.
+		// Bring up the report activity.
 		solo.sendKey(KeyEvent.KEYCODE_MENU);
 		int menuItemID = mActivity.getOptionsMenu()
 				.getItem(MenuItems.DAY_REPORT.ordinal()).getItemId();
 		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
 
-		// Select the footer
+		// Locate the larger percentage task
+		assertTrue(solo.searchText("0.65"));
+		solo.sleep(SLEEPTIME);
+
+		// Locate the smaller percentage task
+		assertTrue(solo.searchText("0.35"));
+		solo.sleep(SLEEPTIME);
+
+		// Locate the footer
 		assertTrue(solo.searchText("1.00"));
 		solo.sleep(SLEEPTIME);
 	}
@@ -205,10 +205,50 @@ public class TimeSheetActivityBasic extends
 		assertNotNull(mActivity);
 
 		Helpers.restore(solo, mInstr, mActivity);
+		// mPositron.restore();
 	}
 
 	@Override
 	protected void tearDown() throws Exception {
 		solo.finishOpenedActivities();
+	}
+
+	private void createSplitTask(String name, String parent, int percentage) {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		// Bring up the new task activity.
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		solo.sleep(SLEEPTIME);
+		int menuItemID = mActivity.getOptionsMenu()
+				.getItem(MenuItems.NEW_TASK.ordinal()).getItemId();
+		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+		solo.sleep(SLEEPTIME);
+
+		// Enter the name of the new task
+		solo.clearEditText(0);
+		solo.enterText(0, name);
+		solo.sleep(SLEEPTIME);
+
+		// Check the split task check box.
+		solo.clickOnCheckBox(0);
+		solo.sleep(SLEEPTIME);
+
+		// Choose the first child task from the list.
+		solo.pressSpinnerItem(0, 0);
+		solo.sleep(SLEEPTIME);
+
+		// Set the percentage desired.
+		solo.setProgressBar(0, percentage);
+		solo.sleep(SLEEPTIME);
+
+		// Verify the percentage is reflected in the text field.
+		assertTrue(solo.searchEditText(String.valueOf(percentage)));
+
+		// Click on Accept button
+		final String acceptButton = mActivity
+				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.accept);
+		solo.clickOnButton(acceptButton);
+		solo.sleep(SLEEPTIME);
 	}
 }

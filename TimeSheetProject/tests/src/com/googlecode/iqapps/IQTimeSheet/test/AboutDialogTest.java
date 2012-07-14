@@ -2,13 +2,14 @@ package com.googlecode.iqapps.IQTimeSheet.test;
 
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
+import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 
-import com.googlecode.iqapps.IQTimeSheet.AboutDialog;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.jayway.android.robotium.solo.Solo;
 
+//@Suppress //#$##
 public class AboutDialogTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private static final String TAG = "AboutDialogTest";
