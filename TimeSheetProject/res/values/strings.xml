@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">IQTimeSheet</string>
     <string name="icon_add_task">ic_task_add.png</string>
     <string name="taskedit">Edit Task</string>
@@ -37,10 +36,14 @@
     <string name="align_minutes_title">Snap to X minute increments</string>
     <string name="align_minutes_summary">Choose an interval to align minutes</string>
 	<string name="hours_day_title">Hours per day</string>
-	<string name="hours_day_summary">Hours normally worked per day</string>    
+	<string name="hours_day_summary">Hours normally worked per day</string>
 	<string name="hours_week_title">Hours per week</string>
-	<string name="hours_week_summary">Hours normally worked per week</string>    
+	<string name="hours_week_summary">Hours normally worked per week</string>
 	<string name="backup_sd_title">Enable backups?</string>
-	<string name="backup_sd_summary_on">Backups of time database will be made on SD card</string>    
-	<string name="backup_sd_summary_off">Backups of time database are disabled</string>    
+	<string name="backup_sd_summary_on">Backups of time database will be made on SD card</string>
+	<string name="backup_sd_summary_off">Backups of time database are disabled</string>
+	<string name="align_minutes_auto">Align minutes automatically?</string>
+	<string name="align_within_time_picker">Align time within Time Picker?</string>
+	<string name="totals_font_size">Totals Font Size</string>
+	<string name="select_parent_task">Select parent task</string>
 </resources>

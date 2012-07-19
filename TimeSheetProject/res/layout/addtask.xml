@@ -55,7 +55,7 @@
         android:layout_below="@+id/CancelEdit"
         android:layout_alignParentLeft="true"
         android:visibility="invisible"
-        android:text="Select parent task" />
+        android:text="@string/select_parent_task" />
     
     <Spinner
         android:id="@+id/TaskSpinner"

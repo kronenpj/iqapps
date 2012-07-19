@@ -16,14 +16,14 @@
         android:order="20"
         android:summaryOff="@string/auto_align_summary_off"
         android:summaryOn="@string/auto_align_summary_on"
-        android:title="Align minutes automatically?" />
+        android:title="@string/align_minutes_auto" />
     <CheckBoxPreference
         android:defaultValue="true"
         android:key="align.time.picker"
         android:order="25"
         android:summaryOff="@string/timepicker_align_summary_off"
         android:summaryOn="@string/timepicker_align_summary_on"
-        android:title="Align time within Time Picker?" >
+        android:title="@string/align_within_time_picker" >
     </CheckBoxPreference>
 
     <EditTextPreference
@@ -46,7 +46,7 @@
         android:key="total.fontSize"
         android:order="50"
         android:summary="@string/totals_fontsize_summary"
-        android:title="Totals Font Size" />
+        android:title="@string/totals_font_size" />
 
     <CheckBoxPreference
         android:defaultValue="true"
