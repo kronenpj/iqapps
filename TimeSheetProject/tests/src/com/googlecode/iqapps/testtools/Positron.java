@@ -329,6 +329,9 @@ public class Positron extends Instrumentation {
 	 * @return The result as the passed type.
 	 */
 	protected <T> T at(Class<T> asA, Object from, String path) {
+		if (viewShorthand == null)
+			viewShorthand = new ViewShorthand(mInstr);
+
 		return viewShorthand.evaluate(asA, from, path);
 	}
 
@@ -685,6 +688,9 @@ public class Positron extends Instrumentation {
 	 * @return True if the object is not null. False otherwise.
 	 */
 	public boolean existsAt(int depth, String path) {
+		if (viewShorthand == null)
+			viewShorthand = new ViewShorthand(mInstr);
+
 		try {
 			if (viewShorthand.evaluate(depth, path) != null) {
 				return true;

@@ -24,12 +24,18 @@
  */
 package com.googlecode.iqapps.IQTimeSheet.test;
 
+import java.util.ArrayList;
+
 import junit.framework.Assert;
 import android.app.Instrumentation;
+import android.database.CursorIndexOutOfBoundsException;
 import android.database.SQLException;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.Suppress;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.ListView;
+import android.widget.Toast;
 
 import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
@@ -47,7 +53,7 @@ import com.jayway.android.robotium.solo.Solo;
 public class CrossDayCheck extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(CrossDayCheck.class);
-	// private static final String TAG = "WeekReportTest";
+	private static final String TAG = "CrossDayCheck";
 	private static final int SLEEPTIME = 50;
 	private static long now = 0;
 	private static final String insertIntoTasks = "INSERT INTO tasks (task, active, usage) "
@@ -68,12 +74,12 @@ public class CrossDayCheck extends
 		super.setUp();
 		mActivity = getActivity();
 		mInstr = getInstrumentation();
-		solo = new Solo(mInstr, getActivity());
+		solo = new Solo(mInstr, mActivity);
 		mPositron = new Positron(mInstr);
 
 		Helpers.backup(solo, mInstr, mActivity);
 		// mPositron.backup();
-		// mPositron.prefBackup();
+		Helpers.prefBackup(mInstr);
 
 		// Reset the database
 		db = new TimeSheetDbAdapter(mActivity);
@@ -109,7 +115,7 @@ public class CrossDayCheck extends
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
-		// mPositron.prefRestore();
+		Helpers.prefRestore(mInstr);
 		Helpers.restore(solo, mInstr, mActivity);
 		// mPositron.restore();
 
@@ -156,9 +162,20 @@ public class CrossDayCheck extends
 		assertTrue(solo.searchText(Helpers.text1));
 		long midnight = TimeHelpers.millisToStartOfDay(now);
 		float hours = TimeHelpers.calculateDuration(midnight, now);
-		String appHourString = mPositron.stringAt("#reportlist.0.1.text");
+		Toast.makeText(mActivity, "About to request android:list",
+				Toast.LENGTH_LONG).show();
+		// String appHourString = mPositron.stringAt("#android:list.0.1.text");
+		ArrayList<ListView> listViews = solo.getCurrentListViews();
+		String appHourString = null;
+		try {
+			appHourString = listViews.get(0).getChildAt(1).toString();
+		} catch (CursorIndexOutOfBoundsException e) {
+			Log.e(TAG, e.toString());
+		}
+
 		float appHours = Float.valueOf(appHourString.substring(0,
 				appHourString.indexOf(' ')));
+		assertTrue(solo.searchText(String.valueOf(hours)));
 		float delta = hours - appHours;
 		if (delta < 0)
 			delta = -delta;

@@ -14,8 +14,7 @@ import com.googlecode.iqapps.testtools.Helpers;
 import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
-@Suppress
-// #$##
+//@Suppress //#$##
 public class EditTaskHandlerTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	private static final String EXAMPLE_TASK_ENTRY = "Example task entry";

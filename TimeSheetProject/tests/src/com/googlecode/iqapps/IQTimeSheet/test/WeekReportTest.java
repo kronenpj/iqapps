@@ -51,7 +51,7 @@ import com.jayway.android.robotium.solo.Solo;
  * @author kronenpj
  * 
  */
-//@Suppress
+//@Suppress //#$##
 public class WeekReportTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(WeekReportTest.class);

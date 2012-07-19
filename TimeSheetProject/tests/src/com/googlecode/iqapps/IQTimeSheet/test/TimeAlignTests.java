@@ -17,7 +17,9 @@ package com.googlecode.iqapps.IQTimeSheet.test;
 
 import android.app.Instrumentation;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.SQLException;
+import android.preference.Preference;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
@@ -25,13 +27,14 @@ import android.widget.ListView;
 
 import com.googlecode.iqapps.TimeHelpers;
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
+import com.googlecode.iqapps.IQTimeSheet.PreferenceHelper;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetDbAdapter;
 import com.googlecode.iqapps.testtools.Helpers;
 import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
-@Suppress
+//@Suppress //#$##
 public class TimeAlignTests extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	// private Log log = LogFactory.getLog(TimeAlignTests.class);
@@ -45,6 +48,7 @@ public class TimeAlignTests extends
 	private Instrumentation mInstr;
 	private Positron mPositron;
 	private TimeSheetDbAdapter db;
+	private boolean oldAlignAuto;
 
 	public TimeAlignTests() {
 		super(TimeSheetActivity.class);
@@ -93,6 +97,54 @@ public class TimeAlignTests extends
 		// mPositron.restore();
 	}
 
+	public void test000SetupPreferences() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		int menuItemID = mActivity.getOptionsMenu()
+				.getItem(MenuItems.SETTINGS.ordinal()).getItemId();
+		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+		assertTrue(solo.waitForActivity("MyPreferenceActivity", 500));
+		solo.sleep(SLEEPTIME);
+
+		// The align button disappears if this option is set.
+		SharedPreferences shPrefs = mActivity
+				.getPreferences(Context.MODE_PRIVATE);
+		oldAlignAuto = shPrefs.getBoolean("align.minutes.auto", false);
+
+		if (oldAlignAuto) {
+			String prefText = mActivity
+					.getText(
+							com.googlecode.iqapps.IQTimeSheet.R.string.align_minutes_auto)
+					.toString();
+			assertTrue(solo.searchText(prefText));
+			solo.clickOnText(prefText);
+		}
+	}
+
+	public void testzzzRestorePreferences() {
+		if (oldAlignAuto) {
+			mActivity = getActivity();
+			assertNotNull(mActivity);
+
+			mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+			int menuItemID = mActivity.getOptionsMenu()
+					.getItem(MenuItems.SETTINGS.ordinal()).getItemId();
+			assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+			assertTrue(solo.waitForActivity("MyPreferenceActivity", 500));
+			solo.sleep(SLEEPTIME);
+
+			String prefText = mActivity
+					.getText(
+							com.googlecode.iqapps.IQTimeSheet.R.string.align_minutes_auto)
+					.toString();
+			assertTrue(solo.searchText(prefText));
+			solo.clickOnText(prefText);
+		}
+	}
+
+	@Suppress
 	public void testverifyTime2Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 0);
@@ -117,6 +169,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime3Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 1);
@@ -141,6 +194,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime4Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 1);
@@ -165,6 +219,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime5Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 2);
@@ -189,6 +244,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	// @Suppress
 	public void testverifyTime6Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 2);
@@ -213,6 +269,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime10Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 4);
@@ -237,6 +294,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime12Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 5);
@@ -261,6 +319,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime15Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 7);
@@ -285,6 +344,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime20Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 9);
@@ -309,6 +369,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime30Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 14);
@@ -333,6 +394,7 @@ public class TimeAlignTests extends
 		checkDayReport("3.00");
 	}
 
+	@Suppress
 	public void testverifyTime60Align() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 29);
@@ -381,6 +443,7 @@ public class TimeAlignTests extends
 		checkDayReport("2.80");
 	}
 
+	@Suppress
 	public void testverifyAlignEdge2() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 8);
@@ -405,6 +468,7 @@ public class TimeAlignTests extends
 		checkDayReport("2.80");
 	}
 
+	@Suppress
 	public void testverifyAlignEdge3() {
 		long now = TimeHelpers.millisNow();
 		long eightAM = TimeHelpers.millisSetTime(now, 8, 9);

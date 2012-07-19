@@ -24,9 +24,12 @@
  */
 package com.googlecode.iqapps.testtools;
 
+import java.io.File;
+
 import junit.framework.Assert;
 import android.app.Instrumentation;
 import android.view.KeyEvent;
+import android.widget.Toast;
 
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
@@ -78,6 +81,7 @@ public class Helpers {
 			solo.goBack();
 		}
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		mActivity = (TimeSheetActivity) solo.getCurrentActivity();
 		int menuItemID = mActivity.getOptionsMenu()
 				.getItem(MenuItems.BACKUP.ordinal()).getItemId();
 		Assert.assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
@@ -93,15 +97,93 @@ public class Helpers {
 		while (!solo.getCurrentActivity().isTaskRoot()) {
 			solo.goBack();
 		}
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
-		int menuItemID = mActivity.getOptionsMenu()
-				.getItem(MenuItems.RESTORE.ordinal()).getItemId();
-		Assert.assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		solo.sleep(SLEEPTIME);
+		try {
+			mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+			int menuItemID = mActivity.getOptionsMenu()
+					.getItem(MenuItems.RESTORE.ordinal()).getItemId();
+			Assert.assertTrue(mInstr.invokeMenuActionSync(mActivity,
+					menuItemID, 0));
+			solo.sleep(SLEEPTIME);
 
-		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
-		solo.sleep(SLEEPTIME);
-		solo.sendKey(KeyEvent.KEYCODE_ENTER);
-		solo.sleep(SLEEPTIME);
+			solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+			solo.sleep(SLEEPTIME);
+			solo.sendKey(KeyEvent.KEYCODE_ENTER);
+			solo.sleep(SLEEPTIME);
+		} catch (IndexOutOfBoundsException e) {
+			Toast.makeText(mActivity, "Restoration of database failed.",
+					Toast.LENGTH_LONG).show();
+		}
+	}
+
+	/** Backup all preferences files in the target context. */
+	public static void prefBackup(Instrumentation mInstr) {
+		String pathToPrefs = mInstr.getTargetContext().getFilesDir()
+				.getAbsolutePath().replace("/files", "")
+				+ "/shared_prefs";
+		File prefsDir = new File(pathToPrefs);
+		for (String preferences : prefsDir.list()) {
+			if (isBackup(preferences))
+				continue;
+			prefBackup(preferences, mInstr);
+		}
+	}
+
+	/** Restore all preferences files that have backups in the target context. */
+	public static void prefRestore(Instrumentation mInstr) {
+		String pathToPrefs = mInstr.getTargetContext().getFilesDir()
+				.getAbsolutePath().replace("/files", "")
+				+ "/shared_prefs";
+		File prefsDir = new File(pathToPrefs);
+		for (String preferences : prefsDir.list()) {
+			if (!isBackup(preferences))
+				continue;
+			prefRestore(originalOf(preferences), mInstr);
+		}
+	}
+
+	/**
+	 * Back up the given preferences file by copying its defining file out of
+	 * the way.
+	 * 
+	 * This blows away any previous backup.
+	 * 
+	 * @param preferences
+	 *            The preferences file to back up.
+	 */
+	public static void prefBackup(String preferences, Instrumentation mInstr) {
+		IOUtils.cp(locationOf(preferences, mInstr),
+				locationOf(backupOf(preferences), mInstr));
+	}
+
+	/**
+	 * Restore the given preferences file by copying the backup file back in
+	 * place.
+	 * 
+	 * @param preferences
+	 *            The preferences file to restore.
+	 */
+	public static void prefRestore(String preferences, Instrumentation mInstr) {
+		IOUtils.mv(locationOf(backupOf(preferences), mInstr),
+				locationOf(preferences, mInstr));
+	}
+
+	private static String locationOf(String preferences, Instrumentation mInstr) {
+		return mInstr.getTargetContext().getFilesDir().getAbsolutePath()
+				.replace("/files", "")
+				+ "/shared_prefs/" + preferences;
+	}
+
+	private static String backupOf(String preferences) {
+		return preferences.replaceAll("\\.xml$", "_backup.xml");
+	}
+
+	private static String originalOf(String preferences) {
+		if (!isBackup(preferences))
+			throw new IllegalArgumentException();
+		return preferences.replaceFirst("_backup\\.xml$", ".xml");
+	}
+
+	private static boolean isBackup(String preferences) {
+		return preferences.matches(".*_backup\\.xml$");
 	}
 }

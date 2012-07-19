@@ -13,7 +13,7 @@ import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.testtools.Helpers;
 import com.jayway.android.robotium.solo.Solo;
 
-//@Suppress // #$##
+@Suppress // #$##
 public class TimeSheetActivityBasic extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	private static final int SLEEPTIME = 50;
