@@ -14,7 +14,7 @@ import com.googlecode.iqapps.testtools.Helpers;
 import com.googlecode.iqapps.testtools.Positron;
 import com.jayway.android.robotium.solo.Solo;
 
-//@Suppress //#$##
+// @Suppress //#$##
 public class EditTaskHandlerTest extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	private static final String EXAMPLE_TASK_ENTRY = "Example task entry";
@@ -95,7 +95,7 @@ public class EditTaskHandlerTest extends
 		createSplitTask(CHILD_TASK_2_35, EXAMPLE_TASK_ENTRY, 35);
 	}
 
-	public void test11StartStopTask() {
+	public void test20StartStopTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -108,7 +108,7 @@ public class EditTaskHandlerTest extends
 		solo.sendKey(KeyEvent.KEYCODE_DPAD_CENTER);
 	}
 
-	public void test12EditTask() {
+	public void test30EditTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -130,12 +130,17 @@ public class EditTaskHandlerTest extends
 		solo.sendKey(KeyEvent.KEYCODE_ENTER);
 		solo.sleep(SLEEPTIME);
 
+//		assertTrue(solo.waitForActivity("EditDayEntriesHandler", 500));
+		solo.sleep(SLEEPTIME*5);
+
 		// Find the start time button and select it.
 		// The method of using the arrow keys is used because the buttons have
 		// dynamic labels.
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
 		solo.sleep(SLEEPTIME);
 		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
 		solo.sleep(SLEEPTIME);
 		// If it's not midnight or the following hour, change start time
 		if (whatHour != 0) {
@@ -173,7 +178,36 @@ public class EditTaskHandlerTest extends
 		solo.sleep(SLEEPTIME);
 	}
 
-	public void test13Report() {
+	public void test40EditTaskCancel() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		// Bring up the edit day activity.
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		solo.sleep(SLEEPTIME);
+		int menuItemID = mActivity.getOptionsMenu()
+				.getItem(MenuItems.EDITDAY_ENTRIES.ordinal()).getItemId();
+		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+		solo.sleep(SLEEPTIME);
+
+		// Select the first item in the list, which was just created.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sleep(SLEEPTIME);
+
+//		assertTrue(solo.waitForActivity("EditDayEntriesHandler", 500));
+		solo.sleep(SLEEPTIME*5);
+
+		// Select the cancel button.
+		solo.clickOnButton(mActivity
+				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.cancel));
+		solo.sleep(SLEEPTIME);
+	}
+
+	public void test50Report() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -193,6 +227,41 @@ public class EditTaskHandlerTest extends
 
 		// Locate the footer
 		assertTrue(solo.searchText("1.00"));
+		solo.sleep(SLEEPTIME);
+	}
+
+	public void test60EditTaskDelete() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		// Bring up the edit day activity.
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		solo.sleep(SLEEPTIME);
+		int menuItemID = mActivity.getOptionsMenu()
+				.getItem(MenuItems.EDITDAY_ENTRIES.ordinal()).getItemId();
+		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+		solo.sleep(SLEEPTIME);
+
+		// Select the first item in the list, which was just created.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sleep(SLEEPTIME);
+
+//		assertTrue(solo.waitForActivity("EditDayEntriesHandler", 500));
+		solo.sleep(SLEEPTIME*5);
+
+		// Select the delete button.
+		solo.clickOnButton(mActivity
+				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.delete));
+		solo.sleep(SLEEPTIME);
+
+		// Answer the dialog.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
 		solo.sleep(SLEEPTIME);
 	}
 

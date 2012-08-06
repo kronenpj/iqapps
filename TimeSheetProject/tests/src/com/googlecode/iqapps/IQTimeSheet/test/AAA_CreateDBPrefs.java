@@ -15,14 +15,17 @@
  */
 package com.googlecode.iqapps.IQTimeSheet.test;
 
+import junit.framework.Assert;
 import android.app.Instrumentation;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.suitebuilder.annotation.Suppress;
 import android.view.KeyEvent;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.googlecode.iqapps.IQTimeSheet.MenuItems;
 import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
+import com.googlecode.iqapps.testtools.Helpers;
 import com.jayway.android.robotium.solo.Solo;
 
 /**
@@ -63,6 +66,35 @@ public class AAA_CreateDBPrefs extends
 
 		mView = (ListView) mActivity.findViewById(android.R.id.list);
 		assertNotNull(mView);
+	}
+
+	/**
+	 * Start to restore the database but cancel before actually doing it.
+	 */
+	public void test10RestoreDBCancel() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		while (!solo.getCurrentActivity().isTaskRoot()) {
+			solo.goBack();
+		}
+		try {
+			mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+			int menuItemID = mActivity.getOptionsMenu()
+					.getItem(MenuItems.RESTORE.ordinal()).getItemId();
+			Assert.assertTrue(mInstr.invokeMenuActionSync(mActivity,
+					menuItemID, 0));
+			solo.sleep(SLEEPTIME);
+
+			solo.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+			solo.sleep(SLEEPTIME);
+			solo.sendKey(KeyEvent.KEYCODE_ENTER);
+			solo.sleep(SLEEPTIME);
+		} catch (IndexOutOfBoundsException e) {
+			Toast.makeText(mActivity,
+					"Cancellation of database restore failed.",
+					Toast.LENGTH_LONG).show();
+		}
 	}
 
 	public void tearDown() {

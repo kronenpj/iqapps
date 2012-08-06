@@ -13,7 +13,7 @@ import com.googlecode.iqapps.IQTimeSheet.TimeSheetActivity;
 import com.googlecode.iqapps.testtools.Helpers;
 import com.jayway.android.robotium.solo.Solo;
 
-@Suppress // #$##
+//@Suppress //#$##
 public class TimeSheetActivityBasic extends
 		ActivityInstrumentationTestCase2<TimeSheetActivity> {
 	private static final int SLEEPTIME = 50;
@@ -63,7 +63,7 @@ public class TimeSheetActivityBasic extends
 	/**
 	 * Make sure the application is ready for us to test it.
 	 */
-	public void test20EraseDB() {
+	public void test10EraseDB() {
 		// TODO: This should be more kind to existing data. Perhaps backing it
 		// up and replacing it once we're done testing...
 
@@ -75,14 +75,14 @@ public class TimeSheetActivityBasic extends
 		}
 	}
 
-	public void test21ForEmptyDatabase() {
+	public void test11ForEmptyDatabase() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
 		assertTrue(solo.searchText("Example task entry"));
 	}
 
-	public void test22RenameTask() {
+	public void test20RenameTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -108,7 +108,7 @@ public class TimeSheetActivityBasic extends
 		assertTrue(solo.searchText(renamedTaskText));
 	}
 
-	public void test23StartStopTask() {
+	public void test30StartStopTask() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
@@ -121,14 +121,14 @@ public class TimeSheetActivityBasic extends
 		solo.sendKey(KeyEvent.KEYCODE_ENTER);
 	}
 
-	public void test24EditTask() {
+	public void test40EditTaskEnd() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
 		int whatHour = TimeHelpers.millisToHour(TimeHelpers.millisNow());
 
 		// Bring up the edit day activity.
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		solo.sendKey(KeyEvent.KEYCODE_MENU);
 		solo.sleep(SLEEPTIME);
 		int menuItemID = mActivity.getOptionsMenu()
 				.getItem(MenuItems.EDITDAY_ENTRIES.ordinal()).getItemId();
@@ -143,17 +143,19 @@ public class TimeSheetActivityBasic extends
 		solo.sendKey(KeyEvent.KEYCODE_ENTER);
 		solo.sleep(SLEEPTIME);
 
-		// Find the start time button and select it.
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		// Find the end time button and select it.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
 		solo.sleep(SLEEPTIME);
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
 		solo.sleep(SLEEPTIME);
 		// If it's not midnight or the following hour, change start time
 		if (whatHour != 0) {
 			solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
 			solo.sleep(SLEEPTIME);
 		}
-		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_ENTER);
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
 		solo.sleep(SLEEPTIME);
 
 		// Change the time to one hour prior.
@@ -182,7 +184,72 @@ public class TimeSheetActivityBasic extends
 		solo.sleep(SLEEPTIME);
 	}
 
-	public void test25Report() {
+	public void test50EditTaskStart() {
+		mActivity = getActivity();
+		assertNotNull(mActivity);
+
+		int whatHour = TimeHelpers.millisToHour(TimeHelpers.millisNow());
+
+		// Bring up the edit day activity.
+		mInstr.sendKeyDownUpSync(KeyEvent.KEYCODE_MENU);
+		solo.sleep(SLEEPTIME);
+		int menuItemID = mActivity.getOptionsMenu()
+				.getItem(MenuItems.EDITDAY_ENTRIES.ordinal()).getItemId();
+		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
+		solo.sleep(SLEEPTIME);
+
+		// Select the first item in the list, which was just created.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sleep(SLEEPTIME);
+
+		// Find the start time button and select it.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_LEFT);
+		solo.sleep(SLEEPTIME);
+		// If it's not midnight or the preceeding hour, change end time
+		if (whatHour != 23) {
+			solo.sendKey(KeyEvent.KEYCODE_DPAD_RIGHT);
+			solo.sleep(SLEEPTIME);
+		}
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sleep(SLEEPTIME);
+
+		// Change the time to one hour prior.
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_DOWN);
+		solo.sleep(SLEEPTIME);
+		solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+		solo.sleep(SLEEPTIME);
+		// If it's midnight or the following hour, increase instead
+		if (whatHour == 23) {
+			solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+			solo.sleep(SLEEPTIME);
+			solo.sendKey(KeyEvent.KEYCODE_DPAD_UP);
+			solo.sleep(SLEEPTIME);
+		}
+		solo.sendKey(KeyEvent.KEYCODE_ENTER);
+		solo.sleep(SLEEPTIME);
+
+		// Accept this change.
+		solo.clickOnButton(mActivity
+				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.accept));
+		solo.sleep(SLEEPTIME);
+
+		// Accept the edit
+		solo.clickOnButton(mActivity
+				.getString(com.googlecode.iqapps.IQTimeSheet.R.string.accept));
+		solo.sleep(SLEEPTIME);
+	}
+
+	public void test60Report() {
 		mActivity = getActivity();
 		assertNotNull(mActivity);
 
