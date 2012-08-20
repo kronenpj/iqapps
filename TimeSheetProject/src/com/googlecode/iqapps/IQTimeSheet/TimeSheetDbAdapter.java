@@ -410,7 +410,7 @@ public class TimeSheetDbAdapter {
 	 * @return rowId or -1 if failed
 	 */
 	public long closeEntry(long chargeno, long timeOut) {
-		final long origTimeOut = timeOut;
+		// final long origTimeOut = timeOut;
 		if (TimeSheetActivity.prefs.getAlignMinutesAuto()) {
 			timeOut = TimeHelpers.millisToAlignMinutes(timeOut,
 					TimeSheetActivity.prefs.getAlignMinutes());

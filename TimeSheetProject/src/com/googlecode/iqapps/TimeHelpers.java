@@ -51,7 +51,7 @@ public class TimeHelpers {
 		final long minInMillis = days * (24L * 60 * 60 * 1000) + hours
 				* (60 * 60 * 1000) + minutes * (60 * 1000);
 
-		final Date date = new Date(minInMillis);
+		// final Date date = new Date(minInMillis);
 
 		return minInMillis;
 	}

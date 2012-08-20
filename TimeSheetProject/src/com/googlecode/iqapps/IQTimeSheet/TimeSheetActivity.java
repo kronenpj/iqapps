@@ -637,11 +637,13 @@ public class TimeSheetActivity extends ListActivity {
 						myPackage)) {
 					Log.w(TAG, "doSDBackup failed.");
 					Toast.makeText(TimeSheetActivity.this,
-							"Database backup failed.", Toast.LENGTH_LONG).show();
+							"Database backup failed.", Toast.LENGTH_LONG)
+							.show();
 				} else {
 					Log.i(TAG, "doSDBackup succeeded.");
 					Toast.makeText(TimeSheetActivity.this,
-							"Database backup succeeded.", Toast.LENGTH_SHORT).show();
+							"Database backup succeeded.", Toast.LENGTH_SHORT)
+							.show();
 				}
 				setupDB();
 			}
@@ -722,7 +724,7 @@ public class TimeSheetActivity extends ListActivity {
 					// database fields.
 					if (data.hasExtra("parent")) {
 						long taskID = db.getTaskIDByName(oldData);
-						int oldSplit = db.getSplitTaskFlag(oldData);
+						// int oldSplit = db.getSplitTaskFlag(oldData);
 						long parentID = db.getTaskIDByName(data
 								.getStringExtra("parent"));
 						db.alterSplitTask(taskID, parentID,
