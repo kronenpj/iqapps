@@ -37,6 +37,8 @@ import android.util.Log;
  * @author Paul Kronenwetter <kronenpj@gmail.com>
  */
 public class PreferenceHelper {
+	private static final float FONTSIZE_TOTAL_DEFAULT = 14.0f;
+	private static final float FONTSIZE_TASKLIST_DEFAULT = 12.0f;
 	private static final String TAG = "PreferenceHelper";
 	private SharedPreferences prefs;
 
@@ -45,6 +47,7 @@ public class PreferenceHelper {
 	public static final String KEY_ALIGN_TIME_PICKER = "align.time.picker";
 	public static final String KEY_HOURS_DAY = "hours.day";
 	public static final String KEY_HOURS_WEEK = "hours.week";
+	public static final String KEY_FONTSIZE_TASKLIST = "fontSize.tasklist";
 	public static final String KEY_TOTAL_FONTSIZE = "total.fontSize";
 	public static final String KEY_SDCARD_BACKUP = "db.on.sdcard";
 
@@ -132,17 +135,37 @@ public class PreferenceHelper {
 		// Be careful here - The list used by the preferences activity is based
 		// on String, not any other primitive or class... This threw cast
 		// exceptions early on in development.
-		float totalsFontSize = (float) 14.0;
+		float totalsFontSize = FONTSIZE_TOTAL_DEFAULT;
 		try {
 			// Throws ClassCastException
 			// hoursWeek = prefs.getFloat(KEY_HOURS_WEEK, (float) 40.0);
 			totalsFontSize = Float.valueOf(prefs.getString(KEY_TOTAL_FONTSIZE,
-					"14.0"));
+					String.valueOf(FONTSIZE_TOTAL_DEFAULT)));
 		} catch (Exception e) {
 			Log.e(TAG, KEY_TOTAL_FONTSIZE + " threw exception: " + e.toString());
 		}
 		Log.d(TAG, "Preference " + KEY_TOTAL_FONTSIZE + ": " + totalsFontSize);
 		return totalsFontSize;
+	}
+
+	public float getFontSizeTaskList() {
+		// Be careful here - The list used by the preferences activity is based
+		// on String, not any other primitive or class... This threw cast
+		// exceptions early on in development.
+		float fontSizeTaskList = FONTSIZE_TASKLIST_DEFAULT;
+		try {
+			// Throws ClassCastException
+			// hoursWeek = prefs.getFloat(KEY_HOURS_WEEK, (float) 40.0);
+			fontSizeTaskList = Float.valueOf(prefs.getString(
+					KEY_FONTSIZE_TASKLIST,
+					String.valueOf(FONTSIZE_TASKLIST_DEFAULT)));
+		} catch (Exception e) {
+			Log.e(TAG,
+					KEY_FONTSIZE_TASKLIST + " threw exception: " + e.toString());
+		}
+		Log.d(TAG, "Preference " + KEY_FONTSIZE_TASKLIST + ": "
+				+ fontSizeTaskList);
+		return fontSizeTaskList;
 	}
 
 	public boolean getSDCardBackup() {

@@ -33,6 +33,7 @@
     <string name="timepicker_align_summary_off">Time picker dialog will behave as usual, stepping by 1 minute at a time.</string>
     <string name="split_task_desc">This is part of a split task</string>
     <string name="totals_fontsize_summary">Font size for the totals footer on reports.  14 is the Android default.</string>
+    <string name="fontsize_tasklist_summary">Font size for the task list.  20 is readable.</string>
     <string name="align_minutes_title">Snap to X minute increments</string>
     <string name="align_minutes_summary">Choose an interval to align minutes</string>
 	<string name="hours_day_title">Hours per day</string>
@@ -45,5 +46,6 @@
 	<string name="align_minutes_auto">Align minutes automatically?</string>
 	<string name="align_within_time_picker">Align time within Time Picker?</string>
 	<string name="totals_font_size">Totals Font Size</string>
+	<string name="fontsize_tasklist">Tasklist Font Size</string>
 	<string name="select_parent_task">Select parent task</string>
 </resources>

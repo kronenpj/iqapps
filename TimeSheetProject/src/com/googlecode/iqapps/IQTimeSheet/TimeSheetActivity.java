@@ -34,8 +34,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.googlecode.iqapps.TimeHelpers;
@@ -52,6 +52,7 @@ public class TimeSheetActivity extends ListActivity {
 	TimeSheetDbAdapter db;
 	Menu optionsMenu;
 	private ListView tasksList;
+	private TextView taskListItem;
 	// private TimeListWrapper timeWrapper;
 	// private TimeListAdapter timeAdapter;
 	private Cursor taskCursor;
@@ -261,7 +262,7 @@ public class TimeSheetActivity extends ListActivity {
 			i++;
 		}
 
-		tasksList.setAdapter(new ArrayAdapter<String>(this,
+		tasksList.setAdapter(new MyArrayAdapter<String>(this,
 				android.R.layout.simple_list_item_single_choice, items));
 		updateTitleBar();
 	}

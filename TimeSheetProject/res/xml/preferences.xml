@@ -48,6 +48,13 @@
         android:summary="@string/totals_fontsize_summary"
         android:title="@string/totals_font_size" />
 
+    <EditTextPreference
+        android:defaultValue="12.0"
+        android:key="fontSize.tasklist"
+        android:order="60"
+        android:summary="@string/fontsize_tasklist_summary"
+        android:title="@string/fontsize_tasklist" />
+
     <CheckBoxPreference
         android:defaultValue="true"
         android:enabled="true"
