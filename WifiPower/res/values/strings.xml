@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">IQWifiPower</string>
+    <string name="powerReduce">Reduced Wifi power to 1mW / 0dBm.</string>
+    <string name="powerFailed">Failed to reduce Wifi power.</string>
+</resources>
