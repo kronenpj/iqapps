@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="custom_rules" default="help">
 
+    <!--
+    <target name="-debug-obfuscation-check">
+        <property name="proguard.enabled" value="true"/>
+    </target>
+    -->
+
     <target name="-pre-build" depends="-update-version">
     </target>
 
@@ -32,5 +38,18 @@
       <replaceregexp file="${resource.absolute.dir}/values/notrans.xml" encoding="utf8" match='(\x3Cstring name="msg_version">)[^\x3C]*(\x3C/string>)' replace='\1${ant.project.name} ${manifest.version.name} (${Revision} ${build.date})\2' />
 
       <echo>Updated "msg_version" to: ${ant.project.name} ${manifest.version.name} (${Revision} ${build.date})</echo>
+    </target>
+
+    <target name="upload" description="Uploads the current release APK to google.">
+      <property file="build.credentials" />
+      <taskdef classname="net.bluecow.googlecode.ant.GoogleCodeUploadTask" classpath="${user.home}/src/svn/ant-googlecode/ant-googlecode.jar" name="gcupload"/>
+      <gcupload
+        username="${gc.username}"
+        password="${gc.password}"
+        projectname="iqapps"
+        filename="build/IQTimeSheet-release.apk"
+        targetfilename="IQTimeSheet-xxxx.y.apk"
+        summary="IQTimeSheet"
+        labels="beta, Type-Installer, OpSys-Android" />
     </target>
 </project>

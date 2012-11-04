@@ -38,7 +38,7 @@ public class AboutDialogTest extends
 		int menuItemID = mActivity.getOptionsMenu()
 				.getItem(MenuItems.ABOUT.ordinal()).getItemId();
 		assertTrue(mInstr.invokeMenuActionSync(mActivity, menuItemID, 0));
-		assertTrue(solo.waitForActivity("AboutDialog", 500));
+		assertTrue(solo.waitForActivity("AboutDialog", 750));
 		while (!solo.getCurrentActivity().isTaskRoot()) {
 			solo.goBack();
 		}
